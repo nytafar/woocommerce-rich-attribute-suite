@@ -28,7 +28,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Implemented meta boxes for attribute properties in the admin interface
 - Added template overrides with fallback to theme templates
 
-## [Unreleased]
+## [1.0.1]
+
+### Added
+- Variation description fallback feature that uses attribute term descriptions when variation descriptions are empty
+- Support for Mix and Match products to display attribute term descriptions
+- Multiple filter hooks to enable/disable specific variation improvement features:
+  - `wc_ras_enable_variation_improvements` - Master toggle for all variation improvements
+  - `wc_ras_enable_variation_description_fallback` - Toggle for description fallback feature
+  - `wc_ras_enable_mnm_description_support` - Toggle for Mix and Match support
+  - `wc_ras_show_variation_description_links` - Toggle for "Learn more" links in descriptions
+  - `wc_ras_combine_all_term_descriptions` - Toggle for combining multiple term descriptions
 
 ### Planned Features
 - Settings page for configuring default behavior

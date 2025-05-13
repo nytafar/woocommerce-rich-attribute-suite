@@ -21,6 +21,8 @@ WooCommerce Rich Attribute Suite transforms standard attribute taxonomy pages in
 - **Translatable**: Fully compatible with WPML/Polylang, matches content by slug per language
 - **Variation-level Access**: Fetch region/smak on a product variation using linked attribute page
 - **Performance-optimized**: All lookups cacheable using wp_cache_get() for high-scale environments
+- **Variation Description Fallback**: Automatically use attribute term descriptions when variation descriptions are empty
+- **Mix and Match Support**: Extends description fallback to WooCommerce Mix and Match products
 
 ## 🔧 Technical Design
 
@@ -95,11 +97,23 @@ add_action('wc_ras_save_attribute_page_meta', function($post_id) {
 
 ## 🧩 Hooks and Filters
 
+### Attribute Page Hooks
+
 | Hook | Description |
 |------|-------------|
 | `wc_ras_register_attribute_page_meta_fields` | Register additional meta fields for attribute pages |
 | `wc_ras_attribute_page_meta_box_fields` | Add fields to the attribute page meta box |
 | `wc_ras_save_attribute_page_meta` | Process additional meta fields when saving |
+
+### Variation Improvement Hooks
+
+| Hook | Description |
+|------|-------------|
+| `wc_ras_enable_variation_improvements` | Master toggle for all variation improvements (default: true) |
+| `wc_ras_enable_variation_description_fallback` | Enable/disable description fallback feature (default: true) |
+| `wc_ras_enable_mnm_description_support` | Enable/disable Mix and Match support (default: true) |
+| `wc_ras_show_variation_description_links` | Show/hide "Learn more" links in descriptions (default: true) |
+| `wc_ras_combine_all_term_descriptions` | Combine multiple term descriptions instead of using just the first one (default: false) |
 
 ## 🔄 Compatibility
 
