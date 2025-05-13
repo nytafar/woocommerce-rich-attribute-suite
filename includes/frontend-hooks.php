@@ -206,8 +206,8 @@ add_filter('woocommerce_available_variation', 'wc_ras_add_attribute_meta_to_vari
  * Add attribute meta to AJAX product variations response
  */
 function wc_ras_enqueue_variation_scripts() {
-    // Only on product pages
-    if (!is_product()) {
+    // Only on product pages and only if variation meta display is enabled
+    if (!is_product() || !apply_filters('wc_ras_enable_variation_meta_display', false)) {
         return;
     }
     

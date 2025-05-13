@@ -1,7 +1,7 @@
 # WooCommerce Rich Attribute Suite
 
 ![WooCommerce Rich Attribute Suite](https://img.shields.io/badge/WooCommerce-Rich%20Attribute%20Suite-7f54b3.svg)
-![Version 1.0.0](https://img.shields.io/badge/Version-1.0.0-brightgreen.svg)
+![Version 1.0.2](https://img.shields.io/badge/Version-1.0.2-brightgreen.svg)
 ![WooCommerce 6.0+](https://img.shields.io/badge/WooCommerce-6.0+-a46497.svg)
 ![PHP 7.4+](https://img.shields.io/badge/PHP-7.4+-8892BF.svg)
 
@@ -114,6 +114,7 @@ add_action('wc_ras_save_attribute_page_meta', function($post_id) {
 | `wc_ras_enable_mnm_description_support` | Enable/disable Mix and Match support (default: true) |
 | `wc_ras_show_variation_description_links` | Show/hide "Learn more" links in descriptions (default: true) |
 | `wc_ras_combine_all_term_descriptions` | Combine multiple term descriptions instead of using just the first one (default: false) |
+| `wc_ras_enable_variation_meta_display` | Enable/disable display of variation meta (region, smak) in the product summary (default: false) |
 
 ## 🔄 Compatibility
 

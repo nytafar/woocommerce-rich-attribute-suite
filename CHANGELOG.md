@@ -40,6 +40,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `wc_ras_show_variation_description_links` - Toggle for "Learn more" links in descriptions
   - `wc_ras_combine_all_term_descriptions` - Toggle for combining multiple term descriptions
 
+## [1.0.2] - 2025-05-13
+
+### Added
+- New hook `wc_ras_enable_variation_meta_display` to control whether variation meta fields are displayed in product summary (disabled by default)
+
+### Fixed
+- Fixed issue where variation meta display was not properly controlled by hooks
+- Improved prioritization for variation descriptions (variation description → term description → attribute page content)
+- Fixed newly created attributes to use term description instead of attribute page content
+- Removed unnecessary wrapper div around attribute page content in taxonomy template
+
 ### Planned Features
 - Settings page for configuring default behavior
 - Additional meta fields for different attribute types

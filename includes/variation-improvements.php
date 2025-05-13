@@ -37,8 +37,41 @@ class WC_RAS_Variation_Improvements {
         if (apply_filters('wc_ras_enable_mnm_description_support', true) && class_exists('WC_Mix_and_Match')) {
             add_action('wc_mnm_child_item_details', array($this, 'mnm_variation_description_support'), 105, 2);
         }
+        
+        // Add meta display in product summary (disabled by default)
+        if (apply_filters('wc_ras_enable_variation_meta_display', false)) {
+            add_action('wp_enqueue_scripts', array($this, 'enqueue_variation_display_script'));
+        }
+        
+        // Register scripts but don't enqueue them yet
+        add_action('wp_enqueue_scripts', array($this, 'register_scripts'));
     }
 
+    /**
+     * Register scripts without enqueueing them
+     */
+    public function register_scripts() {
+        wp_register_script(
+            'wc-ras-variation-display',
+            WC_RAS_PLUGIN_URL . 'assets/js/variation-display.js',
+            array('jquery', 'wc-add-to-cart-variation'),
+            WC_RAS_VERSION,
+            true
+        );
+    }
+    
+    /**
+     * Enqueue variation display script for separate meta display
+     */
+    public function enqueue_variation_display_script() {
+        // Only on product pages
+        if (!is_product()) {
+            return;
+        }
+        
+        wp_enqueue_script('wc-ras-variation-display');
+    }
+    
     /**
      * Fallback to Attribute Term Description When Variation Description Is Absent
      * 
@@ -82,43 +115,49 @@ class WC_RAS_Variation_Improvements {
                         continue;
                     }
                     
-                    // First check if we have a rich attribute page for this term
-                    $attribute_page = wc_ras_get_cached_attribute_page($term->slug);
+                    // First check if term has a description
+                    $term_description = trim($term->description);
+                    $region = '';
+                    $smak = '';
                     
-                    if ($attribute_page) {
-                        // Use the attribute page excerpt if available, otherwise use the content
-                        $content = !empty($attribute_page->post_excerpt) ? $attribute_page->post_excerpt : $attribute_page->post_content;
-                        
-                        if (!empty($content)) {
-                            $term_descriptions[] = wp_trim_words($content, 30, '...');
-                            
-                            // Add link to attribute page
-                            $term_page_links[] = '<a href="' . esc_url(get_term_link($term)) . '" class="term-page-link">' . 
-                                                 esc_html__('Learn more', 'wc-rich-attribute-suite') . '</a>';
-                        }
-                    } else {
-                        // Fallback to term description if no attribute page exists
-                        $term_description = trim($term->description);
+                    if (!empty($term_description)) {
+                        // Use the term description
+                        $term_descriptions[] = $term_description;
                         
                         // Get the term's linked page if any (legacy support)
                         $page_id = get_term_meta($term->term_id, 'linked_page_id', true);
                         $custom_url = get_term_meta($term->term_id, 'custom_page_url', true);
                         
-                        // Add to our collection if description exists
-                        if (!empty($term_description)) {
-                            $term_descriptions[] = $term_description;
+                        // Add page link if available
+                        if (!empty($page_id) || !empty($custom_url)) {
+                            $link_url = !empty($page_id) ? get_permalink($page_id) : $custom_url;
+                            $link_text = !empty($page_id) ? get_the_title($page_id) : __('Learn more', 'wc-rich-attribute-suite');
                             
-                            // Add page link if available
-                            if (!empty($page_id) || !empty($custom_url)) {
-                                $link_url = !empty($page_id) ? get_permalink($page_id) : $custom_url;
-                                $link_text = !empty($page_id) ? get_the_title($page_id) : __('Learn more', 'wc-rich-attribute-suite');
+                            $term_page_links[] = '<a href="' . esc_url($link_url) . '" class="term-page-link">' . esc_html($link_text) . '</a>';
+                        } else {
+                            // Default to term archive link
+                            $term_page_links[] = '<a href="' . esc_url(get_term_link($term)) . '" class="term-page-link">' . 
+                                                 esc_html__('Learn more', 'wc-rich-attribute-suite') . '</a>';
+                        }
+                    } else {
+                        // Fallback to attribute page if no term description exists
+                        $attribute_page = wc_ras_get_cached_attribute_page($term->slug);
+                        
+                        if ($attribute_page) {
+                            // Use the attribute page excerpt if available, otherwise use the content
+                            $content = !empty($attribute_page->post_excerpt) ? $attribute_page->post_excerpt : $attribute_page->post_content;
+                            
+                            if (!empty($content)) {
+                                $term_descriptions[] = wp_trim_words($content, 30, '...');
                                 
-                                $term_page_links[] = '<a href="' . esc_url($link_url) . '" class="term-page-link">' . esc_html($link_text) . '</a>';
-                            } else {
-                                // Default to term archive link
+                                // Add link to attribute page
                                 $term_page_links[] = '<a href="' . esc_url(get_term_link($term)) . '" class="term-page-link">' . 
                                                      esc_html__('Learn more', 'wc-rich-attribute-suite') . '</a>';
                             }
+                            
+                            // Get meta from attribute page
+                            $region = get_post_meta($attribute_page->ID, 'region', true);
+                            $smak = get_post_meta($attribute_page->ID, 'smak', true);
                         }
                     }
                 }
@@ -144,6 +183,17 @@ class WC_RAS_Variation_Improvements {
                     if (apply_filters('wc_ras_show_variation_description_links', true) && !empty($term_page_links)) {
                         $variation_data['variation_description'] .= '<p class="term-page-link-wrapper">' . 
                                                                    implode(' | ', $term_page_links) . '</p>';
+                    }
+                }
+                
+                // Add meta to variation data for potential separate display
+                if (!empty($term_descriptions[0])) {
+                    // Only add if not already present
+                    if (empty($variation_data['attribute_region']) && !empty($region)) {
+                        $variation_data['attribute_region'] = $region;
+                    }
+                    if (empty($variation_data['attribute_smak']) && !empty($smak)) {
+                        $variation_data['attribute_smak'] = $smak;
                     }
                 }
             }
@@ -204,40 +254,40 @@ class WC_RAS_Variation_Improvements {
                         continue;
                     }
                     
-                    // First check if we have a rich attribute page for this term
-                    $attribute_page = wc_ras_get_cached_attribute_page($term->slug);
+                    // First check if term has a description
+                    $term_description = trim($term->description);
                     
-                    if ($attribute_page) {
-                        // Use the attribute page excerpt if available, otherwise use the content
-                        $content = !empty($attribute_page->post_excerpt) ? $attribute_page->post_excerpt : $attribute_page->post_content;
-                        
-                        if (!empty($content)) {
-                            $term_descriptions[] = wp_trim_words($content, 30, '...');
-                            
-                            // Add link to attribute page
-                            $term_page_links[] = '<a href="' . esc_url(get_term_link($term)) . '" class="term-page-link">' . 
-                                                 esc_html__('Learn more', 'wc-rich-attribute-suite') . '</a>';
-                        }
-                    } else {
-                        // Fallback to term description if no attribute page exists
-                        $term_description = trim($term->description);
+                    if (!empty($term_description)) {
+                        // Use the term description
+                        $term_descriptions[] = $term_description;
                         
                         // Get the term's linked page if any (legacy support)
                         $page_id = get_term_meta($term->term_id, 'linked_page_id', true);
                         $custom_url = get_term_meta($term->term_id, 'custom_page_url', true);
                         
-                        // Add to our collection if description exists
-                        if (!empty($term_description)) {
-                            $term_descriptions[] = $term_description;
+                        // Add page link if available
+                        if (!empty($page_id) || !empty($custom_url)) {
+                            $link_url = !empty($page_id) ? get_permalink($page_id) : $custom_url;
+                            $link_text = !empty($page_id) ? get_the_title($page_id) : __('Learn more', 'wc-rich-attribute-suite');
                             
-                            // Add page link if available
-                            if (!empty($page_id) || !empty($custom_url)) {
-                                $link_url = !empty($page_id) ? get_permalink($page_id) : $custom_url;
-                                $link_text = !empty($page_id) ? get_the_title($page_id) : __('Learn more', 'wc-rich-attribute-suite');
+                            $term_page_links[] = '<a href="' . esc_url($link_url) . '" class="term-page-link">' . esc_html($link_text) . '</a>';
+                        } else {
+                            // Default to term archive link
+                            $term_page_links[] = '<a href="' . esc_url(get_term_link($term)) . '" class="term-page-link">' . 
+                                                 esc_html__('Learn more', 'wc-rich-attribute-suite') . '</a>';
+                        }
+                    } else {
+                        // Fallback to attribute page if no term description exists
+                        $attribute_page = wc_ras_get_cached_attribute_page($term->slug);
+                        
+                        if ($attribute_page) {
+                            // Use the attribute page excerpt if available, otherwise use the content
+                            $content = !empty($attribute_page->post_excerpt) ? $attribute_page->post_excerpt : $attribute_page->post_content;
+                            
+                            if (!empty($content)) {
+                                $term_descriptions[] = wp_trim_words($content, 30, '...');
                                 
-                                $term_page_links[] = '<a href="' . esc_url($link_url) . '" class="term-page-link">' . esc_html($link_text) . '</a>';
-                            } else {
-                                // Default to term archive link
+                                // Add link to attribute page
                                 $term_page_links[] = '<a href="' . esc_url(get_term_link($term)) . '" class="term-page-link">' . 
                                                      esc_html__('Learn more', 'wc-rich-attribute-suite') . '</a>';
                             }

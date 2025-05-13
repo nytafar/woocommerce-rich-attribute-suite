@@ -61,9 +61,7 @@ $attribute_page = wc_ras_get_cached_attribute_page($term->slug);
             </div>
         <?php endif; ?>
 
-        <div class="attribute-rich-content">
-            <?php echo apply_filters('the_content', $attribute_page->post_content); ?>
-        </div>
+        <?php echo apply_filters('the_content', $attribute_page->post_content); ?>
     <?php else : ?>
         <?php if (!empty($term->description)) : ?>
             <div class="term-description">

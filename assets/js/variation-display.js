@@ -1,7 +1,8 @@
 /**
  * WooCommerce Rich Attribute Suite - Variation Display
  * 
- * Handles the display of attribute meta data when variations change
+ * Handles the display of attribute meta data when variations change.
+ * This script is only loaded when the wc_ras_enable_variation_meta_display filter is true.
  */
 (function($) {
     'use strict';

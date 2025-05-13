@@ -3,7 +3,7 @@
  * Plugin Name: WooCommerce Rich Attribute Suite
  * Plugin URI: https://jellum.net
  * Description: Enhance WooCommerce product attribute taxonomy pages with rich, translatable, and fully editable content using native WordPress tools.
- * Version: 1.0.1
+ * Version: 1.0.2
  * Author: Lasse Jellum
  * Author URI: https://jellum.net
  * Text Domain: wc-rich-attribute-suite
@@ -18,7 +18,7 @@
 defined('ABSPATH') || exit;
 
 // Define plugin constants
-define('WC_RAS_VERSION', '1.0.1');
+define('WC_RAS_VERSION', '1.0.2');
 define('WC_RAS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('WC_RAS_PLUGIN_URL', plugin_dir_url(__FILE__));
 
