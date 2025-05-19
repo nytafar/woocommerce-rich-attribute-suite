@@ -5,9 +5,9 @@ msgstr ""
 "Project-Id-Version: WooCommerce Rich Attribute Suite 1.0.0\n"
 "Report-Msgid-Bugs-To: https://jellum.net\n"
 "POT-Creation-Date: 2025-05-13T13:00:00+02:00\n"
-"PO-Revision-Date: 2025-05-13 11:05+0000\n"
+"PO-Revision-Date: 2025-05-13 11:45+0000\n"
 "Last-Translator: \n"
-"Language-Team: Norwegian (Bokmål)\n"
+"Language-Team: Norsk bokmål\n"
 "Language: nb_NO\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -17,34 +17,6 @@ msgstr ""
 "X-Domain: wc-rich-attribute-suite\n"
 "X-Loco-Version: 2.7.2; wp-42"
 
-#: woocommerce-rich-attribute-suite.php:43
-msgid ""
-"WooCommerce Rich Attribute Suite requires WooCommerce to be installed and "
-"activated."
-msgstr ""
-"WooCommerce Rich Attribute Suite krever at WooCommerce er installert og "
-"aktivert."
-
-#: includes/cpt-attribute-page.php:18
-msgctxt "Post type general name"
-msgid "Attribute Pages"
-msgstr "Attributtsider"
-
-#: includes/cpt-attribute-page.php:19
-msgctxt "Post type singular name"
-msgid "Attribute Page"
-msgstr "Attributtside"
-
-#: includes/cpt-attribute-page.php:20
-msgctxt "Admin Menu text"
-msgid "Attribute Pages"
-msgstr "Attributtsider"
-
-#: includes/cpt-attribute-page.php:21
-msgctxt "Add New on Toolbar"
-msgid "Attribute Page"
-msgstr "Attributtside"
-
 #: includes/cpt-attribute-page.php:22
 msgid "Add New"
 msgstr "Legg til ny"
@@ -53,69 +25,39 @@ msgstr "Legg til ny"
 msgid "Add New Attribute Page"
 msgstr "Legg til ny attributtside"
 
-#: includes/cpt-attribute-page.php:24
-msgid "New Attribute Page"
-msgstr "Ny attributtside"
+#: includes/cpt-attribute-page.php:21
+msgctxt "Add New on Toolbar"
+msgid "Attribute Page"
+msgstr "Attributtside"
 
-#: includes/cpt-attribute-page.php:25
-msgid "Edit Attribute Page"
-msgstr "Rediger attributtside"
-
-#: includes/cpt-attribute-page.php:26
-msgid "View Attribute Page"
-msgstr "Vis attributtside"
+#: includes/cpt-attribute-page.php:20
+msgctxt "Admin Menu text"
+msgid "Attribute Pages"
+msgstr "Attributtsider"
 
 #: includes/cpt-attribute-page.php:27
 msgid "All Attribute Pages"
 msgstr "Alle attributtsider"
 
-#: includes/cpt-attribute-page.php:28
-msgid "Search Attribute Pages"
-msgstr "Søk etter attributtsider"
+#: includes/admin-hooks.php:152
+msgid "Attribute Properties"
+msgstr "Attributtegenskaper"
 
-#: includes/cpt-attribute-page.php:29
-msgid "Parent Attribute Pages:"
-msgstr "Overordnede attributtsider:"
+#: includes/admin-hooks.php:75
+msgid "Attribute Term"
+msgstr "Attributtbegrep"
 
-#: includes/cpt-attribute-page.php:30
-msgid "No attribute pages found."
-msgstr "Ingen attributtsider funnet."
+#: includes/admin-hooks.php:74
+msgid "Attribute Type"
+msgstr "Attributttype"
 
-#: includes/cpt-attribute-page.php:31
-msgid "No attribute pages found in Trash."
-msgstr "Ingen attributtsider funnet i papirkurven."
+#: includes/admin-hooks.php:46
+msgid "Create Rich Content Page"
+msgstr "Lag en side med rikt innhold"
 
-#: includes/cpt-attribute-page.php:32
-msgctxt "Overrides the \"Featured Image\" phrase"
-msgid "Attribute Image"
-msgstr "Attributtbilde"
-
-#: includes/cpt-attribute-page.php:33
-msgctxt "Overrides the \"Set featured image\" phrase"
-msgid "Set attribute image"
-msgstr "Angi attributtbilde"
-
-#: includes/cpt-attribute-page.php:34
-msgctxt "Overrides the \"Remove featured image\" phrase"
-msgid "Remove attribute image"
-msgstr "Fjern attributtbilde"
-
-#: includes/cpt-attribute-page.php:35
-msgctxt "Overrides the \"Use as featured image\" phrase"
-msgid "Use as attribute image"
-msgstr "Bruk som attributtbilde"
-
-#: includes/cpt-attribute-page.php:73
-msgid "Region information for the attribute"
-msgstr "Regioninformasjon for attributtet"
-
-#: includes/cpt-attribute-page.php:82
-msgid "Taste profile for the attribute"
-msgstr "Smaksprofil for attributtet"
-
-#: includes/admin-hooks.php:27
-msgid "Rich Content"
-msgstr "Rikt innhold"
+#: includes/cpt-attribute-page.php:25
+msgid "Edit Attribute Page"
+msgstr "Rediger attributtside"
 
 #: includes/admin-hooks.php:31
 msgid "Edit Rich Content"
@@ -128,9 +70,24 @@ msgstr ""
 "Rediger siden med rikt innhold for denne attributtermen ved hjelp av "
 "blokkredigereren."
 
-#: includes/admin-hooks.php:46
-msgid "Create Rich Content Page"
-msgstr "Lag en side med rikt innhold"
+#: includes/variation-improvements.php:106
+#: includes/variation-improvements.php:112
+#: includes/variation-improvements.php:196
+#: includes/variation-improvements.php:202
+msgid "Learn more"
+msgstr "Lær mer"
+
+#: includes/cpt-attribute-page.php:24
+msgid "New Attribute Page"
+msgstr "Ny attributtside"
+
+#: includes/cpt-attribute-page.php:31
+msgid "No attribute pages found in Trash."
+msgstr "Ingen attributtsider funnet i papirkurven."
+
+#: includes/cpt-attribute-page.php:30
+msgid "No attribute pages found."
+msgstr "Ingen attributtsider funnet."
 
 #: includes/admin-hooks.php:49
 msgid ""
@@ -139,25 +96,75 @@ msgstr ""
 "Det finnes ingen innholdsrik side for dette attributtermen. Klikk for å "
 "opprette en."
 
-#: includes/admin-hooks.php:74
-msgid "Attribute Type"
-msgstr "Attributttype"
+#: includes/cpt-attribute-page.php:32
+msgctxt "Overrides the \"Featured Image\" phrase"
+msgid "Attribute Image"
+msgstr "Attributtbilde"
 
-#: includes/admin-hooks.php:75
-msgid "Attribute Term"
-msgstr "Attributtbegrep"
+#: includes/cpt-attribute-page.php:34
+msgctxt "Overrides the \"Remove featured image\" phrase"
+msgid "Remove attribute image"
+msgstr "Fjern attributtbilde"
+
+#: includes/cpt-attribute-page.php:33
+msgctxt "Overrides the \"Set featured image\" phrase"
+msgid "Set attribute image"
+msgstr "Angi attributtbilde"
+
+#: includes/cpt-attribute-page.php:35
+msgctxt "Overrides the \"Use as featured image\" phrase"
+msgid "Use as attribute image"
+msgstr "Bruk som attributtbilde"
+
+#: includes/cpt-attribute-page.php:29
+msgid "Parent Attribute Pages:"
+msgstr "Overordnede attributtsider:"
+
+#: includes/cpt-attribute-page.php:18
+msgctxt "Post type general name"
+msgid "Attribute Pages"
+msgstr "Attributtsider"
+
+#: includes/cpt-attribute-page.php:19
+msgctxt "Post type singular name"
+msgid "Attribute Page"
+msgstr "Attributtside"
+
+#: templates/taxonomy-product-attribute.php:78
+msgid "Products made with %s"
+msgstr "Produkter laget med %s"
 
 #: includes/admin-hooks.php:76
 msgid "Region"
 msgstr "Region"
 
+#: includes/cpt-attribute-page.php:73
+msgid "Region information for the attribute"
+msgstr "Regioninformasjon for attributtet"
+
+#: templates/taxonomy-product-attribute.php:46
+msgid "Region:"
+msgstr "Region:"
+
+#: includes/admin-hooks.php:27
+msgid "Rich Content"
+msgstr "Rikt innhold"
+
+#: includes/cpt-attribute-page.php:28
+msgid "Search Attribute Pages"
+msgstr "Søk etter attributtsider"
+
 #: includes/admin-hooks.php:77
 msgid "Smak"
 msgstr "Smak"
 
-#: includes/admin-hooks.php:152
-msgid "Attribute Properties"
-msgstr "Attributtegenskaper"
+#: templates/taxonomy-product-attribute.php:54
+msgid "Smak:"
+msgstr "Smak:"
+
+#: includes/cpt-attribute-page.php:82
+msgid "Taste profile for the attribute"
+msgstr "Smaksprofil for attributtet"
 
 #: includes/admin-hooks.php:172
 msgid "The region for this attribute (e.g., geographical location)"
@@ -167,17 +174,14 @@ msgstr "Regionen for dette attributtet (f.eks. geografisk plassering)"
 msgid "The taste profile for this attribute"
 msgstr "Smaksprofilen for denne egenskapen"
 
-#: includes/frontend-hooks.php:76
-msgid "Region:"
-msgstr "Region:"
+#: includes/cpt-attribute-page.php:26
+msgid "View Attribute Page"
+msgstr "Vis attributtside"
 
-#: includes/frontend-hooks.php:80
-msgid "Smak:"
-msgstr "Smak:"
-
-#: includes/variation-improvements.php:106
-#: includes/variation-improvements.php:112
-#: includes/variation-improvements.php:196
-#: includes/variation-improvements.php:202
-msgid "Learn more"
-msgstr "Lær mer"
+#: woocommerce-rich-attribute-suite.php:43
+msgid ""
+"WooCommerce Rich Attribute Suite requires WooCommerce to be installed and "
+"activated."
+msgstr ""
+"WooCommerce Rich Attribute Suite krever at WooCommerce er installert og "
+"aktivert."

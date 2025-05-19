@@ -178,3 +178,7 @@ msgstr ""
 #: templates/taxonomy-product-attribute.php:54
 msgid "Smak:"
 msgstr ""
+
+#: templates/taxonomy-product-attribute.php:78
+msgid "Products made with %s"
+msgstr ""

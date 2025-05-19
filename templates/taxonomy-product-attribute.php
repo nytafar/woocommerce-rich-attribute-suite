@@ -60,8 +60,6 @@ $attribute_page = wc_ras_get_cached_attribute_page($term->slug);
                 <?php echo wpautop(wptexturize($term->description)); ?>
             </div>
         <?php endif; ?>
-
-        <?php echo apply_filters('the_content', $attribute_page->post_content); ?>
     <?php else : ?>
         <?php if (!empty($term->description)) : ?>
             <div class="term-description">
@@ -71,51 +69,62 @@ $attribute_page = wc_ras_get_cached_attribute_page($term->slug);
     <?php endif; ?>
 </header>
 
-<?php
-// If this is a product attribute archive, display the products
-if (is_tax() && wc_ras_is_product_attribute()) {
-    if (woocommerce_product_loop()) {
-        /**
-         * Hook: woocommerce_before_shop_loop.
-         *
-         * @hooked woocommerce_output_all_notices - 10
-         * @hooked woocommerce_result_count - 20
-         * @hooked woocommerce_catalog_ordering - 30
-         */
-        do_action('woocommerce_before_shop_loop');
+<?php if ($attribute_page && !empty($attribute_page->post_content)) : ?>
+<article class="attribute-page-content">
+    <?php echo apply_filters('the_content', $attribute_page->post_content); ?>
+</article>
+<?php endif; ?>
 
-        woocommerce_product_loop_start();
+<section class="attribute-products-section">
+    <h2 class="products-made-with-title"><?php printf(esc_html__('Products made with %s', 'wc-rich-attribute-suite'), esc_html($term->name)); ?></h2>
 
-        if (wc_get_loop_prop('total')) {
-            while (have_posts()) {
-                the_post();
+    <?php
+    // If this is a product attribute archive, display the products
+    if (is_tax() && wc_ras_is_product_attribute()) {
+        if (woocommerce_product_loop()) {
+            /**
+             * Hook: woocommerce_before_shop_loop.
+             *
+             * @hooked woocommerce_output_all_notices - 10
+             * @hooked woocommerce_result_count - 20
+             * @hooked woocommerce_catalog_ordering - 30
+             */
+            do_action('woocommerce_before_shop_loop');
 
-                /**
-                 * Hook: woocommerce_shop_loop.
-                 */
-                do_action('woocommerce_shop_loop');
+            woocommerce_product_loop_start();
 
-                wc_get_template_part('content', 'product');
+            if (wc_get_loop_prop('total')) {
+                while (have_posts()) {
+                    the_post();
+
+                    /**
+                     * Hook: woocommerce_shop_loop.
+                     */
+                    do_action('woocommerce_shop_loop');
+
+                    wc_get_template_part('content', 'product');
+                }
             }
+
+            woocommerce_product_loop_end();
+
+            /**
+             * Hook: woocommerce_after_shop_loop.
+             *
+             * @hooked woocommerce_pagination - 10
+             */
+            do_action('woocommerce_after_shop_loop');
+        } else {
+            /**
+             * Hook: woocommerce_no_products_found.
+             *
+             * @hooked wc_no_products_found - 10
+             */
+            do_action('woocommerce_no_products_found');
         }
-
-        woocommerce_product_loop_end();
-
-        /**
-         * Hook: woocommerce_after_shop_loop.
-         *
-         * @hooked woocommerce_pagination - 10
-         */
-        do_action('woocommerce_after_shop_loop');
-    } else {
-        /**
-         * Hook: woocommerce_no_products_found.
-         *
-         * @hooked wc_no_products_found - 10
-         */
-        do_action('woocommerce_no_products_found');
     }
-}
+    ?>
+</section>
 
 /**
  * Hook: woocommerce_after_main_content.
