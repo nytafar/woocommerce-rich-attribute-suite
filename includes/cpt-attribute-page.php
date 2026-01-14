@@ -16,14 +16,14 @@ function wc_ras_register_attribute_page_cpt() {
     $labels = array(
         'name'                  => _x('Attribute Pages', 'Post type general name', 'wc-rich-attribute-suite'),
         'singular_name'         => _x('Attribute Page', 'Post type singular name', 'wc-rich-attribute-suite'),
-        'menu_name'             => _x('Attribute Pages', 'Admin Menu text', 'wc-rich-attribute-suite'),
+        'menu_name'             => _x('Attribute Suite', 'Admin Menu text', 'wc-rich-attribute-suite'),
         'name_admin_bar'        => _x('Attribute Page', 'Add New on Toolbar', 'wc-rich-attribute-suite'),
         'add_new'               => __('Add New', 'wc-rich-attribute-suite'),
         'add_new_item'          => __('Add New Attribute Page', 'wc-rich-attribute-suite'),
         'new_item'              => __('New Attribute Page', 'wc-rich-attribute-suite'),
         'edit_item'             => __('Edit Attribute Page', 'wc-rich-attribute-suite'),
         'view_item'             => __('View Attribute Page', 'wc-rich-attribute-suite'),
-        'all_items'             => __('All Attribute Pages', 'wc-rich-attribute-suite'),
+        'all_items'             => __('All Pages', 'wc-rich-attribute-suite'),
         'search_items'          => __('Search Attribute Pages', 'wc-rich-attribute-suite'),
         'parent_item_colon'     => __('Parent Attribute Pages:', 'wc-rich-attribute-suite'),
         'not_found'             => __('No attribute pages found.', 'wc-rich-attribute-suite'),
@@ -54,6 +54,53 @@ function wc_ras_register_attribute_page_cpt() {
     register_post_type('attribute_page', $args);
 }
 add_action('init', 'wc_ras_register_attribute_page_cpt');
+
+/**
+ * Add custom admin menu structure for Attribute Suite
+ */
+function wc_ras_customize_admin_menu() {
+    global $submenu;
+    
+    // Get all product attributes
+    $attribute_taxonomies = wc_get_attribute_taxonomies();
+    
+    if (!empty($attribute_taxonomies) && isset($submenu['edit.php?post_type=attribute_page'])) {
+        // Remove the "Add New" submenu item
+        foreach ($submenu['edit.php?post_type=attribute_page'] as $key => $item) {
+            if ($item[2] === 'post-new.php?post_type=attribute_page') {
+                unset($submenu['edit.php?post_type=attribute_page'][$key]);
+                break;
+            }
+        }
+        
+        // Insert attribute term configuration links before "All Pages"
+        $new_submenu = array();
+        $inserted = false;
+        
+        foreach ($submenu['edit.php?post_type=attribute_page'] as $key => $item) {
+            // Insert attribute links before "All Pages"
+            if (!$inserted && $item[2] === 'edit.php?post_type=attribute_page') {
+                // Add separator comment
+                foreach ($attribute_taxonomies as $tax) {
+                    $taxonomy_name = wc_attribute_taxonomy_name($tax->attribute_name);
+                    $attribute_label = $tax->attribute_label ? $tax->attribute_label : $tax->attribute_name;
+                    
+                    $new_submenu[] = array(
+                        $attribute_label,
+                        'manage_product_terms',
+                        'edit-tags.php?taxonomy=' . $taxonomy_name . '&post_type=product'
+                    );
+                }
+                $inserted = true;
+            }
+            
+            $new_submenu[] = $item;
+        }
+        
+        $submenu['edit.php?post_type=attribute_page'] = $new_submenu;
+    }
+}
+add_action('admin_menu', 'wc_ras_customize_admin_menu', 999);
 
 /**
  * Register meta fields for attribute_page CPT
