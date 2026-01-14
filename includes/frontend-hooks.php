@@ -10,6 +10,87 @@
 defined('ABSPATH') || exit;
 
 /**
+ * Enable public archives for WooCommerce product attribute taxonomies
+ * 
+ * This ensures get_term_link() returns proper permalink URLs
+ * and that attribute term archives are accessible.
+ */
+function wc_ras_enable_attribute_archives() {
+    $attribute_taxonomies = wc_get_attribute_taxonomies();
+    
+    if (empty($attribute_taxonomies)) {
+        return;
+    }
+    
+    foreach ($attribute_taxonomies as $tax) {
+        $taxonomy_name = wc_attribute_taxonomy_name($tax->attribute_name);
+        
+        // Filter the taxonomy args to enable public archives
+        add_filter("woocommerce_taxonomy_args_{$taxonomy_name}", 'wc_ras_filter_attribute_taxonomy_args', 10, 1);
+    }
+}
+// Run early, before WooCommerce registers taxonomies
+add_action('init', 'wc_ras_enable_attribute_archives', 1);
+
+/**
+ * Filter attribute taxonomy args to enable public archives
+ *
+ * @param array $args Taxonomy registration args
+ * @return array Modified args
+ */
+function wc_ras_filter_attribute_taxonomy_args($args) {
+    // Enable public access and query var
+    $args['public'] = true;
+    $args['query_var'] = true;
+    
+    // Set up rewrite rules if not already set
+    if (empty($args['rewrite']) || $args['rewrite'] === false) {
+        // Extract attribute name from the current filter
+        $current_filter = current_filter();
+        $taxonomy_name = str_replace('woocommerce_taxonomy_args_', '', $current_filter);
+        $attribute_name = str_replace('pa_', '', $taxonomy_name);
+        
+        $permalinks = wc_get_permalink_structure();
+        $base_slug = !empty($permalinks['attribute_rewrite_slug']) ? $permalinks['attribute_rewrite_slug'] : '';
+        
+        $args['rewrite'] = array(
+            'slug'         => trailingslashit($base_slug) . urldecode(sanitize_title($attribute_name)),
+            'with_front'   => false,
+            'hierarchical' => true,
+        );
+    }
+    
+    return $args;
+}
+
+/**
+ * Flush rewrite rules when plugin is activated or settings change
+ */
+function wc_ras_maybe_flush_rewrite_rules() {
+    if (get_option('wc_ras_flush_rewrite_rules')) {
+        flush_rewrite_rules();
+        delete_option('wc_ras_flush_rewrite_rules');
+    }
+}
+add_action('init', 'wc_ras_maybe_flush_rewrite_rules', 99);
+
+/**
+ * Check if rewrite rules need to be flushed for attribute archives
+ * 
+ * This runs once after plugin update to ensure attribute archives work
+ */
+function wc_ras_check_rewrite_rules_version() {
+    $current_version = get_option('wc_ras_rewrite_version', '0');
+    
+    if (version_compare($current_version, '1.2.0', '<')) {
+        // Schedule a rewrite flush
+        update_option('wc_ras_flush_rewrite_rules', true);
+        update_option('wc_ras_rewrite_version', WC_RAS_VERSION);
+    }
+}
+add_action('init', 'wc_ras_check_rewrite_rules_version', 98);
+
+/**
  * Check if current page is a product attribute archive
  *
  * @return bool True if current page is a product attribute taxonomy

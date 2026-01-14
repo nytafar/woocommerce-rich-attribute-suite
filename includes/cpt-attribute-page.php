@@ -138,6 +138,101 @@ function wc_ras_register_attribute_term_hooks() {
 add_action('init', 'wc_ras_register_attribute_term_hooks', 20);
 
 /**
+ * Pre-fill attribute page data when creating from term edit screen
+ * 
+ * Captures URL parameters and sets up default title/slug
+ */
+function wc_ras_prefill_attribute_page_from_url() {
+    global $pagenow;
+    
+    // Only on new post screen for attribute_page
+    if ($pagenow !== 'post-new.php' || !isset($_GET['post_type']) || $_GET['post_type'] !== 'attribute_page') {
+        return;
+    }
+    
+    // Check for attribute term parameters
+    if (!isset($_GET['attribute_term']) || !isset($_GET['attribute_taxonomy'])) {
+        return;
+    }
+    
+    $term_slug = sanitize_text_field($_GET['attribute_term']);
+    $taxonomy = sanitize_text_field($_GET['attribute_taxonomy']);
+    
+    // Get the term
+    $term = get_term_by('slug', $term_slug, $taxonomy);
+    if (!$term || is_wp_error($term)) {
+        return;
+    }
+    
+    // Store in transient for use when post is saved
+    set_transient('wc_ras_pending_attribute_page_' . get_current_user_id(), array(
+        'term_id' => $term->term_id,
+        'term_slug' => $term_slug,
+        'term_name' => $term->name,
+        'taxonomy' => $taxonomy,
+    ), HOUR_IN_SECONDS);
+    
+    // Pre-fill title using JavaScript
+    add_action('admin_footer', function() use ($term) {
+        ?>
+        <script>
+        jQuery(document).ready(function($) {
+            // For classic editor
+            if ($('#title').length && !$('#title').val()) {
+                $('#title').val(<?php echo wp_json_encode($term->name); ?>);
+            }
+            // For block editor - set default title
+            if (typeof wp !== 'undefined' && wp.data && wp.data.select('core/editor')) {
+                var currentTitle = wp.data.select('core/editor').getEditedPostAttribute('title');
+                if (!currentTitle) {
+                    wp.data.dispatch('core/editor').editPost({ title: <?php echo wp_json_encode($term->name); ?> });
+                }
+            }
+        });
+        </script>
+        <?php
+    });
+}
+add_action('admin_init', 'wc_ras_prefill_attribute_page_from_url');
+
+/**
+ * Save attribute term meta when attribute page is created manually
+ *
+ * @param int $post_id Post ID
+ */
+function wc_ras_save_attribute_page_term_link($post_id) {
+    // Check if this is an attribute_page
+    if (get_post_type($post_id) !== 'attribute_page') {
+        return;
+    }
+    
+    // Check for pending attribute page data
+    $pending_data = get_transient('wc_ras_pending_attribute_page_' . get_current_user_id());
+    if (!$pending_data) {
+        return;
+    }
+    
+    // Only save if meta doesn't already exist
+    if (!get_post_meta($post_id, '_attribute_term_id', true)) {
+        update_post_meta($post_id, '_attribute_term_id', $pending_data['term_id']);
+        update_post_meta($post_id, '_attribute_taxonomy', $pending_data['taxonomy']);
+        
+        // Also set the post slug to match the term slug if not already set
+        $post = get_post($post_id);
+        if ($post && empty($post->post_name)) {
+            wp_update_post(array(
+                'ID' => $post_id,
+                'post_name' => $pending_data['term_slug'],
+            ));
+        }
+    }
+    
+    // Clean up transient
+    delete_transient('wc_ras_pending_attribute_page_' . get_current_user_id());
+}
+add_action('save_post_attribute_page', 'wc_ras_save_attribute_page_term_link', 5);
+
+/**
  * Get or create an attribute page for a specific term
  *
  * @param string $term_slug The term slug

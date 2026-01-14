@@ -237,3 +237,164 @@ function wc_ras_save_attribute_meta($post_id) {
     do_action('wc_ras_save_attribute_page_meta', $post_id);
 }
 add_action('save_post_attribute_page', 'wc_ras_save_attribute_meta');
+
+/**
+ * Add custom columns to product attribute term list tables
+ *
+ * @param array $columns Existing columns
+ * @return array Modified columns
+ */
+function wc_ras_add_term_columns($columns) {
+    // Insert Description and Rich Content columns before the count column
+    $new_columns = array();
+    
+    foreach ($columns as $key => $value) {
+        if ($key === 'posts') {
+            $new_columns['term_description'] = __('Description', 'wc-rich-attribute-suite');
+            $new_columns['rich_content'] = __('Rich Content', 'wc-rich-attribute-suite');
+        }
+        $new_columns[$key] = $value;
+    }
+    
+    return $new_columns;
+}
+
+/**
+ * Populate custom columns in product attribute term list tables
+ *
+ * @param string $content     Column content
+ * @param string $column_name Column name
+ * @param int    $term_id     Term ID
+ * @return string Modified column content
+ */
+function wc_ras_populate_term_columns($content, $column_name, $term_id) {
+    $term = get_term($term_id);
+    if (!$term || is_wp_error($term)) {
+        return '—';
+    }
+    
+    switch ($column_name) {
+        case 'term_description':
+            $description = $term->description;
+            if (empty($description)) {
+                return '<span class="na">—</span>';
+            }
+            // Truncate long descriptions
+            $truncated = wp_trim_words($description, 15, '...');
+            // Add hidden field for quick edit to read
+            return '<span class="term-description-text">' . esc_html($truncated) . '</span>' .
+                   '<input type="hidden" class="term-description-full" value="' . esc_attr($description) . '">';
+            
+        case 'rich_content':
+            // Look for matching attribute page
+            $linked_page = get_page_by_path($term->slug, OBJECT, 'attribute_page');
+            
+            if ($linked_page) {
+                $edit_url = get_edit_post_link($linked_page->ID);
+                return '<a href="' . esc_url($edit_url) . '" class="button button-small">' . 
+                       esc_html__('Edit', 'wc-rich-attribute-suite') . '</a>';
+            } else {
+                $create_url = admin_url('post-new.php?post_type=attribute_page&attribute_term=' . $term->slug . '&attribute_taxonomy=' . $term->taxonomy);
+                return '<a href="' . esc_url($create_url) . '" class="button button-small button-secondary" title="' . 
+                       esc_attr__('No rich content page exists. Click to create one.', 'wc-rich-attribute-suite') . '">' . 
+                       esc_html__('Create', 'wc-rich-attribute-suite') . '</a>';
+            }
+    }
+    
+    return $content;
+}
+
+/**
+ * Register term column hooks for all product attribute taxonomies
+ */
+function wc_ras_register_term_column_hooks() {
+    $attribute_taxonomies = wc_get_attribute_taxonomies();
+    
+    if (empty($attribute_taxonomies)) {
+        return;
+    }
+    
+    foreach ($attribute_taxonomies as $taxonomy) {
+        $taxonomy_name = wc_attribute_taxonomy_name($taxonomy->attribute_name);
+        add_filter("manage_edit-{$taxonomy_name}_columns", 'wc_ras_add_term_columns');
+        add_filter("manage_{$taxonomy_name}_custom_column", 'wc_ras_populate_term_columns', 10, 3);
+    }
+}
+add_action('admin_init', 'wc_ras_register_term_column_hooks');
+
+/**
+ * Add Quick Edit support for term description
+ * 
+ * WooCommerce disables quick edit for attribute terms by default.
+ * This re-enables it and adds description field support.
+ */
+function wc_ras_enable_quick_edit_description() {
+    $attribute_taxonomies = wc_get_attribute_taxonomies();
+    
+    if (empty($attribute_taxonomies)) {
+        return;
+    }
+    
+    foreach ($attribute_taxonomies as $taxonomy) {
+        $taxonomy_name = wc_attribute_taxonomy_name($taxonomy->attribute_name);
+        
+        // Re-enable quick edit for this taxonomy
+        add_filter("manage_edit-{$taxonomy_name}_columns", function($columns) {
+            return $columns;
+        }, 100);
+    }
+}
+add_action('admin_init', 'wc_ras_enable_quick_edit_description');
+
+/**
+ * Add description to quick edit form for attribute terms
+ */
+function wc_ras_quick_edit_description_field($column_name, $screen, $taxonomy) {
+    // Only for product attribute taxonomies
+    if (strpos($taxonomy, 'pa_') !== 0) {
+        return;
+    }
+    
+    // Add after the slug column
+    if ($column_name !== 'slug') {
+        return;
+    }
+    
+    ?>
+    <fieldset>
+        <div class="inline-edit-col">
+            <label>
+                <span class="title"><?php esc_html_e('Description', 'wc-rich-attribute-suite'); ?></span>
+                <span class="input-text-wrap">
+                    <textarea name="description" rows="3" class="ptitle"></textarea>
+                </span>
+            </label>
+        </div>
+    </fieldset>
+    <?php
+}
+add_action('quick_edit_custom_box', 'wc_ras_quick_edit_description_field', 10, 3);
+
+/**
+ * Enqueue scripts for quick edit description functionality
+ */
+function wc_ras_enqueue_quick_edit_scripts($hook) {
+    if ($hook !== 'edit-tags.php') {
+        return;
+    }
+    
+    // Check if this is a product attribute taxonomy
+    $taxonomy = isset($_GET['taxonomy']) ? sanitize_text_field($_GET['taxonomy']) : '';
+    if (strpos($taxonomy, 'pa_') !== 0) {
+        return;
+    }
+    
+    wp_enqueue_script(
+        'wc-ras-quick-edit',
+        WC_RAS_PLUGIN_URL . 'assets/js/admin-quick-edit.js',
+        array('jquery', 'inline-edit-tax'),
+        WC_RAS_VERSION,
+        true
+    );
+}
+add_action('admin_enqueue_scripts', 'wc_ras_enqueue_quick_edit_scripts');

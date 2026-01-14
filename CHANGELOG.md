@@ -5,6 +5,31 @@ All notable changes to the WooCommerce Rich Attribute Suite plugin will be docum
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2025-01-14
+
+### Added
+- **Public Attribute Archives**: Automatically enables public archives for all WooCommerce product attribute taxonomies
+  - Ensures `get_term_link()` returns proper permalink URLs instead of query-string URLs
+  - Sets up rewrite rules for attribute term archives
+  - Includes automatic rewrite flush on plugin activation
+- **Term List Enhancements**: New columns in attribute term list tables (Products → Attributes → Configure terms)
+  - Description column showing truncated term descriptions
+  - Rich Content column with Edit/Create buttons for attribute pages
+- **Quick Edit Description**: Edit term descriptions directly from the term list using Quick Edit
+  - Adds description textarea to the quick edit form
+  - Pre-populates with existing description
+- **Improved Attribute Page Creation**: When creating an attribute page from the term edit screen
+  - Title is pre-filled with the term name
+  - Post slug is automatically set to match the term slug
+  - Term linkage metadata is properly saved
+
+### Technical
+- New function `wc_ras_enable_attribute_archives()` to filter taxonomy registration
+- New function `wc_ras_prefill_attribute_page_from_url()` for handling URL parameters
+- New function `wc_ras_save_attribute_page_term_link()` for saving term linkage on manual creation
+- New JavaScript `assets/js/admin-quick-edit.js` for quick edit description support
+- Deferred rewrite flush using transient option
+
 ## [1.1.0] - 2025-01-14
 
 ### Added
