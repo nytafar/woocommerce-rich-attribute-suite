@@ -5,6 +5,24 @@ All notable changes to the WooCommerce Rich Attribute Suite plugin will be docum
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2025-01-14
+
+### Added
+- **Inline Variation Description**: New feature that renders variation descriptions directly within the variations table, eliminating Cumulative Layout Shift (CLS) and DOM manipulation issues
+  - Must be explicitly enabled by theme using `add_filter('wc_ras_enable_inline_variation_description', '__return_true')`
+  - Auto-detects which attribute has term descriptions, or can be configured via `wc_ras_inline_variation_description_config` filter
+  - Overrides WooCommerce's variation template to remove default description div
+  - Uses JavaScript to update inline content on variation change without DOM manipulation
+- New filter hooks:
+  - `wc_ras_enable_inline_variation_description` - Enable/disable inline description (default: false)
+  - `wc_ras_inline_variation_description_config` - Configure target attribute and auto-detection
+  - `wc_ras_inline_description_animation_duration` - Customize show/hide animation duration
+
+### Technical
+- New class `WC_RAS_Inline_Variation_Description` in `includes/inline-variation-description.php`
+- New template `templates/variation-no-description.php` based on WooCommerce 9.3.0
+- New JavaScript `assets/js/inline-variation-description.js` for handling variation updates
+
 ## [1.0.0] - 2025-05-12
 
 ### Added

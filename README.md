@@ -1,7 +1,7 @@
 # WooCommerce Rich Attribute Suite
 
 ![WooCommerce Rich Attribute Suite](https://img.shields.io/badge/WooCommerce-Rich%20Attribute%20Suite-7f54b3.svg)
-![Version 1.0.2](https://img.shields.io/badge/Version-1.0.2-brightgreen.svg)
+![Version 1.1.0](https://img.shields.io/badge/Version-1.1.0-brightgreen.svg)
 ![WooCommerce 6.0+](https://img.shields.io/badge/WooCommerce-6.0+-a46497.svg)
 ![PHP 7.4+](https://img.shields.io/badge/PHP-7.4+-8892BF.svg)
 
@@ -23,6 +23,7 @@ WooCommerce Rich Attribute Suite transforms standard attribute taxonomy pages in
 - **Performance-optimized**: All lookups cacheable using wp_cache_get() for high-scale environments
 - **Variation Description Fallback**: Automatically use attribute term descriptions when variation descriptions are empty
 - **Mix and Match Support**: Extends description fallback to WooCommerce Mix and Match products
+- **Inline Variation Description**: Render descriptions directly in the variations table, eliminating CLS and DOM manipulation issues
 
 ## 🔧 Technical Design
 
@@ -95,6 +96,38 @@ add_action('wc_ras_save_attribute_page_meta', function($post_id) {
 });
 ```
 
+#### Enabling Inline Variation Description
+
+The inline variation description feature renders descriptions directly within the variations table, eliminating Cumulative Layout Shift (CLS) and DOM manipulation issues. This feature must be explicitly enabled by the theme.
+
+```php
+// Enable inline variation description (add to theme's functions.php)
+add_filter('wc_ras_enable_inline_variation_description', '__return_true');
+
+// Optional: Configure which attribute to show description after
+add_filter('wc_ras_inline_variation_description_config', function($config) {
+    return array(
+        // Specify attribute taxonomy, or leave empty for auto-detection
+        'target_attribute' => 'pa_opprinnelse',
+        // Auto-detect first attribute with term descriptions
+        'auto_detect' => true,
+    );
+});
+
+// Optional: Customize animation duration (in milliseconds)
+add_filter('wc_ras_inline_description_animation_duration', function() {
+    return 150; // Faster animation
+});
+```
+
+**How it works:**
+1. The plugin injects a hidden row into the variations table after the target attribute
+2. WooCommerce's default variation template is overridden to remove the description div
+3. When a variation is selected, JavaScript updates the inline row content
+4. No DOM manipulation or element moving required - eliminates CLS completely
+
+**Important:** When enabling this feature, remove any existing theme JavaScript that moves or clones the variation description element. The plugin handles everything automatically.
+
 ## 🧩 Hooks and Filters
 
 ### Attribute Page Hooks
@@ -115,6 +148,9 @@ add_action('wc_ras_save_attribute_page_meta', function($post_id) {
 | `wc_ras_show_variation_description_links` | Show/hide "Learn more" links in descriptions (default: true) |
 | `wc_ras_combine_all_term_descriptions` | Combine multiple term descriptions instead of using just the first one (default: false) |
 | `wc_ras_enable_variation_meta_display` | Enable/disable display of variation meta (region, smak) in the product summary (default: false) |
+| `wc_ras_enable_inline_variation_description` | Enable inline description rendering in variations table (default: false, must be enabled by theme) |
+| `wc_ras_inline_variation_description_config` | Configure inline description behavior (target_attribute, auto_detect) |
+| `wc_ras_inline_description_animation_duration` | Animation duration in ms for showing/hiding inline description (default: 200) |
 
 ## 🔄 Compatibility
 
