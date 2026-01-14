@@ -245,15 +245,15 @@ add_action('save_post_attribute_page', 'wc_ras_save_attribute_meta');
  * @return array Modified columns
  */
 function wc_ras_add_term_columns($columns) {
-    // Insert Description and Rich Content columns before the count column
+    // Only add Rich Content column - WooCommerce already has Description column
     $new_columns = array();
     
     foreach ($columns as $key => $value) {
-        if ($key === 'posts') {
-            $new_columns['term_description'] = __('Description', 'wc-rich-attribute-suite');
+        $new_columns[$key] = $value;
+        // Insert Rich Content column after the description column
+        if ($key === 'description') {
             $new_columns['rich_content'] = __('Rich Content', 'wc-rich-attribute-suite');
         }
-        $new_columns[$key] = $value;
     }
     
     return $new_columns;
@@ -274,17 +274,6 @@ function wc_ras_populate_term_columns($content, $column_name, $term_id) {
     }
     
     switch ($column_name) {
-        case 'term_description':
-            $description = $term->description;
-            if (empty($description)) {
-                return '<span class="na">—</span>';
-            }
-            // Truncate long descriptions
-            $truncated = wp_trim_words($description, 15, '...');
-            // Add hidden field for quick edit to read
-            return '<span class="term-description-text">' . esc_html($truncated) . '</span>' .
-                   '<input type="hidden" class="term-description-full" value="' . esc_attr($description) . '">';
-            
         case 'rich_content':
             // Look for matching attribute page
             $linked_page = get_page_by_path($term->slug, OBJECT, 'attribute_page');
@@ -323,78 +312,168 @@ function wc_ras_register_term_column_hooks() {
 add_action('admin_init', 'wc_ras_register_term_column_hooks');
 
 /**
- * Add Quick Edit support for term description
+ * Add description textarea to quick edit form via JavaScript
  * 
  * WooCommerce disables quick edit for attribute terms by default.
- * This re-enables it and adds description field support.
+ * We inject the description field via JavaScript since the quick_edit_custom_box
+ * hook doesn't fire for taxonomies with show_in_quick_edit = false.
  */
-function wc_ras_enable_quick_edit_description() {
-    $attribute_taxonomies = wc_get_attribute_taxonomies();
+function wc_ras_add_quick_edit_description_js() {
+    global $pagenow;
     
-    if (empty($attribute_taxonomies)) {
+    if ($pagenow !== 'edit-tags.php') {
         return;
     }
     
-    foreach ($attribute_taxonomies as $taxonomy) {
-        $taxonomy_name = wc_attribute_taxonomy_name($taxonomy->attribute_name);
-        
-        // Re-enable quick edit for this taxonomy
-        add_filter("manage_edit-{$taxonomy_name}_columns", function($columns) {
-            return $columns;
-        }, 100);
-    }
-}
-add_action('admin_init', 'wc_ras_enable_quick_edit_description');
-
-/**
- * Add description to quick edit form for attribute terms
- */
-function wc_ras_quick_edit_description_field($column_name, $screen, $taxonomy) {
-    // Only for product attribute taxonomies
-    if (strpos($taxonomy, 'pa_') !== 0) {
-        return;
-    }
-    
-    // Add after the slug column
-    if ($column_name !== 'slug') {
-        return;
-    }
-    
-    ?>
-    <fieldset>
-        <div class="inline-edit-col">
-            <label>
-                <span class="title"><?php esc_html_e('Description', 'wc-rich-attribute-suite'); ?></span>
-                <span class="input-text-wrap">
-                    <textarea name="description" rows="3" class="ptitle"></textarea>
-                </span>
-            </label>
-        </div>
-    </fieldset>
-    <?php
-}
-add_action('quick_edit_custom_box', 'wc_ras_quick_edit_description_field', 10, 3);
-
-/**
- * Enqueue scripts for quick edit description functionality
- */
-function wc_ras_enqueue_quick_edit_scripts($hook) {
-    if ($hook !== 'edit-tags.php') {
-        return;
-    }
-    
-    // Check if this is a product attribute taxonomy
     $taxonomy = isset($_GET['taxonomy']) ? sanitize_text_field($_GET['taxonomy']) : '';
     if (strpos($taxonomy, 'pa_') !== 0) {
         return;
     }
     
-    wp_enqueue_script(
-        'wc-ras-quick-edit',
-        WC_RAS_PLUGIN_URL . 'assets/js/admin-quick-edit.js',
-        array('jquery', 'inline-edit-tax'),
-        WC_RAS_VERSION,
-        true
-    );
+    $taxonomy = sanitize_text_field($_GET['taxonomy']);
+    ?>
+    <script type="text/javascript">
+    jQuery(document).ready(function($) {
+        var taxonomy = '<?php echo esc_js($taxonomy); ?>';
+        
+        // Hook into inlineEditTax to add our field
+        if (typeof inlineEditTax !== 'undefined') {
+            var originalEdit = inlineEditTax.edit;
+            var originalSave = inlineEditTax.save;
+            
+            inlineEditTax.edit = function(id) {
+                // Call original
+                originalEdit.apply(this, arguments);
+                
+                if (typeof id === 'object') {
+                    id = this.getId(id);
+                }
+                
+                var $editRow = $('#edit-' + id);
+                var $tagRow = $('#tag-' + id);
+                
+                // Check if we already added the description field
+                if ($editRow.find('textarea[name="wc_ras_description"]').length === 0) {
+                    // Create description field
+                    var descriptionHtml = '<fieldset class="wc-ras-description-field">' +
+                        '<div class="inline-edit-col">' +
+                        '<label>' +
+                        '<span class="title"><?php echo esc_js(__('Description', 'wc-rich-attribute-suite')); ?></span>' +
+                        '<span class="input-text-wrap">' +
+                        '<textarea name="wc_ras_description" rows="3" class="ptitle" style="width:100%;"></textarea>' +
+                        '</span>' +
+                        '</label>' +
+                        '</div>' +
+                        '</fieldset>';
+                    
+                    // Insert after slug field
+                    var $slugField = $editRow.find('input[name="slug"]').closest('label');
+                    if ($slugField.length) {
+                        $slugField.closest('fieldset').after(descriptionHtml);
+                    }
+                }
+                
+                // Get description from the description column
+                var description = $tagRow.find('td.description').text().trim();
+                if (description === 'No description' || description === '—') {
+                    description = '';
+                }
+                $editRow.find('textarea[name="wc_ras_description"]').val(description);
+                
+                // Store term ID for save
+                $editRow.data('wc-ras-term-id', id);
+            };
+            
+            // Override save to also save description
+            inlineEditTax.save = function(id) {
+                if (typeof id === 'object') {
+                    id = this.getId(id);
+                }
+                
+                var $editRow = $('#edit-' + id);
+                var description = $editRow.find('textarea[name="wc_ras_description"]').val();
+                var termId = $editRow.data('wc-ras-term-id') || id;
+                
+                // Save description via our custom AJAX
+                if (typeof wcRasDescNonce !== 'undefined') {
+                    $.post(ajaxurl, {
+                        action: 'wc_ras_save_term_description',
+                        nonce: wcRasDescNonce,
+                        term_id: termId,
+                        taxonomy: taxonomy,
+                        description: description
+                    });
+                }
+                
+                // Call original save
+                return originalSave.apply(this, arguments);
+            };
+        }
+    });
+    </script>
+    <?php
 }
-add_action('admin_enqueue_scripts', 'wc_ras_enqueue_quick_edit_scripts');
+add_action('admin_footer', 'wc_ras_add_quick_edit_description_js');
+
+/**
+ * AJAX handler to save term description
+ */
+function wc_ras_ajax_save_term_description() {
+    // Verify nonce
+    check_ajax_referer('wc_ras_save_description', 'nonce');
+    
+    $term_id = isset($_POST['term_id']) ? intval($_POST['term_id']) : 0;
+    $taxonomy = isset($_POST['taxonomy']) ? sanitize_text_field($_POST['taxonomy']) : '';
+    $description = isset($_POST['description']) ? wp_kses_post($_POST['description']) : '';
+    
+    if (!$term_id || !$taxonomy) {
+        wp_send_json_error('Missing required parameters');
+    }
+    
+    // Verify taxonomy is a product attribute
+    if (strpos($taxonomy, 'pa_') !== 0) {
+        wp_send_json_error('Invalid taxonomy');
+    }
+    
+    // Verify permission
+    if (!current_user_can('edit_term', $term_id)) {
+        wp_send_json_error('Permission denied');
+    }
+    
+    // Update the term
+    $result = wp_update_term($term_id, $taxonomy, array(
+        'description' => $description,
+    ));
+    
+    if (is_wp_error($result)) {
+        wp_send_json_error($result->get_error_message());
+    }
+    
+    wp_send_json_success(array(
+        'description' => $description,
+    ));
+}
+add_action('wp_ajax_wc_ras_save_term_description', 'wc_ras_ajax_save_term_description');
+
+/**
+ * Add nonce for description save AJAX
+ */
+function wc_ras_add_description_save_nonce() {
+    global $pagenow;
+    
+    if ($pagenow !== 'edit-tags.php') {
+        return;
+    }
+    
+    $taxonomy = isset($_GET['taxonomy']) ? sanitize_text_field($_GET['taxonomy']) : '';
+    if (strpos($taxonomy, 'pa_') !== 0) {
+        return;
+    }
+    
+    ?>
+    <script type="text/javascript">
+    var wcRasDescNonce = '<?php echo wp_create_nonce('wc_ras_save_description'); ?>';
+    </script>
+    <?php
+}
+add_action('admin_head', 'wc_ras_add_description_save_nonce');

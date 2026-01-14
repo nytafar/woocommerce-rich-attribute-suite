@@ -126,6 +126,7 @@ $attribute_page = wc_ras_get_cached_attribute_page($term->slug);
     ?>
 </section>
 
+<?php
 /**
  * Hook: woocommerce_after_main_content.
  *
