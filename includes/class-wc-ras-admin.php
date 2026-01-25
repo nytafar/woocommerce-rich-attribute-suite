@@ -380,6 +380,11 @@ class WC_RAS_Admin {
 	/**
 	 * Add description textarea to quick edit form via JavaScript.
 	 *
+	 * Queries all terms for the current taxonomy and outputs a JavaScript object
+	 * mapping term IDs to their full descriptions. This allows the quick edit
+	 * form to populate the description field with the complete text rather than
+	 * relying on potentially truncated DOM content.
+	 *
 	 * @internal
 	 *
 	 * @since 1.0.0
@@ -391,31 +396,48 @@ class WC_RAS_Admin {
 			return;
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Reading taxonomy from URL for display purposes only.
 		$taxonomy = isset( $_GET['taxonomy'] ) ? sanitize_text_field( wp_unslash( $_GET['taxonomy'] ) ) : '';
 		if ( 0 !== strpos( $taxonomy, 'pa_' ) ) {
 			return;
 		}
 
+		// Get all terms with their full descriptions.
+		$terms = get_terms(
+			array(
+				'taxonomy'   => $taxonomy,
+				'hide_empty' => false,
+			)
+		);
+
+		$term_descriptions = array();
+		if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
+			foreach ( $terms as $term ) {
+				$term_descriptions[ $term->term_id ] = $term->description;
+			}
+		}
+
 		?>
 		<script type="text/javascript">
-		jQuery(document).ready(function($) {
+		jQuery( document ).ready( function( $ ) {
 			var taxonomy = <?php echo wp_json_encode( $taxonomy ); ?>;
+			var termDescriptions = <?php echo wp_json_encode( $term_descriptions ); ?>;
 
-			if (typeof inlineEditTax !== 'undefined') {
+			if ( typeof inlineEditTax !== 'undefined' ) {
 				var originalEdit = inlineEditTax.edit;
 				var originalSave = inlineEditTax.save;
 
-				inlineEditTax.edit = function(id) {
-					originalEdit.apply(this, arguments);
+				inlineEditTax.edit = function( id ) {
+					originalEdit.apply( this, arguments );
 
-					if (typeof id === 'object') {
-						id = this.getId(id);
+					if ( typeof id === 'object' ) {
+						id = this.getId( id );
 					}
 
-					var $editRow = $('#edit-' + id);
-					var $tagRow = $('#tag-' + id);
+					var $editRow = $( '#edit-' + id );
 
-					if ($editRow.find('textarea[name="wc_ras_description"]').length === 0) {
+					// Add description textarea if it doesn't exist.
+					if ( $editRow.find( 'textarea[name="wc_ras_description"]' ).length === 0 ) {
 						var descriptionHtml = '<fieldset class="wc-ras-description-field">' +
 							'<div class="inline-edit-col">' +
 							'<label>' +
@@ -427,44 +449,41 @@ class WC_RAS_Admin {
 							'</div>' +
 							'</fieldset>';
 
-						var $slugField = $editRow.find('input[name="slug"]').closest('label');
-						if ($slugField.length) {
-							$slugField.closest('fieldset').after(descriptionHtml);
+						var $slugField = $editRow.find( 'input[name="slug"]' ).closest( 'label' );
+						if ( $slugField.length ) {
+							$slugField.closest( 'fieldset' ).after( descriptionHtml );
 						}
 					}
 
-					var description = $tagRow.find('td.description').text().trim();
-					if (description === 'No description' || description === '—') {
-						description = '';
-					}
-					$editRow.find('textarea[name="wc_ras_description"]').val(description);
-
-					$editRow.data('wc-ras-term-id', id);
+					// Get the full description from our pre-loaded data.
+					var description = termDescriptions[ id ] || '';
+					$editRow.find( 'textarea[name="wc_ras_description"]' ).val( description );
+					$editRow.data( 'wc-ras-term-id', id );
 				};
 
-				inlineEditTax.save = function(id) {
-					if (typeof id === 'object') {
-						id = this.getId(id);
+				inlineEditTax.save = function( id ) {
+					if ( typeof id === 'object' ) {
+						id = this.getId( id );
 					}
 
-					var $editRow = $('#edit-' + id);
-					var description = $editRow.find('textarea[name="wc_ras_description"]').val();
-					var termId = $editRow.data('wc-ras-term-id') || id;
+					var $editRow = $( '#edit-' + id );
+					var description = $editRow.find( 'textarea[name="wc_ras_description"]' ).val();
+					var termId = $editRow.data( 'wc-ras-term-id' ) || id;
 
-					if (typeof wcRasDescNonce !== 'undefined') {
-						$.post(ajaxurl, {
+					if ( typeof wcRasDescNonce !== 'undefined' ) {
+						$.post( ajaxurl, {
 							action: 'wc_ras_save_term_description',
 							nonce: wcRasDescNonce,
 							term_id: termId,
 							taxonomy: taxonomy,
 							description: description
-						});
+						} );
 					}
 
-					return originalSave.apply(this, arguments);
+					return originalSave.apply( this, arguments );
 				};
 			}
-		});
+		} );
 		</script>
 		<?php
 	}
@@ -491,7 +510,7 @@ class WC_RAS_Admin {
 			wp_send_json_error( 'Invalid taxonomy' );
 		}
 
-		if ( ! current_user_can( 'edit_term', $term_id ) ) {
+		if ( ! current_user_can( 'manage_product_terms' ) ) {
 			wp_send_json_error( 'Permission denied' );
 		}
 
@@ -517,6 +536,9 @@ class WC_RAS_Admin {
 	/**
 	 * Add nonce for description save AJAX.
 	 *
+	 * Outputs the nonce as a JavaScript variable in the admin head so it's
+	 * available when the quick edit save function runs.
+	 *
 	 * @internal
 	 *
 	 * @since 1.0.0
@@ -528,15 +550,16 @@ class WC_RAS_Admin {
 			return;
 		}
 
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Reading taxonomy from URL for display purposes only.
 		$taxonomy = isset( $_GET['taxonomy'] ) ? sanitize_text_field( wp_unslash( $_GET['taxonomy'] ) ) : '';
 		if ( 0 !== strpos( $taxonomy, 'pa_' ) ) {
 			return;
 		}
 
-		wp_add_inline_script(
-			'jquery',
-			'var wcRasDescNonce = ' . wp_json_encode( wp_create_nonce( 'wc_ras_save_description' ) ) . ';',
-			'before'
-		);
+		?>
+		<script type="text/javascript">
+			var wcRasDescNonce = <?php echo wp_json_encode( wp_create_nonce( 'wc_ras_save_description' ) ); ?>;
+		</script>
+		<?php
 	}
 }
