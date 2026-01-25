@@ -9,13 +9,20 @@
  * Text Domain: wc-rich-attribute-suite
  * Domain Path: /languages
  * WC requires at least: 6.0
- * WC tested up to: 8.0
+ * WC tested up to: 9.6
  * Requires PHP: 7.4
  *
  * @package WooCommerce_Rich_Attribute_Suite
  */
 
 defined('ABSPATH') || exit;
+
+// Declare HPOS (High-Performance Order Storage) compatibility
+add_action('before_woocommerce_init', function () {
+    if (class_exists(\Automattic\WooCommerce\Utilities\FeaturesUtil::class)) {
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__, true);
+    }
+});
 
 // Define plugin constants
 define('WC_RAS_VERSION', '1.2.0');
