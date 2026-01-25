@@ -96,97 +96,27 @@ class WC_RAS_Variation_Improvements {
 			return $variation_data;
 		}
 
-		$term_descriptions = array();
-		$term_page_links   = array();
-		$region            = '';
-		$smak              = '';
-
 		$attributes = $variation->get_attributes();
-
 		if ( empty( $attributes ) ) {
 			return $variation_data;
 		}
 
-		foreach ( $attributes as $attribute_name => $attribute_value ) {
-			if ( empty( $attribute_value ) ) {
-				continue;
-			}
+		$term_data   = $this->get_term_descriptions_from_attributes( $attributes );
+		$description = $this->format_description_html( $term_data['descriptions'], $term_data['links'] );
 
-			$taxonomy = str_replace( 'attribute_', '', $attribute_name );
-
-			if ( ! taxonomy_exists( $taxonomy ) ) {
-				continue;
-			}
-
-			$term = get_term_by( 'slug', $attribute_value, $taxonomy );
-
-			if ( ! $term || is_wp_error( $term ) ) {
-				continue;
-			}
-
-			$term_description = trim( $term->description );
-
-			if ( ! empty( $term_description ) ) {
-				$term_descriptions[] = $term_description;
-
-				$page_id    = get_term_meta( $term->term_id, 'linked_page_id', true );
-				$custom_url = get_term_meta( $term->term_id, 'custom_page_url', true );
-
-				if ( ! empty( $page_id ) || ! empty( $custom_url ) ) {
-					$link_url  = ! empty( $page_id ) ? get_permalink( $page_id ) : $custom_url;
-					$link_text = ! empty( $page_id ) ? get_the_title( $page_id ) : __( 'Learn more', 'wc-rich-attribute-suite' );
-
-					$term_page_links[] = '<a href="' . esc_url( $link_url ) . '" class="term-page-link">' . esc_html( $link_text ) . '</a>';
-				} else {
-					$term_page_links[] = '<a href="' . esc_url( get_term_link( $term ) ) . '" class="term-page-link">' .
-										 esc_html__( 'Learn more', 'wc-rich-attribute-suite' ) . '</a>';
-				}
-			} else {
-				$attribute_page = WC_RAS_Attribute_Page_CPT::get_attribute_page( $term->slug );
-
-				if ( $attribute_page ) {
-					$content = ! empty( $attribute_page->post_excerpt ) ? $attribute_page->post_excerpt : $attribute_page->post_content;
-
-					if ( ! empty( $content ) ) {
-						$term_descriptions[] = wp_trim_words( $content, 30, '...' );
-
-						$term_page_links[] = '<a href="' . esc_url( get_term_link( $term ) ) . '" class="term-page-link">' .
-											 esc_html__( 'Learn more', 'wc-rich-attribute-suite' ) . '</a>';
-					}
-
-					$region = get_post_meta( $attribute_page->ID, 'region', true );
-					$smak   = get_post_meta( $attribute_page->ID, 'smak', true );
-				}
-			}
-		}
-
-		if ( empty( $term_descriptions ) ) {
+		if ( empty( $description ) ) {
 			return $variation_data;
-		}
-
-		$description = '<p>' . $term_descriptions[0] . '</p>';
-
-		if ( ! empty( $term_page_links[0] ) && apply_filters( 'wc_ras_show_variation_description_links', true ) ) {
-			$description .= '<p class="term-page-link-wrapper">' . $term_page_links[0] . '</p>';
 		}
 
 		$variation_data['variation_description'] = $description;
 
-		if ( apply_filters( 'wc_ras_combine_all_term_descriptions', false ) && count( $term_descriptions ) > 1 ) {
-			$variation_data['variation_description'] = '<p>' . implode( '</p><p>', $term_descriptions ) . '</p>';
-
-			if ( apply_filters( 'wc_ras_show_variation_description_links', true ) && ! empty( $term_page_links ) ) {
-				$variation_data['variation_description'] .= '<p class="term-page-link-wrapper">' .
-															implode( ' | ', $term_page_links ) . '</p>';
+		// Add meta to variation data for potential separate display.
+		if ( ! empty( $term_data['descriptions'] ) ) {
+			if ( empty( $variation_data['attribute_region'] ) && ! empty( $term_data['region'] ) ) {
+				$variation_data['attribute_region'] = $term_data['region'];
 			}
-		}
-
-		if ( ! empty( $term_descriptions[0] ) ) {
-			if ( empty( $variation_data['attribute_region'] ) && ! empty( $region ) ) {
-				$variation_data['attribute_region'] = $region;
-			}
-			if ( empty( $variation_data['attribute_smak'] ) && ! empty( $smak ) ) {
-				$variation_data['attribute_smak'] = $smak;
+			if ( empty( $variation_data['attribute_smak'] ) && ! empty( $term_data['smak'] ) ) {
+				$variation_data['attribute_smak'] = $term_data['smak'];
 			}
 		}
 
@@ -220,14 +150,44 @@ class WC_RAS_Variation_Improvements {
 			return;
 		}
 
-		$term_descriptions = array();
-		$term_page_links   = array();
-
 		$attributes = $child_product->get_attributes();
-
 		if ( empty( $attributes ) ) {
 			return;
 		}
+
+		$term_data   = $this->get_term_descriptions_from_attributes( $attributes );
+		$description = $this->format_description_html( $term_data['descriptions'], $term_data['links'] );
+
+		if ( empty( $description ) ) {
+			return;
+		}
+
+		echo '<div class="mnm-child-item-short-description">';
+		echo wp_kses_post( $description );
+		echo '</div>';
+	}
+
+	/**
+	 * Extract term descriptions and links from variation attributes.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param array $attributes Array of attribute name => value pairs.
+	 *
+	 * @return array {
+	 *     @type array  $descriptions Array of term descriptions.
+	 *     @type array  $links        Array of term page link HTML.
+	 *     @type string $region       Region meta value (from last found attribute page).
+	 *     @type string $smak         Smak meta value (from last found attribute page).
+	 * }
+	 */
+	private function get_term_descriptions_from_attributes( $attributes ) {
+		$result = array(
+			'descriptions' => array(),
+			'links'        => array(),
+			'region'       => '',
+			'smak'         => '',
+		);
 
 		foreach ( $attributes as $attribute_name => $attribute_value ) {
 			if ( empty( $attribute_value ) ) {
@@ -249,20 +209,8 @@ class WC_RAS_Variation_Improvements {
 			$term_description = trim( $term->description );
 
 			if ( ! empty( $term_description ) ) {
-				$term_descriptions[] = $term_description;
-
-				$page_id    = get_term_meta( $term->term_id, 'linked_page_id', true );
-				$custom_url = get_term_meta( $term->term_id, 'custom_page_url', true );
-
-				if ( ! empty( $page_id ) || ! empty( $custom_url ) ) {
-					$link_url  = ! empty( $page_id ) ? get_permalink( $page_id ) : $custom_url;
-					$link_text = ! empty( $page_id ) ? get_the_title( $page_id ) : __( 'Learn more', 'wc-rich-attribute-suite' );
-
-					$term_page_links[] = '<a href="' . esc_url( $link_url ) . '" class="term-page-link">' . esc_html( $link_text ) . '</a>';
-				} else {
-					$term_page_links[] = '<a href="' . esc_url( get_term_link( $term ) ) . '" class="term-page-link">' .
-										 esc_html__( 'Learn more', 'wc-rich-attribute-suite' ) . '</a>';
-				}
+				$result['descriptions'][] = $term_description;
+				$result['links'][]        = $this->build_term_link( $term );
 			} else {
 				$attribute_page = WC_RAS_Attribute_Page_CPT::get_attribute_page( $term->slug );
 
@@ -270,37 +218,79 @@ class WC_RAS_Variation_Improvements {
 					$content = ! empty( $attribute_page->post_excerpt ) ? $attribute_page->post_excerpt : $attribute_page->post_content;
 
 					if ( ! empty( $content ) ) {
-						$term_descriptions[] = wp_trim_words( $content, 30, '...' );
-
-						$term_page_links[] = '<a href="' . esc_url( get_term_link( $term ) ) . '" class="term-page-link">' .
-											 esc_html__( 'Learn more', 'wc-rich-attribute-suite' ) . '</a>';
+						$result['descriptions'][] = wp_trim_words( $content, 30, '...' );
+						$result['links'][]        = '<a href="' . esc_url( get_term_link( $term ) ) . '" class="term-page-link">' .
+													esc_html__( 'Learn more', 'wc-rich-attribute-suite' ) . '</a>';
 					}
+
+					$result['region'] = get_post_meta( $attribute_page->ID, 'region', true );
+					$result['smak']   = get_post_meta( $attribute_page->ID, 'smak', true );
 				}
 			}
 		}
 
-		if ( empty( $term_descriptions ) ) {
-			return;
+		return $result;
+	}
+
+	/**
+	 * Build a link HTML for a term.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param WP_Term $term The term object.
+	 *
+	 * @return string Link HTML.
+	 */
+	private function build_term_link( $term ) {
+		$page_id    = get_term_meta( $term->term_id, 'linked_page_id', true );
+		$custom_url = get_term_meta( $term->term_id, 'custom_page_url', true );
+
+		if ( ! empty( $page_id ) || ! empty( $custom_url ) ) {
+			$link_url  = ! empty( $page_id ) ? get_permalink( $page_id ) : $custom_url;
+			$link_text = ! empty( $page_id ) ? get_the_title( $page_id ) : __( 'Learn more', 'wc-rich-attribute-suite' );
+
+			return '<a href="' . esc_url( $link_url ) . '" class="term-page-link">' . esc_html( $link_text ) . '</a>';
 		}
 
-		$variation_description = '<p>' . $term_descriptions[0] . '</p>';
+		return '<a href="' . esc_url( get_term_link( $term ) ) . '" class="term-page-link">' .
+			   esc_html__( 'Learn more', 'wc-rich-attribute-suite' ) . '</a>';
+	}
 
-		if ( ! empty( $term_page_links[0] ) && apply_filters( 'wc_ras_show_variation_description_links', true ) ) {
-			$variation_description .= '<p class="term-page-link-wrapper">' . $term_page_links[0] . '</p>';
+	/**
+	 * Format term descriptions and links into HTML.
+	 *
+	 * @since 1.3.0
+	 *
+	 * @param array $descriptions Array of term descriptions.
+	 * @param array $links        Array of term page link HTML.
+	 *
+	 * @return string Formatted HTML description.
+	 */
+	private function format_description_html( $descriptions, $links ) {
+		if ( empty( $descriptions ) ) {
+			return '';
 		}
 
-		if ( apply_filters( 'wc_ras_combine_all_term_descriptions', false ) && count( $term_descriptions ) > 1 ) {
-			$variation_description = '<p>' . implode( '</p><p>', $term_descriptions ) . '</p>';
+		$show_links = apply_filters( 'wc_ras_show_variation_description_links', true );
+		$combine    = apply_filters( 'wc_ras_combine_all_term_descriptions', false );
 
-			if ( apply_filters( 'wc_ras_show_variation_description_links', true ) && ! empty( $term_page_links ) ) {
-				$variation_description .= '<p class="term-page-link-wrapper">' .
-										 implode( ' | ', $term_page_links ) . '</p>';
+		if ( $combine && count( $descriptions ) > 1 ) {
+			$html = '<p>' . implode( '</p><p>', $descriptions ) . '</p>';
+
+			if ( $show_links && ! empty( $links ) ) {
+				$html .= '<p class="term-page-link-wrapper">' . implode( ' | ', $links ) . '</p>';
 			}
+
+			return $html;
 		}
 
-		echo '<div class="mnm-child-item-short-description">';
-		echo wp_kses_post( $variation_description );
-		echo '</div>';
+		$html = '<p>' . $descriptions[0] . '</p>';
+
+		if ( $show_links && ! empty( $links[0] ) ) {
+			$html .= '<p class="term-page-link-wrapper">' . $links[0] . '</p>';
+		}
+
+		return $html;
 	}
 }
 

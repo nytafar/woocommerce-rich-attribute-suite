@@ -231,13 +231,23 @@ class WC_RAS_Frontend {
 	 * Get attribute meta for a specific variation.
 	 *
 	 * @param int    $variation_id Variation ID.
-	 * @param string $attribute    Attribute taxonomy name (e.g. 'pa_color').
+	 * @param string $attribute    Attribute taxonomy name (e.g. 'pa_color'). If empty,
+	 *                             uses the first attribute with an attribute page.
 	 *
 	 * @return array Attribute metadata.
 	 *
 	 * @since 1.0.0
 	 */
-	public function get_attribute_meta_for_variation( $variation_id, $attribute = 'pa_opprinnelse' ) {
+	public function get_attribute_meta_for_variation( $variation_id, $attribute = '' ) {
+		/**
+		 * Filter the default attribute to use for variation meta lookup.
+		 *
+		 * @since 1.3.0
+		 *
+		 * @param string $attribute    The attribute taxonomy name.
+		 * @param int    $variation_id The variation ID.
+		 */
+		$attribute = apply_filters( 'wc_ras_variation_meta_attribute', $attribute, $variation_id );
 		$product = wc_get_product( $variation_id );
 
 		if ( ! $product || ! $product->is_type( 'variation' ) ) {
@@ -246,7 +256,28 @@ class WC_RAS_Frontend {
 
 		$attributes = $product->get_attributes();
 
-		if ( ! isset( $attributes[ $attribute ] ) ) {
+		// If no specific attribute provided, find the first one with an attribute page.
+		if ( empty( $attribute ) ) {
+			foreach ( $attributes as $attr_name => $attr_value ) {
+				if ( empty( $attr_value ) ) {
+					continue;
+				}
+				$taxonomy = str_replace( 'attribute_', '', $attr_name );
+				if ( ! taxonomy_exists( $taxonomy ) ) {
+					continue;
+				}
+				$term = get_term_by( 'slug', $attr_value, $taxonomy );
+				if ( $term && ! is_wp_error( $term ) ) {
+					$page = WC_RAS_Attribute_Page_CPT::get_attribute_page( $term->slug );
+					if ( $page ) {
+						$attribute = $taxonomy;
+						break;
+					}
+				}
+			}
+		}
+
+		if ( empty( $attribute ) || ! isset( $attributes[ $attribute ] ) ) {
 			return array();
 		}
 
