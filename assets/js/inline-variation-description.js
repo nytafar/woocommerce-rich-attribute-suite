@@ -6,9 +6,9 @@
  * to provide a CLS-free variation description experience.
  *
  * @package WooCommerce_Rich_Attribute_Suite
- * @since 1.1.0
+ * @since 1.2.0
  */
-(function($) {
+(function() {
     'use strict';
 
     var config = window.wcRasInlineDesc || {
@@ -17,148 +17,230 @@
         autoDetect: true
     };
 
+    var duration = config.animationDuration;
+
+    // ── Animation helpers ────────────────────────────────────────
+
+    /**
+     * Slide an element down from height 0 (display:none → visible)
+     */
+    function slideDown(el, ms, callback) {
+        el.style.display = '';
+        el.style.overflow = 'hidden';
+        var target = el.scrollHeight;
+        el.style.height = '0px';
+        el.offsetHeight; // reflow
+        el.style.transition = 'height ' + ms + 'ms ease';
+        el.style.height = target + 'px';
+        el.addEventListener('transitionend', function handler(e) {
+            if (e.target !== el || e.propertyName !== 'height') return;
+            el.removeEventListener('transitionend', handler);
+            el.style.transition = '';
+            el.style.height = '';
+            el.style.overflow = '';
+            if (callback) callback();
+        });
+    }
+
+    /**
+     * Slide an element up to height 0, then display:none
+     */
+    function slideUp(el, ms, callback) {
+        el.style.overflow = 'hidden';
+        el.style.height = el.scrollHeight + 'px';
+        el.offsetHeight; // reflow
+        el.style.transition = 'height ' + ms + 'ms ease';
+        el.style.height = '0px';
+        el.addEventListener('transitionend', function handler(e) {
+            if (e.target !== el || e.propertyName !== 'height') return;
+            el.removeEventListener('transitionend', handler);
+            el.style.transition = '';
+            el.style.height = '';
+            el.style.overflow = '';
+            el.style.display = 'none';
+            if (callback) callback();
+        });
+    }
+
+    /**
+     * Animate container height from old to new, fade in text paragraphs
+     */
+    function animateContentChange(container, ms) {
+        var paragraphs = container.querySelectorAll('p:not(.term-page-link-wrapper)');
+
+        // Fade in paragraphs
+        Array.prototype.forEach.call(paragraphs, function(p, i) {
+            p.style.opacity = '0';
+            p.style.transform = 'translateY(6px)';
+            p.style.transition = 'none';
+            p.offsetHeight; // reflow
+            p.style.transition = 'opacity ' + ms + 'ms ease, transform ' + ms + 'ms ease';
+            p.style.transitionDelay = (i * 50) + 'ms';
+            p.style.opacity = '1';
+            p.style.transform = '';
+        });
+
+        // Clean up inline styles after animation
+        var last = paragraphs[paragraphs.length - 1];
+        if (last) {
+            last.addEventListener('transitionend', function handler() {
+                last.removeEventListener('transitionend', handler);
+                Array.prototype.forEach.call(paragraphs, function(p) {
+                    p.style.opacity = '';
+                    p.style.transform = '';
+                    p.style.transition = '';
+                    p.style.transitionDelay = '';
+                });
+            });
+        }
+    }
+
+    /**
+     * Animate height of container from old to new value
+     */
+    function animateHeight(container, oldHeight, ms, callback) {
+        container.style.height = 'auto';
+        var newHeight = container.offsetHeight;
+        container.style.height = oldHeight + 'px';
+        container.style.overflow = 'hidden';
+        container.offsetHeight; // reflow
+        container.style.transition = 'height ' + ms + 'ms ease';
+        container.style.height = newHeight + 'px';
+        container.addEventListener('transitionend', function handler(e) {
+            if (e.target !== container || e.propertyName !== 'height') return;
+            container.removeEventListener('transitionend', handler);
+            container.style.transition = '';
+            container.style.height = '';
+            container.style.overflow = '';
+            if (callback) callback();
+        });
+    }
+
+    // ── Core logic ───────────────────────────────────────────────
+
     /**
      * Initialize inline description handling
      */
     function init() {
-        $('.variations_form').each(function() {
-            var $form = $(this);
-            
-            // Skip if already initialized
-            if ($form.data('wc-ras-inline-init')) {
-                return;
-            }
-            $form.data('wc-ras-inline-init', true);
+        var forms = document.querySelectorAll('.variations_form');
+        forms.forEach(function(form) {
+            if (form.dataset.wcRasInlineInit) return;
+            form.dataset.wcRasInlineInit = 'true';
 
-            // Find or determine target attribute row
-            var $targetRow = findTargetAttributeRow($form);
-            if (!$targetRow || !$targetRow.length) {
-                return;
-            }
+            var targetRow = findTargetAttributeRow(form);
+            if (!targetRow) return;
 
-            // Create and inject the description row (hidden initially)
-            var $descRow = createDescriptionRow();
-            $targetRow.after($descRow);
+            var descRow = createDescriptionRow();
+            targetRow.after(descRow);
 
-            var $descContainer = $descRow.find('.wc-ras-inline-description');
+            var container = descRow.querySelector('.wc-ras-inline-description');
 
-            // Handle variation found
-            $form.on('found_variation', function(event, variation) {
-                updateDescription($descRow, $descContainer, variation);
+            // WooCommerce fires these as jQuery events
+            jQuery(form).on('found_variation', function(event, variation) {
+                updateDescription(descRow, container, variation);
             });
 
-            // Backup: also listen to show_variation for compatibility
-            $form.on('show_variation', function(event, variation) {
-                updateDescription($descRow, $descContainer, variation);
+            jQuery(form).on('show_variation', function(event, variation) {
+                updateDescription(descRow, container, variation);
             });
 
-            // Handle reset
-            $form.on('reset_data', function() {
-                hideDescription($descRow, $descContainer);
-            });
-
-            // Handle hide_variation (when selection becomes incomplete)
-            $form.on('hide_variation', function() {
-                hideDescription($descRow, $descContainer);
+            jQuery(form).on('reset_data hide_variation', function() {
+                hideDescription(descRow, container);
             });
         });
     }
 
     /**
      * Find the target attribute row to insert description after
-     *
-     * @param {jQuery} $form The variations form
-     * @return {jQuery} The target row element
      */
-    function findTargetAttributeRow($form) {
-        var $table = $form.find('table.variations tbody');
-        if (!$table.length) {
-            return null;
-        }
+    function findTargetAttributeRow(form) {
+        var tbody = form.querySelector('table.variations tbody');
+        if (!tbody) return null;
 
-        // If target attribute is explicitly configured
         if (config.targetAttribute) {
-            var $row = $table.find('tr.attribute-' + config.targetAttribute);
-            if ($row.length) {
-                return $row;
-            }
-            // Also try without 'attribute-' prefix (some themes use different classes)
-            $row = $table.find('tr[class*="' + config.targetAttribute + '"]');
-            if ($row.length) {
-                return $row.first();
-            }
+            var row = tbody.querySelector('tr.attribute-' + config.targetAttribute)
+                || tbody.querySelector('tr[class*="' + config.targetAttribute + '"]');
+            if (row) return row;
         }
 
-        // Auto-detect or fallback to first attribute row
-        var $rows = $table.find('tr');
-        if ($rows.length) {
-            return $rows.first();
-        }
-
-        return null;
+        return tbody.querySelector('tr');
     }
 
     /**
      * Create the description row element
-     *
-     * @return {jQuery} The description row element
      */
     function createDescriptionRow() {
-        return $('<tr class="wc-ras-inline-description-row" style="display:none;">' +
-            '<td colspan="2">' +
-            '<div class="wc-ras-inline-description woocommerce-variation-description"></div>' +
-            '</td>' +
-            '</tr>');
+        var tr = document.createElement('tr');
+        tr.className = 'wc-ras-inline-description-row';
+        tr.style.display = 'none';
+        var td = document.createElement('td');
+        td.colSpan = 2;
+        var div = document.createElement('div');
+        div.className = 'wc-ras-inline-description woocommerce-variation-description';
+        td.appendChild(div);
+        tr.appendChild(td);
+        return tr;
     }
 
     /**
      * Update the description content
-     *
-     * @param {jQuery} $row       The description row element
-     * @param {jQuery} $container The description container element
-     * @param {Object} variation  The variation data from WooCommerce
      */
-    function updateDescription($row, $container, variation) {
+    var lastDescription = '';
+
+    function updateDescription(row, container, variation) {
         var description = variation.variation_description || '';
+        if (!description) {
+            lastDescription = '';
+            hideDescription(row, container);
+            return;
+        }
 
-        if (description) {
-            // Update content
-            $container.html(description);
+        // Skip if content hasn't changed
+        if (description === lastDescription) return;
+        lastDescription = description;
 
-            // Show row with smooth transition (no CLS since row exists in DOM)
-            if (!$row.is(':visible')) {
-                $row.slideDown(config.animationDuration);
-            }
+        var isVisible = row.style.display !== 'none';
+
+        if (!isVisible) {
+            // First show
+            container.innerHTML = description;
+            slideDown(row, duration, function() {
+                animateContentChange(container, duration);
+            });
         } else {
-            hideDescription($row, $container);
+            // Already visible — animate height + fade text
+            var oldHeight = container.offsetHeight;
+            container.innerHTML = description;
+            animateHeight(container, oldHeight, duration);
+            animateContentChange(container, duration);
         }
     }
 
     /**
      * Hide the description row
-     *
-     * @param {jQuery} $row       The description row element
-     * @param {jQuery} $container The description container element
      */
-    function hideDescription($row, $container) {
-        if ($row.is(':visible')) {
-            $row.slideUp(config.animationDuration, function() {
-                $container.empty();
+    function hideDescription(row, container) {
+        if (row.style.display !== 'none') {
+            slideUp(row, duration, function() {
+                container.innerHTML = '';
             });
         } else {
-            $container.empty();
+            container.innerHTML = '';
         }
     }
 
-    // Initialize on document ready
-    $(document).ready(init);
+    // ── Bootstrap ────────────────────────────────────────────────
 
-    // Also initialize on AJAX complete (for dynamically loaded content)
-    $(document).ajaxComplete(function(event, xhr, settings) {
-        // Only re-init if this looks like a WooCommerce AJAX call
-        if (settings.url && settings.url.indexOf('wc-ajax') !== -1) {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+
+    // Re-init on WooCommerce AJAX (e.g. dynamically loaded content)
+    document.addEventListener('ajaxComplete', function(e) {
+        if (e.detail && e.detail.url && e.detail.url.indexOf('wc-ajax') !== -1) {
             init();
         }
     });
-
-})(jQuery);
+})();
