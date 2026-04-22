@@ -115,17 +115,21 @@ class WC_RAS_Inline_Variation_Description {
             'auto_detect' => true,    // Auto-detect attribute with description
         ));
 
+        $script_version = WC_RAS_VERSION . '.' . filemtime(
+            WC_RAS_PLUGIN_DIR . 'assets/js/inline-variation-description.js'
+        );
+
         wp_enqueue_script(
             'wc-ras-inline-description',
             WC_RAS_PLUGIN_URL . 'assets/js/inline-variation-description.js',
             array('jquery', 'wc-add-to-cart-variation'),
-            WC_RAS_VERSION,
+            $script_version,
             true
         );
 
         // Pass configuration to JS
         wp_localize_script('wc-ras-inline-description', 'wcRasInlineDesc', array(
-            'animationDuration' => apply_filters('wc_ras_inline_description_animation_duration', 200),
+            'animationDuration' => apply_filters('wc_ras_inline_description_animation_duration', 400),
             'targetAttribute' => $config['target_attribute'],
             'autoDetect' => $config['auto_detect'],
         ));

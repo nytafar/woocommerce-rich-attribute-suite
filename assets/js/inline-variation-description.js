@@ -63,44 +63,17 @@
     }
 
     /**
-     * Animate container height from old to new, fade in text paragraphs
-     */
-    function animateContentChange(container, ms) {
-        var paragraphs = container.querySelectorAll('p:not(.term-page-link-wrapper)');
-
-        // Fade in paragraphs
-        Array.prototype.forEach.call(paragraphs, function(p, i) {
-            p.style.opacity = '0';
-            p.style.transform = 'translateY(6px)';
-            p.style.transition = 'none';
-            p.offsetHeight; // reflow
-            p.style.transition = 'opacity ' + ms + 'ms ease, transform ' + ms + 'ms ease';
-            p.style.transitionDelay = (i * 50) + 'ms';
-            p.style.opacity = '1';
-            p.style.transform = '';
-        });
-
-        // Clean up inline styles after animation
-        var last = paragraphs[paragraphs.length - 1];
-        if (last) {
-            last.addEventListener('transitionend', function handler() {
-                last.removeEventListener('transitionend', handler);
-                Array.prototype.forEach.call(paragraphs, function(p) {
-                    p.style.opacity = '';
-                    p.style.transform = '';
-                    p.style.transition = '';
-                    p.style.transitionDelay = '';
-                });
-            });
-        }
-    }
-
-    /**
      * Animate height of container from old to new value
      */
     function animateHeight(container, oldHeight, ms, callback) {
         container.style.height = 'auto';
         var newHeight = container.offsetHeight;
+        if (oldHeight === newHeight) {
+            container.style.height = '';
+            container.style.overflow = '';
+            if (callback) callback();
+            return;
+        }
         container.style.height = oldHeight + 'px';
         container.style.overflow = 'hidden';
         container.offsetHeight; // reflow
@@ -204,15 +177,12 @@
         if (!isVisible) {
             // First show
             container.innerHTML = description;
-            slideDown(row, duration, function() {
-                animateContentChange(container, duration);
-            });
+            slideDown(row, duration);
         } else {
-            // Already visible — animate height + fade text
+            // Already visible — animate height only
             var oldHeight = container.offsetHeight;
             container.innerHTML = description;
             animateHeight(container, oldHeight, duration);
-            animateContentChange(container, duration);
         }
     }
 
