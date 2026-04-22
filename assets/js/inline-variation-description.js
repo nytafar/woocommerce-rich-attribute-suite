@@ -26,7 +26,8 @@
      */
     function slideDown(el, ms, callback) {
         el.style.display = '';
-        el.style.overflow = 'hidden';
+        el.style.clipPath = 'inset(0)';
+        el.style.willChange = 'height';
         var target = el.scrollHeight;
         el.style.height = '0px';
         el.offsetHeight; // reflow
@@ -37,16 +38,28 @@
             el.removeEventListener('transitionend', handler);
             el.style.transition = '';
             el.style.height = '';
-            el.style.overflow = '';
+            el.style.clipPath = '';
+            el.style.willChange = '';
             if (callback) callback();
         });
+    }
+
+    function normalizeDescriptionLayout(container) {
+        container.style.boxSizing = 'border-box';
+        container.style.display = 'flow-root';
+
+        var linkWrapper = container.querySelector('p.term-page-link-wrapper');
+        if (linkWrapper) {
+            linkWrapper.style.clear = 'both';
+        }
     }
 
     /**
      * Slide an element up to height 0, then display:none
      */
     function slideUp(el, ms, callback) {
-        el.style.overflow = 'hidden';
+        el.style.clipPath = 'inset(0)';
+        el.style.willChange = 'height';
         el.style.height = el.scrollHeight + 'px';
         el.offsetHeight; // reflow
         el.style.transition = 'height ' + ms + 'ms ease';
@@ -56,7 +69,8 @@
             el.removeEventListener('transitionend', handler);
             el.style.transition = '';
             el.style.height = '';
-            el.style.overflow = '';
+            el.style.clipPath = '';
+            el.style.willChange = '';
             el.style.display = 'none';
             if (callback) callback();
         });
@@ -66,16 +80,15 @@
      * Animate height of container from old to new value
      */
     function animateHeight(container, oldHeight, ms, callback) {
+        container.style.boxSizing = 'border-box';
         container.style.height = 'auto';
         var newHeight = container.offsetHeight;
         if (oldHeight === newHeight) {
             container.style.height = '';
-            container.style.overflow = '';
             if (callback) callback();
             return;
         }
         container.style.height = oldHeight + 'px';
-        container.style.overflow = 'hidden';
         container.offsetHeight; // reflow
         container.style.transition = 'height ' + ms + 'ms ease';
         container.style.height = newHeight + 'px';
@@ -84,7 +97,6 @@
             container.removeEventListener('transitionend', handler);
             container.style.transition = '';
             container.style.height = '';
-            container.style.overflow = '';
             if (callback) callback();
         });
     }
@@ -177,11 +189,13 @@
         if (!isVisible) {
             // First show
             container.innerHTML = description;
+            normalizeDescriptionLayout(container);
             slideDown(row, duration);
         } else {
             // Already visible — animate height only
             var oldHeight = container.offsetHeight;
             container.innerHTML = description;
+            normalizeDescriptionLayout(container);
             animateHeight(container, oldHeight, duration);
         }
     }
