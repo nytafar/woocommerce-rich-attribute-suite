@@ -123,6 +123,93 @@
         });
     }
 
+    function getCssVarMs(name, fallback) {
+        var raw = window.getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        if (!raw) return fallback;
+
+        var value;
+        if (raw.slice(-2) === 'ms') {
+            value = parseFloat(raw);
+        } else if (raw.slice(-1) === 's') {
+            value = parseFloat(raw) * 1000;
+        } else {
+            value = parseFloat(raw);
+        }
+
+        return Number.isFinite(value) ? value : fallback;
+    }
+
+    function getCssVarNumber(name, fallback) {
+        var raw = window.getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+        if (!raw) return fallback;
+        var value = parseFloat(raw);
+        return Number.isFinite(value) ? value : fallback;
+    }
+
+    function fadeOutContentStagger(container, ms, callback) {
+        var elements = Array.prototype.slice.call(container.children).filter(function(el) {
+            return !(el.matches && el.matches('p.term-page-link-wrapper'));
+        });
+
+        if (!elements.length) {
+            if (callback) callback();
+            return;
+        }
+
+        var fadeDuration = getCssVarMs('--wc-inline-desc-fade-out-ms', Math.max(80, Math.min(140, ms)));
+        var stagger = getCssVarMs('--wc-inline-desc-fade-out-stagger-ms', 25);
+        var tailDelay = getCssVarMs('--wc-inline-desc-fade-out-tail-ms', 20);
+        var maxDelay = 0;
+
+        elements.forEach(function(el, index) {
+            var delay = index * stagger;
+            if (delay > maxDelay) {
+                maxDelay = delay;
+            }
+
+            el.style.willChange = 'opacity';
+            el.style.transition = 'opacity ' + fadeDuration + 'ms ease';
+            el.style.transitionDelay = delay + 'ms';
+            el.style.opacity = '0';
+        });
+
+        window.setTimeout(function() {
+            if (callback) callback();
+        }, fadeDuration + maxDelay + tailDelay);
+    }
+
+    function fadeInContentStagger(container, heightDuration) {
+        var elements = Array.prototype.slice.call(container.children).filter(function(el) {
+            return !(el.matches && el.matches('p.term-page-link-wrapper'));
+        });
+
+        if (!elements.length) {
+            return;
+        }
+
+        var fadeInDuration = getCssVarMs('--wc-inline-desc-fade-in-ms', Math.max(110, Math.min(190, Math.round(heightDuration * 0.45))));
+        var fadeInStagger = getCssVarMs('--wc-inline-desc-fade-in-stagger-ms', 20);
+        var growRatio = getCssVarNumber('--wc-inline-desc-fade-in-grow-ratio', 0.2);
+        var normalizedGrowRatio = Math.max(0, Math.min(1, growRatio));
+        var fadeInBaseDelay = Math.round(heightDuration * normalizedGrowRatio);
+
+        elements.forEach(function(el) {
+            el.style.opacity = '0';
+            el.style.transition = 'none';
+            el.style.transitionDelay = '0ms';
+        });
+
+        container.offsetHeight; // reflow
+
+        elements.forEach(function(el, index) {
+            var delay = fadeInBaseDelay + (index * fadeInStagger);
+            el.style.willChange = 'opacity';
+            el.style.transition = 'opacity ' + fadeInDuration + 'ms ease';
+            el.style.transitionDelay = delay + 'ms';
+            el.style.opacity = '1';
+        });
+    }
+
     // ── Core logic ───────────────────────────────────────────────
 
     /**
@@ -214,14 +301,18 @@
             normalizeDescriptionLayout(container);
             slideDown(row, duration);
         } else {
-            // Already visible — animate height only
+            // Already visible — quick staggered fade-out, then animate height
             var oldHeight = container.offsetHeight;
             var oldLinkWrapper = container.querySelector('p.term-page-link-wrapper');
             var oldLinkTop = oldLinkWrapper ? oldLinkWrapper.getBoundingClientRect().top : null;
-            container.innerHTML = description;
-            normalizeDescriptionLayout(container);
-            animateHeight(container, oldHeight, duration);
-            animateLinkWrapperPosition(container, oldLinkTop, duration);
+
+            fadeOutContentStagger(container, Math.round(duration * 0.35), function() {
+                container.innerHTML = description;
+                normalizeDescriptionLayout(container);
+                animateHeight(container, oldHeight, duration);
+                animateLinkWrapperPosition(container, oldLinkTop, duration);
+                fadeInContentStagger(container, duration);
+            });
         }
     }
 
