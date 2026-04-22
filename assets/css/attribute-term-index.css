@@ -1,0 +1,36 @@
+/**
+ * WooCommerce Rich Attribute Suite — Attribute Term Index Scaffold
+ *
+ * Structural bones only. The theme owns all visual treatment
+ * (colors, surfaces, typography, spacing, hover). This file exists
+ * so the index works without a theme opinion.
+ *
+ * Tunable grid via CSS custom properties on .term-cards:
+ *   --term-cards-min   Minimum card width for auto-fill (default 280px)
+ *   --term-cards-gap   Gap between cards (default 1.5rem)
+ *
+ * For explicit columns, set grid-template-columns directly in the theme.
+ */
+
+.term-cards {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(var(--term-cards-min, 280px), 1fr));
+    gap: var(--term-cards-gap, 1.5rem);
+}
+
+.term-cards a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.term-cards figure {
+    margin: 0;
+}
+
+.term-cards figure img {
+    display: block;
+    width: 100%;
+}
