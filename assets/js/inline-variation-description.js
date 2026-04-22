@@ -46,12 +46,7 @@
 
     function normalizeDescriptionLayout(container) {
         container.style.boxSizing = 'border-box';
-        container.style.display = 'flow-root';
-
-        var linkWrapper = container.querySelector('p.term-page-link-wrapper');
-        if (linkWrapper) {
-            linkWrapper.style.clear = 'both';
-        }
+        container.style.display = '';
     }
 
     /**
