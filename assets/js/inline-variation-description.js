@@ -49,6 +49,33 @@
         container.style.display = '';
     }
 
+    function animateLinkWrapperPosition(container, oldTop, ms) {
+        if (oldTop == null) return;
+
+        var linkWrapper = container.querySelector('p.term-page-link-wrapper');
+        if (!linkWrapper) return;
+
+        var newTop = linkWrapper.getBoundingClientRect().top;
+        var deltaY = oldTop - newTop;
+
+        if (Math.abs(deltaY) < 1) return;
+
+        linkWrapper.style.willChange = 'transform';
+        linkWrapper.style.transition = 'none';
+        linkWrapper.style.transform = 'translateY(' + deltaY + 'px)';
+        linkWrapper.offsetHeight; // reflow
+        linkWrapper.style.transition = 'transform ' + ms + 'ms ease';
+        linkWrapper.style.transform = 'translateY(0)';
+
+        linkWrapper.addEventListener('transitionend', function handler(e) {
+            if (e.target !== linkWrapper || e.propertyName !== 'transform') return;
+            linkWrapper.removeEventListener('transitionend', handler);
+            linkWrapper.style.transition = '';
+            linkWrapper.style.transform = '';
+            linkWrapper.style.willChange = '';
+        });
+    }
+
     /**
      * Slide an element up to height 0, then display:none
      */
@@ -189,9 +216,12 @@
         } else {
             // Already visible — animate height only
             var oldHeight = container.offsetHeight;
+            var oldLinkWrapper = container.querySelector('p.term-page-link-wrapper');
+            var oldLinkTop = oldLinkWrapper ? oldLinkWrapper.getBoundingClientRect().top : null;
             container.innerHTML = description;
             normalizeDescriptionLayout(container);
             animateHeight(container, oldHeight, duration);
+            animateLinkWrapperPosition(container, oldLinkTop, duration);
         }
     }
 
