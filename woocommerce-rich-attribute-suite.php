@@ -40,7 +40,6 @@ function wc_ras_init() {
     require_once WC_RAS_PLUGIN_DIR . 'includes/admin-hooks.php';
     require_once WC_RAS_PLUGIN_DIR . 'includes/variation-improvements.php';
     require_once WC_RAS_PLUGIN_DIR . 'includes/inline-variation-description.php';
-    require_once WC_RAS_PLUGIN_DIR . 'includes/attribute-term-index.php';
 }
 add_action('plugins_loaded', 'wc_ras_init');
 
