@@ -72,26 +72,13 @@ function wc_ras_fermentation_types() {
 /**
  * Country flag mapping: origin_country term slug => flag SVG/image URL.
  *
- * Default is empty. Site owners register mappings via the filter. Slug
- * convention: ISO-ish lowercase names (peru, tanzania, nicaragua, …).
+ * Default is empty. Site owners register mappings via the filter if they
+ * want to override the file-based resolution in
+ * wc_ras_country_flag_url() (origin-render.php). Slug convention:
+ * ISO-ish lowercase names (peru, tanzania, nicaragua, …).
  *
  * @return array<string,string>
  */
 function wc_ras_country_flag_map() {
     return apply_filters('wc_ras_country_flag_map', array());
-}
-
-/**
- * Resolve a flag URL for a given origin_country term slug.
- *
- * @param string $slug Term slug.
- * @return string Flag URL, or empty string if no mapping exists.
- */
-function wc_ras_country_flag_url($slug) {
-    if (empty($slug)) {
-        return '';
-    }
-
-    $map = wc_ras_country_flag_map();
-    return isset($map[$slug]) ? $map[$slug] : '';
 }

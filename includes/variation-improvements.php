@@ -84,121 +84,91 @@ class WC_RAS_Variation_Improvements {
      * @return array Modified variation data
      */
     public function variation_description_fallback($variation_data, $product, $variation) {
-        // Only proceed if variation description is empty
-        if (empty($variation_data['variation_description'])) {
-            $term_descriptions = array();
-            $term_page_links = array();
-            
-            // Get all attributes for this variation
-            $attributes = $variation->get_attributes();
-            
-            if (!empty($attributes)) {
-                foreach ($attributes as $attribute_name => $attribute_value) {
-                    // Skip if attribute value is empty
-                    if (empty($attribute_value)) {
-                        continue;
-                    }
-                    
-                    // Get the attribute taxonomy name (e.g., 'pa_color')
-                    $taxonomy = str_replace('attribute_', '', $attribute_name);
-                    
-                    // Skip non-taxonomy attributes
-                    if (!taxonomy_exists($taxonomy)) {
-                        continue;
-                    }
-                    
-                    // Get the term object
-                    $term = get_term_by('slug', $attribute_value, $taxonomy);
-                    
-                    // Skip if term doesn't exist
-                    if (!$term || is_wp_error($term)) {
-                        continue;
-                    }
-                    
-                    // First check if term has a description
-                    $term_description = trim($term->description);
-                    $region = '';
-                    $smak = '';
-                    
-                    if (!empty($term_description)) {
-                        // Use the term description
-                        $term_descriptions[] = $term_description;
-                        
-                        // Get the term's linked page if any (legacy support)
-                        $page_id = get_term_meta($term->term_id, 'linked_page_id', true);
-                        $custom_url = get_term_meta($term->term_id, 'custom_page_url', true);
-                        
-                        // Add page link if available
-                        if (!empty($page_id) || !empty($custom_url)) {
-                            $link_url = !empty($page_id) ? get_permalink($page_id) : $custom_url;
-                            $link_text = !empty($page_id) ? get_the_title($page_id) : __('Learn more', 'wc-rich-attribute-suite');
-                            
-                            $term_page_links[] = '<a href="' . esc_url($link_url) . '" class="term-page-link">' . esc_html($link_text) . '</a>';
-                        } else {
-                            // Default to term archive link
-                            $term_page_links[] = '<a href="' . esc_url(get_term_link($term)) . '" class="term-page-link">' . 
-                                                 esc_html__('Learn more', 'wc-rich-attribute-suite') . '</a>';
-                        }
-                    } else {
-                        // Fallback to attribute page if no term description exists
-                        $attribute_page = wc_ras_get_cached_attribute_page($term->slug);
-                        
-                        if ($attribute_page) {
-                            // Use the attribute page excerpt if available, otherwise use the content
-                            $content = !empty($attribute_page->post_excerpt) ? $attribute_page->post_excerpt : $attribute_page->post_content;
-                            
-                            if (!empty($content)) {
-                                $term_descriptions[] = wp_trim_words($content, 30, '...');
-                                
-                                // Add link to attribute page
-                                $term_page_links[] = '<a href="' . esc_url(get_term_link($term)) . '" class="term-page-link">' . 
-                                                     esc_html__('Learn more', 'wc-rich-attribute-suite') . '</a>';
-                            }
-                            
-                            // Get meta from attribute page
-                            $region = get_post_meta($attribute_page->ID, 'region', true);
-                            $smak = get_post_meta($attribute_page->ID, 'smak', true);
-                        }
+        // Respect an explicit admin-set variation description — skip enrichment.
+        if (!empty($variation_data['variation_description'])) {
+            return $variation_data;
+        }
+
+        $attributes = $variation->get_attributes();
+        if (empty($attributes)) {
+            return $variation_data;
+        }
+
+        $origin           = null;
+        $description_text = '';
+        $cta_url          = '';
+
+        foreach ($attributes as $attribute_name => $attribute_value) {
+            if (empty($attribute_value)) {
+                continue;
+            }
+            $taxonomy = str_replace('attribute_', '', $attribute_name);
+            if (!taxonomy_exists($taxonomy)) {
+                continue;
+            }
+            $term = get_term_by('slug', $attribute_value, $taxonomy);
+            if (!$term || is_wp_error($term)) {
+                continue;
+            }
+
+            $page = wc_ras_get_cached_attribute_page($term->slug);
+
+            // First origin wins (typically pa_opprinnelse).
+            if ($page && !$origin) {
+                $origin = wc_ras_build_origin_struct($page);
+                if (!empty($origin['permalink'])) {
+                    $cta_url = $origin['permalink'];
+                }
+            }
+
+            // Body text fallback — first non-empty across all attributes.
+            if ($description_text === '') {
+                $term_description = trim((string) $term->description);
+                if ($term_description !== '') {
+                    $description_text = $term_description;
+                } elseif ($page) {
+                    $content = !empty($page->post_excerpt) ? $page->post_excerpt : $page->post_content;
+                    if (!empty($content)) {
+                        $description_text = wp_trim_words($content, 30, '...');
                     }
                 }
             }
-            
-            // If we found any term descriptions, use the first one as fallback
-            if (!empty($term_descriptions)) {
-                // Format with paragraph tags to match standard variation descriptions
-                $description = '<p>' . $term_descriptions[0] . '</p>';
-                
-                // Add page link if available and enabled
-                if (!empty($term_page_links[0]) && apply_filters('wc_ras_show_variation_description_links', true)) {
-                    $description .= '<p class="term-page-link-wrapper">' . $term_page_links[0] . '</p>';
-                }
-                
-                $variation_data['variation_description'] = $description;
-                
-                // Allow combining all term descriptions if enabled
-                if (apply_filters('wc_ras_combine_all_term_descriptions', false) && count($term_descriptions) > 1) {
-                    $variation_data['variation_description'] = '<p>' . implode('</p><p>', $term_descriptions) . '</p>';
-                    
-                    // Add all links if showing links is enabled
-                    if (apply_filters('wc_ras_show_variation_description_links', true) && !empty($term_page_links)) {
-                        $variation_data['variation_description'] .= '<p class="term-page-link-wrapper">' . 
-                                                                   implode(' | ', $term_page_links) . '</p>';
-                    }
-                }
-                
-                // Add meta to variation data for potential separate display
-                if (!empty($term_descriptions[0])) {
-                    // Only add if not already present
-                    if (empty($variation_data['attribute_region']) && !empty($region)) {
-                        $variation_data['attribute_region'] = $region;
-                    }
-                    if (empty($variation_data['attribute_smak']) && !empty($smak)) {
-                        $variation_data['attribute_smak'] = $smak;
-                    }
+
+            // CTA URL fallbacks: legacy term meta (linked_page_id, custom_page_url),
+            // then term archive URL via the learn-more helper.
+            if ($cta_url === '') {
+                $legacy_page_id = get_term_meta($term->term_id, 'linked_page_id', true);
+                $legacy_url     = get_term_meta($term->term_id, 'custom_page_url', true);
+                if (!empty($legacy_page_id)) {
+                    $cta_url = (string) get_permalink($legacy_page_id);
+                } elseif (!empty($legacy_url)) {
+                    $cta_url = (string) $legacy_url;
+                } elseif ($page || trim((string) $term->description) !== '') {
+                    $cta_url = (string) wc_ras_get_learn_more_url($term);
                 }
             }
         }
-        
+
+        // Nothing to render.
+        if (!$origin && $description_text === '') {
+            return $variation_data;
+        }
+
+        if (!apply_filters('wc_ras_show_variation_description_links', true)) {
+            $cta_url = '';
+        }
+
+        $html = wc_ras_load_template('parts/variation-description', array(
+            'origin'           => $origin,
+            'description_text' => $description_text,
+            'cta_url'          => $cta_url,
+            'cta_label'        => __('Lær mer', 'wc-rich-attribute-suite'),
+        ));
+
+        if ($html !== '') {
+            $variation_data['variation_description'] = $html;
+        }
+
         return $variation_data;
     }
 
@@ -273,7 +243,7 @@ class WC_RAS_Variation_Improvements {
                             $term_page_links[] = '<a href="' . esc_url($link_url) . '" class="term-page-link">' . esc_html($link_text) . '</a>';
                         } else {
                             // Default to term archive link
-                            $term_page_links[] = '<a href="' . esc_url(get_term_link($term)) . '" class="term-page-link">' . 
+                            $term_page_links[] = '<a href="' . esc_url(wc_ras_get_learn_more_url($term)) . '" class="term-page-link">' .
                                                  esc_html__('Learn more', 'wc-rich-attribute-suite') . '</a>';
                         }
                     } else {
@@ -286,16 +256,16 @@ class WC_RAS_Variation_Improvements {
                             
                             if (!empty($content)) {
                                 $term_descriptions[] = wp_trim_words($content, 30, '...');
-                                
-                                // Add link to attribute page
-                                $term_page_links[] = '<a href="' . esc_url(get_term_link($term)) . '" class="term-page-link">' . 
+
+                                // Add link to attribute page (CPT permalink)
+                                $term_page_links[] = '<a href="' . esc_url(wc_ras_get_learn_more_url($term)) . '" class="term-page-link">' .
                                                      esc_html__('Learn more', 'wc-rich-attribute-suite') . '</a>';
                             }
                         }
                     }
                 }
             }
-            
+
             // If we found any term descriptions, use the first one as fallback
             if (!empty($term_descriptions)) {
                 // Format with paragraph tags to match standard variation descriptions
@@ -330,3 +300,25 @@ class WC_RAS_Variation_Improvements {
 
 // Initialize the class
 new WC_RAS_Variation_Improvements();
+
+/**
+ * Resolve the canonical "Learn more" URL for an attribute term.
+ *
+ * Priority: attribute_page CPT permalink (canonical as of 1.3.0), with
+ * graceful fallback to the term archive if no matching CPT exists yet.
+ *
+ * @param WP_Term $term
+ * @return string
+ */
+function wc_ras_get_learn_more_url($term) {
+    if (!$term || is_wp_error($term)) {
+        return '';
+    }
+    $page = function_exists('wc_ras_get_cached_attribute_page')
+        ? wc_ras_get_cached_attribute_page($term->slug)
+        : null;
+    if ($page) {
+        return (string) get_permalink($page);
+    }
+    return (string) get_term_link($term);
+}

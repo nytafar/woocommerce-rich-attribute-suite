@@ -35,13 +35,18 @@ function wc_ras_init() {
     }
 
     // Include core files
+    require_once WC_RAS_PLUGIN_DIR . 'includes/template-loader.php';
     require_once WC_RAS_PLUGIN_DIR . 'includes/cpt-attribute-page.php';
     require_once WC_RAS_PLUGIN_DIR . 'includes/origin/origin-config.php';
     require_once WC_RAS_PLUGIN_DIR . 'includes/origin/origin-meta.php';
     require_once WC_RAS_PLUGIN_DIR . 'includes/origin/origin-taxonomies.php';
+    require_once WC_RAS_PLUGIN_DIR . 'includes/origin/origin-render.php';
     require_once WC_RAS_PLUGIN_DIR . 'includes/frontend-hooks.php';
+    require_once WC_RAS_PLUGIN_DIR . 'includes/origin/origin-frontend.php';
+    require_once WC_RAS_PLUGIN_DIR . 'includes/origin/block-patterns.php';
     require_once WC_RAS_PLUGIN_DIR . 'includes/admin-hooks.php';
     require_once WC_RAS_PLUGIN_DIR . 'includes/origin/origin-admin.php';
+    require_once WC_RAS_PLUGIN_DIR . 'includes/origin/origin-admin-certifications.php';
     require_once WC_RAS_PLUGIN_DIR . 'includes/variation-improvements.php';
     require_once WC_RAS_PLUGIN_DIR . 'includes/inline-variation-description.php';
 }

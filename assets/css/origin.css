@@ -1,0 +1,181 @@
+/**
+ * Rich Attribute Suite — origin module (CPT-only skeleton CSS).
+ *
+ * Scope: strukturell markup for CPT-arkiv og CPT-single-side.
+ * Ikke styling for produktside (variation-description-berikelse) — det eier
+ * temaet via CSS-klasser i templates/parts/variation-description.php.
+ *
+ * Stil: descendant-selektorer scopet av parent-klasser. Ikke BEM.
+ */
+
+/* ── Arkiv ───────────────────────────────────────────────────── */
+
+.wc-ras-origin-archive .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+    gap: 1.5rem;
+}
+
+.wc-ras-origin-archive .empty {
+    opacity: 0.7;
+}
+
+/* ── Kort ────────────────────────────────────────────────────── */
+
+.wc-ras-origin-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.wc-ras-origin-card .media {
+    display: block;
+    aspect-ratio: 4 / 5;
+    overflow: hidden;
+}
+
+.wc-ras-origin-card .media img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.wc-ras-origin-card .body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.wc-ras-origin-card .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.wc-ras-origin-card .link {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    text-indent: 100%;
+    white-space: nowrap;
+    z-index: 1;
+}
+
+/* ── Single ──────────────────────────────────────────────────── */
+
+.wc-ras-origin-single .header {
+    display: grid;
+    gap: 2rem;
+}
+
+.wc-ras-origin-single .hero {
+    display: grid;
+    gap: 1rem;
+}
+
+.wc-ras-origin-single .hero .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.wc-ras-origin-single .section {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.wc-ras-origin-single .section.flavour {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+@media (min-width: 48em) {
+    .wc-ras-origin-single .section.flavour {
+        grid-template-columns: auto 1fr;
+        align-items: center;
+    }
+}
+
+.wc-ras-origin-single .section.certifications ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.wc-ras-origin-single .section.certifications li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.wc-ras-origin-single .section.certifications img {
+    width: 1.5em;
+    height: 1.5em;
+}
+
+/* ── Post-harvest hybrid item (brukt på single) ──────────────── */
+
+.wc-ras-origin-single .postharvest-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.wc-ras-origin-single .postharvest-item .icon {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.25em;
+    height: 1.25em;
+}
+
+.wc-ras-origin-single .postharvest-item .icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.wc-ras-origin-single .postharvest-item .body {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ── Radar ───────────────────────────────────────────────────── */
+
+.wc-ras-radar {
+    display: block;
+    width: 100%;
+    max-width: 320px;
+    height: auto;
+}
+
+/* ── Pills (brukt på kort + single hero) ─────────────────────── */
+
+.wc-ras-origin-card .pill,
+.wc-ras-origin-single .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    line-height: 1.2;
+}
+
+.wc-ras-origin-card .pill img,
+.wc-ras-origin-single .pill img {
+    width: 1em;
+    height: 1em;
+}
+
+.wc-ras-origin-card .pill svg,
+.wc-ras-origin-single .pill svg {
+    width: 1em;
+    height: 1em;
+}
