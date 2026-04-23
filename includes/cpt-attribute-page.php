@@ -37,17 +37,20 @@ function wc_ras_register_attribute_page_cpt() {
     $args = array(
         'labels'             => $labels,
         'public'             => true,
-        'publicly_queryable' => false,  // Content is accessed via attribute archive
+        'publicly_queryable' => true,
         'show_ui'            => true,
         'show_in_menu'       => true,
         'query_var'          => true,
-        'rewrite'            => false,  // No direct URL access, content shown on attribute archives
+        'rewrite'            => array(
+            'slug'       => 'opprinnelser',
+            'with_front' => false,
+        ),
         'capability_type'    => 'post',
-        'has_archive'        => false,
+        'has_archive'        => 'opprinnelser',
         'hierarchical'       => false,
         'menu_position'      => null,
         'menu_icon'          => 'dashicons-tag',
-        'supports'           => array('title', 'editor', 'thumbnail', 'revisions'),
+        'supports'           => array('title', 'editor', 'thumbnail', 'excerpt', 'revisions'),
         'show_in_rest'       => true,  // Enable block editor
     );
 
@@ -297,3 +300,25 @@ function wc_ras_get_attribute_page($term_slug) {
 
     return $page_id ? get_post($page_id) : null;
 }
+
+/**
+ * Invalidate cached attribute_page lookups when a post is saved or deleted.
+ *
+ * Two cache groups exist historically (`wc_ras_attribute_page` in
+ * frontend-hooks.php and `wc_ras_attribute_pages` in this file). Both are
+ * cleared here so variation preload and archive fallbacks always see the
+ * latest state without waiting for the 1-hour TTL.
+ *
+ * @param int $post_id Post ID.
+ */
+function wc_ras_invalidate_attribute_page_cache($post_id) {
+    $post = get_post($post_id);
+    if (!$post || $post->post_type !== 'attribute_page' || empty($post->post_name)) {
+        return;
+    }
+    $key = 'attribute_page_' . md5($post->post_name);
+    wp_cache_delete($key, 'wc_ras_attribute_page');
+    wp_cache_delete($key, 'wc_ras_attribute_pages');
+}
+add_action('save_post_attribute_page', 'wc_ras_invalidate_attribute_page_cache');
+add_action('deleted_post', 'wc_ras_invalidate_attribute_page_cache');

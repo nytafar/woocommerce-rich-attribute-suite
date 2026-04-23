@@ -82,8 +82,10 @@ add_action('init', 'wc_ras_maybe_flush_rewrite_rules', 99);
 function wc_ras_check_rewrite_rules_version() {
     $current_version = get_option('wc_ras_rewrite_version', '0');
     
-    if (version_compare($current_version, '1.2.0', '<')) {
-        // Schedule a rewrite flush
+    if (version_compare($current_version, '1.3.0', '<')) {
+        // Schedule a rewrite flush — required after CPT is flipped to
+        // publicly_queryable and taxonomies origin_country + certification
+        // are registered in 1.3.0.
         update_option('wc_ras_flush_rewrite_rules', true);
         update_option('wc_ras_rewrite_version', WC_RAS_VERSION);
     }
@@ -217,71 +219,65 @@ function wc_ras_add_attribute_content_to_archive($description) {
 add_filter('woocommerce_taxonomy_archive_description', 'wc_ras_add_attribute_content_to_archive', 20);
 
 /**
- * Get attribute meta for a specific variation
+ * Resolve the attribute_page CPT for a given variation's opprinnelse term.
  *
- * @param int    $variation_id Variation ID
- * @param string $attribute    Attribute name (default: pa_opprinnelse)
- * @return array Attribute metadata
+ * @param int    $variation_id Variation ID.
+ * @param string $attribute    Attribute taxonomy (default: pa_opprinnelse).
+ * @return WP_Post|null Matching attribute_page post, or null.
  */
-function wc_ras_get_attribute_meta_for_variation($variation_id, $attribute = 'pa_opprinnelse') {
+function wc_ras_get_attribute_page_for_variation($variation_id, $attribute = 'pa_opprinnelse') {
     $product = wc_get_product($variation_id);
-    
     if (!$product || !$product->is_type('variation')) {
-        return array();
+        return null;
     }
-    
+
     $attributes = $product->get_attributes();
-    
-    // Check if variation has this attribute
     if (!isset($attributes[$attribute])) {
-        return array();
+        return null;
     }
-    
-    $attribute_value = $attributes[$attribute];
-    
-    // Get the term slug
-    $term = get_term_by('slug', $attribute_value, $attribute);
-    
-    if (!$term) {
-        return array();
+
+    $term = get_term_by('slug', $attributes[$attribute], $attribute);
+    if (!$term || is_wp_error($term)) {
+        return null;
     }
-    
-    // Get attribute page by slug
-    $attribute_page = wc_ras_get_cached_attribute_page($term->slug);
-    
-    if (!$attribute_page) {
-        return array();
-    }
-    
-    // Get metadata
-    return array(
-        'region' => get_post_meta($attribute_page->ID, 'region', true),
-        'smak' => get_post_meta($attribute_page->ID, 'smak', true),
-    );
+
+    return wc_ras_get_cached_attribute_page($term->slug);
 }
 
 /**
- * Add attribute meta to variation data
+ * Add the wc_ras_origin struct to variation data.
  *
- * @param array                $data      Variation data
- * @param WC_Product_Variable  $product   Product object
- * @param WC_Product_Variation $variation Variation object
- * @return array Modified variation data
+ * Phase 1 payload: identity + region + taste_notes. Sufficient to verify the
+ * data shape in devtools. Phase 2 extends this with the full modal-ready
+ * payload (producer_type, taste_profile, certifications, featured image,
+ * country/flag, etc.) once rendering needs them.
+ *
+ * Priority 20 — runs after variation-improvements.php (priority 10), which
+ * populates variation_description from the attribute page excerpt.
+ *
+ * @param array                $data      Variation data.
+ * @param WC_Product_Variable  $product   Product object.
+ * @param WC_Product_Variation $variation Variation object.
+ * @return array
  */
-function wc_ras_add_attribute_meta_to_variation($data, $product, $variation) {
-    $attribute_meta = wc_ras_get_attribute_meta_for_variation($variation->get_id());
-    
-    if (!empty($attribute_meta)) {
-        foreach ($attribute_meta as $key => $value) {
-            if (!empty($value)) {
-                $data['attribute_' . $key] = $value;
-            }
-        }
+function wc_ras_add_origin_to_variation($data, $product, $variation) {
+    $page = wc_ras_get_attribute_page_for_variation($variation->get_id());
+    if (!$page) {
+        return $data;
     }
-    
+
+    $data['wc_ras_origin'] = array(
+        'name'        => $page->post_title,
+        'slug'        => $page->post_name,
+        'excerpt'     => get_the_excerpt($page),
+        'permalink'   => get_permalink($page),
+        'region'      => get_post_meta($page->ID, 'region', true),
+        'taste_notes' => get_post_meta($page->ID, 'smak', true),
+    );
+
     return $data;
 }
-add_filter('woocommerce_available_variation', 'wc_ras_add_attribute_meta_to_variation', 10, 3);
+add_filter('woocommerce_available_variation', 'wc_ras_add_origin_to_variation', 20, 3);
 
 /**
  * Add attribute meta to AJAX product variations response

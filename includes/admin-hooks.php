@@ -92,6 +92,7 @@ function wc_ras_add_attribute_page_columns($columns) {
             $new_columns['attribute_term'] = __('Attribute Term', 'wc-rich-attribute-suite');
             $new_columns['region'] = __('Region', 'wc-rich-attribute-suite');
             $new_columns['smak'] = __('Smak', 'wc-rich-attribute-suite');
+            $new_columns['producer_type'] = __('Producer', 'wc-rich-attribute-suite');
         }
     }
     
@@ -141,6 +142,16 @@ function wc_ras_populate_attribute_page_columns($column, $post_id) {
             // Display meta value
             $value = get_post_meta($post_id, $column, true);
             echo esc_html($value ? $value : '—');
+            break;
+
+        case 'producer_type':
+            $value = get_post_meta($post_id, 'producer_type', true);
+            if (!$value) {
+                echo '—';
+                break;
+            }
+            $types = function_exists('wc_ras_producer_types') ? wc_ras_producer_types() : array();
+            echo esc_html(isset($types[$value]) ? $types[$value] : $value);
             break;
     }
 }
