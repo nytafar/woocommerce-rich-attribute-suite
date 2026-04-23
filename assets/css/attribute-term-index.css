@@ -5,6 +5,11 @@
  * (colors, surfaces, typography, spacing, hover). This file exists
  * so the index works without a theme opinion.
  *
+ * Markup pattern: the card's <h2> is the only link. An ::after overlay
+ * on that link extends the clickable area to the whole <li>, so the card
+ * behaves like a single target without wrapping non-link content in an
+ * anchor (keeps semantics clean and avoids link-style inheritance).
+ *
  * Tunable grid via CSS custom properties on .term-cards:
  *   --term-cards-min   Minimum card width for auto-fill (default 280px)
  *   --term-cards-gap   Gap between cards (default 1.5rem)
@@ -15,15 +20,22 @@
 .term-cards {
     list-style: none;
     padding: 0;
-    margin: 0;
+    /* margin-block only — leave margin-inline to the host layout
+       (e.g. Ousia's `section > *` rule which centers via margin-inline: auto). */
+    margin-block: 0;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(var(--term-cards-min, 280px), 1fr));
     gap: var(--term-cards-gap, 1.5rem);
 }
 
-.term-cards a {
-    color: inherit;
-    text-decoration: none;
+.term-cards li {
+    position: relative;
+}
+
+.term-cards h2 a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
 }
 
 .term-cards figure {

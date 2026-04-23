@@ -106,12 +106,15 @@ function wc_ras_get_attribute_term_card_data($term) {
 }
 
 /**
- * Render the attribute term index grid.
+ * Render the attribute term index grid only.
+ *
+ * Use this when embedding the grid inline (e.g. in a shortcode) and the
+ * surrounding page already supplies its own heading and intro.
  *
  * @param string $taxonomy Taxonomy slug (e.g. pa_opprinnelse).
- * @return string HTML markup.
+ * @return string HTML markup (empty string if nothing to render).
  */
-function wc_ras_render_attribute_term_index($taxonomy = '') {
+function wc_ras_render_attribute_term_index_grid($taxonomy = '') {
     $taxonomy = wc_ras_resolve_index_taxonomy($taxonomy);
 
     if (!taxonomy_exists($taxonomy)) {
@@ -136,31 +139,73 @@ function wc_ras_render_attribute_term_index($taxonomy = '') {
             $has_image = !empty($card['image_html']);
             ?>
             <li>
-                <a href="<?php echo esc_url($card['permalink']); ?>">
-                    <?php if ($has_image) : ?>
-                        <figure>
-                            <?php echo $card['image_html']; // Safe: from get_the_post_thumbnail. ?>
-                            <?php if (!empty($card['region'])) : ?>
-                                <figcaption><?php echo esc_html($card['region']); ?></figcaption>
-                            <?php endif; ?>
-                        </figure>
-                    <?php elseif (!empty($card['region'])) : ?>
-                        <p class="region"><?php echo esc_html($card['region']); ?></p>
-                    <?php endif; ?>
+                <?php if ($has_image) : ?>
+                    <figure>
+                        <?php echo $card['image_html']; // Safe: from get_the_post_thumbnail. ?>
+                        <?php if (!empty($card['region'])) : ?>
+                            <figcaption><?php echo esc_html($card['region']); ?></figcaption>
+                        <?php endif; ?>
+                    </figure>
+                <?php elseif (!empty($card['region'])) : ?>
+                    <p class="region"><?php echo esc_html($card['region']); ?></p>
+                <?php endif; ?>
 
-                    <h2><?php echo esc_html($card['name']); ?></h2>
+                <h2><a href="<?php echo esc_url($card['permalink']); ?>"><?php echo esc_html($card['name']); ?></a></h2>
 
-                    <?php if (!empty($card['smak'])) : ?>
-                        <p class="smak"><?php echo esc_html($card['smak']); ?></p>
-                    <?php endif; ?>
+                <?php if (!empty($card['smak'])) : ?>
+                    <dl class="smak">
+                        <dt><?php esc_html_e('Smak', 'wc-rich-attribute-suite'); ?></dt>
+                        <dd><?php echo esc_html($card['smak']); ?></dd>
+                    </dl>
+                <?php endif; ?>
 
-                    <?php if (!empty($card['description'])) : ?>
+                <?php if (!empty($card['description'])) : ?>
+                    <div class="term-description">
                         <?php echo wp_kses_post(wpautop(wptexturize($card['description']))); ?>
-                    <?php endif; ?>
-                </a>
+                    </div>
+                <?php endif; ?>
             </li>
         <?php endforeach; ?>
     </ul>
+    <?php
+    return ob_get_clean();
+}
+
+/**
+ * Render the full attribute term index page: section wrapper + page heading
+ * + intro + grid. This is the single source of truth for the page markup.
+ *
+ * Theme and plugin page templates both call this so wrapper HTML lives in
+ * exactly one place.
+ *
+ * @param string   $taxonomy Taxonomy slug (e.g. pa_opprinnelse).
+ * @param int|null $page_id  WP page ID to pull title/intro from. Defaults to
+ *                           the current queried page.
+ * @return string HTML markup.
+ */
+function wc_ras_render_attribute_term_index($taxonomy = '', $page_id = null) {
+    if (!$page_id) {
+        $page_id = get_the_ID();
+    }
+
+    $title = $page_id ? get_the_title($page_id) : '';
+    $intro = $page_id ? get_post_field('post_content', $page_id) : '';
+
+    ob_start();
+    ?>
+    <section class="attribute-archive">
+        <?php if (!empty($title)) : ?>
+            <h1><?php echo esc_html($title); ?></h1>
+        <?php endif; ?>
+
+        <?php if (!empty($intro)) : ?>
+            <div class="page-intro">
+                <?php echo apply_filters('the_content', $intro); ?>
+            </div>
+        <?php endif; ?>
+
+        <?php echo wc_ras_render_attribute_term_index_grid($taxonomy); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>
+    </section>
     <?php
     return ob_get_clean();
 }
@@ -176,7 +221,8 @@ function wc_ras_attribute_index_shortcode($atts) {
     // Mark scaffold enqueue needed (in case shortcode is used outside the page template).
     add_filter('wc_ras_attribute_index_force_enqueue', '__return_true');
 
-    return wc_ras_render_attribute_term_index($atts['taxonomy']);
+    // Grid-only for inline/shortcode embedding — the surrounding page supplies its own header.
+    return wc_ras_render_attribute_term_index_grid($atts['taxonomy']);
 }
 add_shortcode('wc_ras_attribute_index', 'wc_ras_attribute_index_shortcode');
 
@@ -246,11 +292,14 @@ function wc_ras_enqueue_attribute_index_assets() {
         return;
     }
 
+    $css_path = WC_RAS_PLUGIN_DIR . 'assets/css/attribute-term-index.css';
+    $version  = file_exists($css_path) ? filemtime($css_path) : WC_RAS_VERSION;
+
     wp_enqueue_style(
         'wc-ras-attribute-term-index',
         WC_RAS_PLUGIN_URL . 'assets/css/attribute-term-index.css',
         array(),
-        WC_RAS_VERSION
+        $version
     );
 }
 add_action('wp_enqueue_scripts', 'wc_ras_enqueue_attribute_index_assets');

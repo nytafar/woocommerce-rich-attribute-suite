@@ -25,10 +25,15 @@ $term = get_queried_object();
 
 // Get matching attribute page
 $attribute_page = wc_ras_get_cached_attribute_page($term->slug);
+
+// Prefer the attribute page title when one is linked; fall back to the term name.
+$display_title = ($attribute_page && !empty($attribute_page->post_title))
+    ? $attribute_page->post_title
+    : $term->name;
 ?>
 
 <header class="woocommerce-products-header">
-    <h1 class="woocommerce-products-header__title page-title"><?php echo esc_html($term->name); ?></h1>
+    <h1 class="woocommerce-products-header__title page-title"><?php echo esc_html($display_title); ?></h1>
 
     <?php if ($attribute_page) : ?>
         <?php
