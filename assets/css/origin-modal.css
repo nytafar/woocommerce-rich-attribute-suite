@@ -1,0 +1,216 @@
+/**
+ * Rich Attribute Suite — origin-modal structural CSS.
+ *
+ * Scope: only the rules the dialog needs to *function*. Mobil går til
+ * blocking fullskjerm, desktop går til non-blocking over gallery-området.
+ * Alt visuelt (farger, typografi, spacing, kort-layout) eier temaet.
+ *
+ * Bruk cascade: `.wc-ras-origin-modal[open]` vinner naturlig over
+ * dialog-UA-default. `[hidden]` må vinne over våre flex/grid-display —
+ * legg `[hidden] { display: none !important }` sist for trygghet.
+ */
+
+/* ── Base ─────────────────────────────────────────────────────── */
+
+.wc-ras-origin-modal {
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: inherit;
+    max-width: none;
+    max-height: none;
+    overflow: visible;
+}
+
+.wc-ras-origin-modal::backdrop {
+    background: rgba(0, 0, 0, 0.55);
+}
+
+.wc-ras-origin-modal[open] {
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-color-selected);
+}
+
+/* ── Mobil — full viewport, blocking ──────────────────────────── */
+
+@media (max-width: 1023px) {
+    .wc-ras-origin-modal[open] {
+        position: fixed;
+        inset: 0;
+        width: 100vw;
+        height: 100dvh;
+        margin: 0;
+        z-index: 1000;
+    }
+}
+
+/* ── Desktop — non-blocking, fyller gallery-containeren ───────── */
+/*
+ * Modalen rendres som søsken av gallery-figure inne i
+ * `.woocommerce-product-gallery`. UA-default dialog-positioning (absolute
+ * i flow, left/right 0, margin auto) kombinert med width/height 100%
+ * lar den fylle gallery-containeren naturlig — uten at vi overstyrer
+ * inset eller margin selv.
+ */
+@media (min-width: 1024px) {
+    .wc-ras-origin-modal[open] {
+        width: 100%;
+        height: 100%;
+    }
+
+    .wc-ras-origin-modal::backdrop {
+        background: transparent;
+    }
+}
+
+/* ── Chrome (nav + close) ─────────────────────────────────────── */
+
+.wc-ras-origin-modal__chrome {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    flex: 0 0 auto;
+}
+
+.wc-ras-origin-modal__chrome button {
+    cursor: pointer;
+    background: transparent;
+    border: 0;
+    padding: 0.5rem 0.75rem;
+    line-height: 1;
+    font: inherit;
+    color: inherit;
+}
+
+.wc-ras-origin-modal__chrome button[disabled] {
+    opacity: 0.4;
+    cursor: default;
+}
+
+/* ── Card — scrolls, card content styled by tema ─────────────── */
+
+.wc-ras-origin-modal__card {
+    flex: 1 1 auto;
+    overflow: auto;
+    min-height: 0;
+}
+
+.wc-ras-origin-modal__hero {
+    display: grid;
+    gap: 1rem;
+}
+
+.wc-ras-origin-modal__image {
+    display: block;
+    width: 100%;
+    height: auto;
+}
+
+.wc-ras-origin-modal__pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.wc-ras-origin-modal__section {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.wc-ras-origin-modal .postharvest-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.wc-ras-origin-modal .postharvest-item .icon {
+    flex: 0 0 auto;
+    width: 1.25em;
+    height: 1.25em;
+}
+
+.wc-ras-origin-modal .postharvest-item .icon svg {
+    width: 100%;
+    height: 100%;
+}
+
+.wc-ras-origin-modal .postharvest-item .body {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.wc-ras-origin-modal .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    line-height: 1.2;
+}
+
+.wc-ras-origin-modal .pill img,
+.wc-ras-origin-modal .pill svg {
+    width: 1em;
+    height: 1em;
+}
+
+.wc-ras-origin-modal .certifications ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.wc-ras-origin-modal .certifications li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.wc-ras-origin-modal .certifications img {
+    width: 1.5em;
+    height: 1.5em;
+}
+
+.wc-ras-origin-modal .radar {
+    display: block;
+}
+
+/* ── Skala: små overskrifter + em-baserte SVG-er ──────────────── */
+
+.wc-ras-origin-modal__title {
+    font-size: 1.25em;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.wc-ras-origin-modal__section h3,
+.wc-ras-origin-modal .notes h3 {
+    font-size: 1em;
+    margin: 0 0 0.25em;
+    line-height: 1.2;
+}
+
+.wc-ras-origin-modal svg.wc-ras-icon {
+    width: 1em;
+    height: 1em;
+}
+
+.wc-ras-origin-modal .wc-ras-radar {
+    display: block;
+    width: 100%;
+    max-width: 12em;
+    height: auto;
+}
+
+/* ── [hidden] wins over our display rules ─────────────────────── */
+
+.wc-ras-origin-modal [hidden] {
+    display: none !important;
+}

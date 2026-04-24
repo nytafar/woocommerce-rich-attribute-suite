@@ -129,28 +129,37 @@ function wc_ras_get_cached_attribute_page($slug) {
  *
  * Expected example output:
  *   array(
- *     'name'               => 'Qori Inti',
- *     'slug'               => 'peru-qoriinti',
- *     'excerpt'             => 'Solens Bønn(e)',
- *     'permalink'           => 'https://site/opprinnelser/peru-qoriinti/',
- *     'country'             => 'Peru',
- *     'country_slug'        => 'peru',
- *     'country_flag_url'    => 'https://site/wp-content/plugins/.../flags/peru.svg' | null,
- *     'region'              => 'Cusco, Quillabamba',
- *     'variety'             => 'Chuncho',
- *     'altitude'            => array('min' => 1200, 'max' => 1450, 'unit' => 'm') | null,
- *     'taste_notes'         => 'Mango, krem, macadamia',
- *     'producer_type'       => 'cooperative' | null,
- *     'producer_count'      => 45 | null,
- *     'fermentation_type'   => 'centralized' | null,
- *     'fermentation_days'   => 6 | null,
- *     'fermentation_method' => '3-tier cascade...' | null,
- *     'drying_method'       => 'Sun-dried on raised beds' | null,
- *     'taste_profile'       => array('acidity' => 6, 'sweetness' => null, ...),
- *     'certifications'      => array(array('slug' => 'organic', 'name' => 'Organic', 'icon_url' => '...'), ...),
- *     'featured_image_url'  => 'https://...' | null,
- *     'has_rich_page'       => true,
+ *     'name'                 => 'Qori Inti',
+ *     'slug'                 => 'peru-qoriinti',
+ *     'excerpt'              => 'Solens Bønn(e)',
+ *     'permalink'            => 'https://site/opprinnelser/peru-qoriinti/',
+ *     'country'              => 'Peru',
+ *     'country_slug'         => 'peru',
+ *     'country_flag_url'     => 'https://site/wp-content/plugins/.../flags/peru.svg' | null,
+ *     'region'               => 'Cusco, Quillabamba',
+ *     'region_label'         => 'Peru, Cusco, Quillabamba',
+ *     'variety'              => 'Chuncho',
+ *     'altitude'             => array('min' => 1200, 'max' => 1450, 'unit' => 'm') | null,
+ *     'altitude_label'       => '1200–1450 moh',
+ *     'taste_notes'          => 'Mango, krem, macadamia',
+ *     'producer_type'        => 'cooperative' | null,
+ *     'producer_type_label'  => 'Cooperative',
+ *     'producer_count'       => 45 | null,
+ *     'producer_count_label' => '45 produsenter',
+ *     'fermentation_type'    => 'centralized' | null,
+ *     'fermentation_days'    => 6 | null,
+ *     'fermentation_value'   => 'Sentralisert · 6 dager',
+ *     'fermentation_method'  => '3-tier cascade...' | null,
+ *     'drying_method'        => 'Sun-dried on raised beds' | null,
+ *     'taste_profile'        => array('acidity' => 6, 'sweetness' => null, ...),
+ *     'certifications'       => array(array('slug' => 'organic', 'name' => 'Organic', 'icon_url' => '...'), ...),
+ *     'featured_image_url'   => 'https://...' | null,
+ *     'has_rich_page'        => true,
  *   )
+ *
+ * The `*_label` / `*_value` fields are derived (formatted + translated)
+ * strings intended for client-side hydration. Null inputs produce empty
+ * strings in the derived fields so consumers can treat them uniformly.
  *
  * @param WP_Post|null $page Attribute page post.
  * @return array|null Origin struct, or null if $page is null.
@@ -227,33 +236,66 @@ function wc_ras_build_origin_struct($page) {
         $taste_profile = array();
     }
 
+    $region_raw            = $nullable(get_post_meta($page_id, 'region', true));
+    $variety_raw           = $nullable(get_post_meta($page_id, 'variety', true));
+    $producer_type_raw     = $nullable(get_post_meta($page_id, 'producer_type', true));
+    $producer_count_value  = ($producer_count === '' || $producer_count === false) ? null : (int) $producer_count;
+    $fermentation_type_raw = $nullable(get_post_meta($page_id, 'fermentation_type', true));
+    $fermentation_days_val = ($fermentation_days === '' || $fermentation_days === false) ? null : (int) $fermentation_days;
+
+    $region_label = implode(', ', array_filter(array($country_name, $region_raw)));
+
+    $altitude_label = function_exists('wc_ras_format_altitude') ? wc_ras_format_altitude($altitude) : '';
+
+    $producer_types_map = function_exists('wc_ras_producer_types') ? wc_ras_producer_types() : array();
+    $producer_type_label = ($producer_type_raw && isset($producer_types_map[$producer_type_raw]))
+        ? $producer_types_map[$producer_type_raw]
+        : '';
+
+    $producer_count_label = ($producer_count_value !== null)
+        ? sprintf(
+            /* translators: %d: number of producers */
+            _n('%d produsent', '%d produsenter', $producer_count_value, 'wc-rich-attribute-suite'),
+            $producer_count_value
+        )
+        : '';
+
+    $fermentation_value = function_exists('wc_ras_format_fermentation_value')
+        ? wc_ras_format_fermentation_value($fermentation_type_raw, $fermentation_days_val)
+        : '';
+
     $struct = array(
-        'name'                => $page->post_title,
-        'slug'                => $page->post_name,
-        'excerpt'             => get_the_excerpt($page),
-        'permalink'           => get_permalink($page),
+        'name'                 => $page->post_title,
+        'slug'                 => $page->post_name,
+        'excerpt'              => get_the_excerpt($page),
+        'permalink'            => get_permalink($page),
 
-        'country'             => $country_name,
-        'country_slug'        => $country_slug,
-        'country_flag_url'    => $country_flag_url,
-        'region'              => $nullable(get_post_meta($page_id, 'region', true)),
-        'variety'             => $nullable(get_post_meta($page_id, 'variety', true)),
-        'altitude'            => $altitude,
-        'taste_notes'         => $nullable(get_post_meta($page_id, 'smak', true)),
+        'country'              => $country_name,
+        'country_slug'         => $country_slug,
+        'country_flag_url'     => $country_flag_url,
+        'region'               => $region_raw,
+        'region_label'         => $region_label,
+        'variety'              => $variety_raw,
+        'altitude'             => $altitude,
+        'altitude_label'       => $altitude_label,
+        'taste_notes'          => $nullable(get_post_meta($page_id, 'smak', true)),
 
-        'producer_type'       => $nullable(get_post_meta($page_id, 'producer_type', true)),
-        'producer_count'      => ($producer_count === '' || $producer_count === false) ? null : (int) $producer_count,
+        'producer_type'        => $producer_type_raw,
+        'producer_type_label'  => $producer_type_label,
+        'producer_count'       => $producer_count_value,
+        'producer_count_label' => $producer_count_label,
 
-        'fermentation_type'   => $nullable(get_post_meta($page_id, 'fermentation_type', true)),
-        'fermentation_days'   => ($fermentation_days === '' || $fermentation_days === false) ? null : (int) $fermentation_days,
-        'fermentation_method' => $nullable(get_post_meta($page_id, 'fermentation_method', true)),
-        'drying_method'       => $nullable(get_post_meta($page_id, 'drying_method', true)),
+        'fermentation_type'    => $fermentation_type_raw,
+        'fermentation_days'    => $fermentation_days_val,
+        'fermentation_value'   => $fermentation_value,
+        'fermentation_method'  => $nullable(get_post_meta($page_id, 'fermentation_method', true)),
+        'drying_method'        => $nullable(get_post_meta($page_id, 'drying_method', true)),
 
-        'taste_profile'       => $taste_profile,
-        'certifications'      => $certifications,
-        'featured_image_url'  => $featured_image_url,
+        'taste_profile'        => $taste_profile,
+        'certifications'       => $certifications,
+        'featured_image_url'   => $featured_image_url,
 
-        'has_rich_page'       => true,
+        'has_rich_page'        => true,
     );
 
     /**

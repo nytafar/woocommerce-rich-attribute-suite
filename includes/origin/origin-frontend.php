@@ -6,7 +6,8 @@
  *   - CPT stylesheet enqueue (origin.css) on CPT archive, CPT single,
  *     origin_country archive, certification archive. No product-page
  *     styling — theme owns that in this pass.
- *   - origin-radar.js registration for modal use in fase 3.
+ *   - origin-radar.js registration (handle used as dependency by modal).
+ *   - Product-page origin-modal enqueue + render hook (fase 3).
  *   - Template-include fallback so CPT archive/single use plugin
  *     templates when the theme does not override.
  *
@@ -59,6 +60,114 @@ function wc_ras_origin_register_radar_script() {
     }
 }
 add_action('wp_enqueue_scripts', 'wc_ras_origin_register_radar_script');
+
+/**
+ * Product-page guard used by both modal enqueue and modal render.
+ *
+ * Returns the WC_Product when the current request is a product page for a
+ * variable product whose variations include the `pa_opprinnelse` attribute.
+ * Returns null otherwise, letting callers bail cheaply.
+ *
+ * @return WC_Product|null
+ */
+function wc_ras_origin_modal_product() {
+    if (!function_exists('is_product') || !is_product()) {
+        return null;
+    }
+    global $product;
+    $candidate = $product instanceof WC_Product ? $product : wc_get_product(get_the_ID());
+    if (!$candidate || !$candidate->is_type('variable')) {
+        return null;
+    }
+    $attrs = $candidate->get_variation_attributes();
+    if (empty($attrs['pa_opprinnelse'])) {
+        return null;
+    }
+    return $candidate;
+}
+
+/**
+ * Resolve the initial origin to seed the server-rendered modal card.
+ *
+ * Strategy:
+ *   1. Use the product's default pa_opprinnelse attribute if set.
+ *   2. Otherwise, walk children and take the first variation whose
+ *      attribute_page exists.
+ *
+ * The modal card is hydrated client-side on `found_variation`, so the
+ * seed only matters for no-JS users (who go to CPT-single anyway) and
+ * for avoiding an initial empty-shell flash on JS users.
+ *
+ * @param WC_Product $product Variable product.
+ * @return array|null wc_ras_origin struct or null.
+ */
+function wc_ras_origin_modal_initial_origin($product) {
+    $default_attrs = method_exists($product, 'get_default_attributes')
+        ? $product->get_default_attributes()
+        : array();
+    $default_slug = isset($default_attrs['pa_opprinnelse']) ? (string) $default_attrs['pa_opprinnelse'] : '';
+
+    if ($default_slug !== '') {
+        $page = wc_ras_get_cached_attribute_page($default_slug);
+        if ($page) {
+            return wc_ras_build_origin_struct($page);
+        }
+    }
+
+    foreach ($product->get_children() as $variation_id) {
+        $page = wc_ras_get_attribute_page_for_variation($variation_id);
+        if ($page) {
+            return wc_ras_build_origin_struct($page);
+        }
+    }
+    return null;
+}
+
+/**
+ * Register the modal stylesheet + enqueue the modal script on product
+ * pages that have pa_opprinnelse variations. Radar JS is pulled in as a
+ * dependency, so pages without the modal never pay for either.
+ */
+function wc_ras_origin_enqueue_modal_assets() {
+    if (!wc_ras_origin_modal_product()) {
+        return;
+    }
+
+    wp_enqueue_style(
+        'wc-ras-origin-modal',
+        WC_RAS_PLUGIN_URL . 'assets/css/origin-modal.css',
+        array(),
+        WC_RAS_VERSION
+    );
+
+    wp_enqueue_script(
+        'wc-ras-origin-modal',
+        WC_RAS_PLUGIN_URL . 'assets/js/origin-modal.js',
+        array('jquery', 'wc-add-to-cart-variation', 'wc-ras-origin-radar'),
+        WC_RAS_VERSION,
+        true
+    );
+}
+add_action('wp_enqueue_scripts', 'wc_ras_origin_enqueue_modal_assets', 20);
+
+/**
+ * Render the modal shell inside `.woocommerce-product-gallery`. Hooked on
+ * `woocommerce_product_thumbnails` so the dialog is a sibling of the main
+ * gallery figure. That gives desktop `dialog.show()` a natural positioning
+ * context (the gallery wrapper sizes the dialog to width/height: 100%),
+ * and mobile `showModal()` pulls itself to the top layer regardless.
+ */
+function wc_ras_origin_render_modal() {
+    $product = wc_ras_origin_modal_product();
+    if (!$product) {
+        return;
+    }
+
+    echo wc_ras_load_template('parts/origin-modal', array(
+        'origin' => wc_ras_origin_modal_initial_origin($product),
+    ));
+}
+add_action('woocommerce_product_thumbnails', 'wc_ras_origin_render_modal', 100);
 
 /**
  * Fall back to plugin templates when the active theme does not provide
