@@ -5,9 +5,13 @@
  * blocking fullskjerm, desktop går til non-blocking over gallery-området.
  * Alt visuelt (farger, typografi, spacing, kort-layout) eier temaet.
  *
- * Bruk cascade: `.wc-ras-origin-modal[open]` vinner naturlig over
- * dialog-UA-default. `[hidden]` må vinne over våre flex/grid-display —
- * legg `[hidden] { display: none !important }` sist for trygghet.
+ * Ingen breakpoints: layouten bruker intrinsic grid (`auto-fit` +
+ * `minmax(min(100%, N), 1fr)`) slik at seksjonene splittes når de har
+ * plass og stacker når de ikke har det. Mobil- vs desktop-oppførsel
+ * på selve dialogen drives av `:modal`-pseudo-klassen (satt av
+ * `showModal()`), ikke av viewport-media.
+ *
+ * `[hidden]` må vinne over grid/flex-display — `!important` til slutt.
  */
 
 /* ── Base ─────────────────────────────────────────────────────── */
@@ -21,46 +25,30 @@
     overflow: visible;
 }
 
-.wc-ras-origin-modal::backdrop {
-    background: rgba(0, 0, 0, 0.55);
-}
-
 .wc-ras-origin-modal[open] {
     display: flex;
     flex-direction: column;
     background: var(--bg-color-selected, #fff);
 }
 
-/* ── Mobil — full viewport, blocking ──────────────────────────── */
-
-@media (max-width: 1023px) {
-    .wc-ras-origin-modal[open] {
-        position: fixed;
-        inset: 0;
-        width: 100vw;
-        height: 100dvh;
-        margin: 0;
-        z-index: 1000;
-    }
+/* Modal (showModal): full viewport, blocking, backdrop */
+.wc-ras-origin-modal[open]:modal {
+    position: fixed;
+    inset: 0;
+    width: 100vw;
+    height: 100dvh;
+    margin: 0;
+    z-index: 1000;
 }
 
-/* ── Desktop — non-blocking, fyller gallery-containeren ───────── */
-/*
- * Modalen rendres som søsken av gallery-figure inne i
- * `.woocommerce-product-gallery`. UA-default dialog-positioning (absolute
- * i flow, left/right 0, margin auto) kombinert med width/height 100%
- * lar den fylle gallery-containeren naturlig — uten at vi overstyrer
- * inset eller margin selv.
- */
-@media (min-width: 1024px) {
-    .wc-ras-origin-modal[open] {
-        width: 100%;
-        height: 100%;
-    }
+.wc-ras-origin-modal:modal::backdrop {
+    background: rgba(0, 0, 0, 0.55);
+}
 
-    .wc-ras-origin-modal::backdrop {
-        background: transparent;
-    }
+/* Non-modal (show): fyller parent-containeren (gallery på desktop) */
+.wc-ras-origin-modal[open]:not(:modal) {
+    width: 100%;
+    height: 100%;
 }
 
 /* ── Chrome (nav + close) ─────────────────────────────────────── */
@@ -89,40 +77,31 @@
     cursor: default;
 }
 
-/* ── Card — scrolls + container-query root ──────────────────── */
+/* ── Card + seksjoner ─────────────────────────────────────────── */
 /*
- * Layout skalerer med KORTETS bredde, ikke viewporten — ett og
- * samme system funker i full-skjerm mobil (100vw) og i
- * gallery-containeren på desktop (en brøkdel av viewport).
- *
- * Trappen:
- *   base     → linear stack, ingen grid-splits
- *   ≥ 24em   → post-harvest-blokker brytes side-om-side
- *   ≥ 32em   → hero splittes (bilde | tekst),
- *              flavour splittes (radar | noter)
- *   ≥ 40em   → kort blir 2-kolonne: sticky hero-kolonne venstre,
- *              alle andre seksjoner stackes i høyre kolonne
- *   ≥ 56em   → høyre kolonne blir 2-spalt grid (producers +
- *              postharvest øverst, flavour + certifications under)
+ * Kortet stacker seksjonene i én kolonne. Hver seksjon som kan ha
+ * flere sub-elementer (hero, post-harvest, flavour) bruker `auto-fit`
+ * internt — sub-elementene splittes til kolonner når seksjonen har
+ * plass, og stabler seg ellers. `min(100%, N)` i minmax'en sikrer at
+ * én sub-kolonne aldri tvinges bredere enn kortet selv (ellers ville
+ * smale viewporter scrolle horisontalt).
  */
 
 .wc-ras-origin-modal__card {
     flex: 1 1 auto;
     overflow: auto;
     min-height: 0;
-    container-type: inline-size;
-    container-name: ras-modal;
     display: grid;
     grid-template-columns: 1fr;
     align-content: start;
-    gap: 1rem;
+    gap: 1.25rem;
     padding: 1rem;
 }
 
 .wc-ras-origin-modal__hero {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14em), 1fr));
+    gap: 1rem;
     align-items: start;
 }
 
@@ -130,7 +109,7 @@
     display: block;
     width: 100%;
     height: auto;
-    aspect-ratio: 4 / 5;
+    aspect-ratio: 5 / 2;
     object-fit: cover;
 }
 
@@ -153,80 +132,22 @@
     align-content: start;
 }
 
+.wc-ras-origin-modal__section.postharvest {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 10em), 1fr));
+    gap: 1rem;
+}
+
 .wc-ras-origin-modal__section.flavour {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 12em), 1fr));
+    gap: 1.25rem;
+    align-items: center;
 }
 
 .wc-ras-origin-modal__permalink {
     margin: 0;
 }
 
-/* ── ≥ 24em: post-harvest splittes side-om-side ───────────────── */
-
-@container ras-modal (min-width: 24em) {
-    .wc-ras-origin-modal__section.postharvest {
-        grid-template-columns: repeat(auto-fit, minmax(10em, 1fr));
-        gap: 1rem;
-    }
-}
-
-/* ── ≥ 32em: hero splittes, flavour splittes ──────────────────── */
-
-@container ras-modal (min-width: 32em) {
-    .wc-ras-origin-modal__hero {
-        grid-template-columns: minmax(8em, 14em) 1fr;
-        gap: 1.25rem;
-    }
-
-    .wc-ras-origin-modal__section.flavour {
-        grid-template-columns: auto 1fr;
-        gap: 1.5rem;
-        align-items: center;
-    }
-}
-
-/* ── ≥ 40em: kort blir 2-kolonne med sticky hero ──────────────── */
-
-@container ras-modal (min-width: 40em) {
-    .wc-ras-origin-modal__card {
-        grid-template-columns: minmax(12em, 1fr) minmax(0, 2fr);
-        grid-template-areas:
-            "hero producers"
-            "hero postharvest"
-            "hero flavour"
-            "hero certifications"
-            "hero permalink";
-        gap: 1.5rem 2rem;
-        padding: 1.5rem;
-    }
-
-    .wc-ras-origin-modal__hero {
-        grid-area: hero;
-        grid-template-columns: 1fr;
-        position: sticky;
-        top: 1rem;
-        align-self: start;
-    }
-
-    .wc-ras-origin-modal__section.producers     { grid-area: producers; }
-    .wc-ras-origin-modal__section.postharvest   { grid-area: postharvest; }
-    .wc-ras-origin-modal__section.flavour       { grid-area: flavour; }
-    .wc-ras-origin-modal__section.certifications { grid-area: certifications; }
-    .wc-ras-origin-modal__permalink             { grid-area: permalink; }
-}
-
-/* ── ≥ 56em: høyre kolonne blir 2-spalt ───────────────────────── */
-
-@container ras-modal (min-width: 56em) {
-    .wc-ras-origin-modal__card {
-        grid-template-columns: minmax(14em, 1fr) minmax(0, 2fr) minmax(0, 2fr);
-        grid-template-areas:
-            "hero  producers  postharvest"
-            "hero  flavour    certifications"
-            "hero  permalink  permalink";
-        gap: 1.5rem 2rem;
-    }
-}
+/* ── Seksjons-interne komponenter ─────────────────────────────── */
 
 .wc-ras-origin-modal .postharvest-item {
     display: flex;
