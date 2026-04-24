@@ -184,15 +184,32 @@
         return out;
     }
 
-    function findOriginSelect(form) {
-        return form.querySelector('select[name="attribute_pa_opprinnelse"]')
-            || form.querySelector('[name="attribute_pa_opprinnelse"]');
+    /**
+     * Resolve the origin attribute control(s) in the form.
+     *
+     * Woo's standard rendering is a single <select>, but themes and
+     * plugins (e.g. Variation Swatches) often swap that for radio inputs
+     * with the same name. Return both shapes so callers can branch.
+     *
+     * @return {{ select: HTMLSelectElement|null, radios: HTMLInputElement[] }}
+     */
+    function findOriginControl(form) {
+        var select = form.querySelector('select[name="attribute_pa_opprinnelse"]');
+        var radios = Array.prototype.slice.call(
+            form.querySelectorAll('input[type="radio"][name="attribute_pa_opprinnelse"]')
+        );
+        return { select: select, radios: radios };
     }
 
     function currentOriginSlug(ctx) {
-        var sel = findOriginSelect(ctx.form);
-        if (sel && sel.value) {
-            return sel.value;
+        var ctrl = findOriginControl(ctx.form);
+        if (ctrl.select && ctrl.select.value) {
+            return ctrl.select.value;
+        }
+        for (var i = 0; i < ctrl.radios.length; i++) {
+            if (ctrl.radios[i].checked) {
+                return ctrl.radios[i].value;
+            }
         }
         // Fallback: the card's currently hydrated slug.
         return ctx.card.getAttribute('data-current-slug') || '';
@@ -206,18 +223,37 @@
         if (!slug) {
             return;
         }
-        var sel = findOriginSelect(ctx.form);
-        if (!sel) {
+        var ctrl = findOriginControl(ctx.form);
+
+        // Radios: find the specific input with this value, check it, fire change.
+        if (ctrl.radios.length) {
+            var target = null;
+            for (var i = 0; i < ctrl.radios.length; i++) {
+                if (ctrl.radios[i].value === slug) {
+                    target = ctrl.radios[i];
+                    break;
+                }
+            }
+            if (!target || target.checked) {
+                return;
+            }
+            target.checked = true;
+            if (window.jQuery) {
+                window.jQuery(target).trigger('change');
+            } else {
+                target.dispatchEvent(new Event('change', { bubbles: true }));
+            }
             return;
         }
-        if (sel.value === slug) {
-            return;
-        }
-        sel.value = slug;
-        if (window.jQuery) {
-            window.jQuery(sel).trigger('change');
-        } else {
-            sel.dispatchEvent(new Event('change', { bubbles: true }));
+
+        // Select: canonical WC path.
+        if (ctrl.select && ctrl.select.value !== slug) {
+            ctrl.select.value = slug;
+            if (window.jQuery) {
+                window.jQuery(ctrl.select).trigger('change');
+            } else {
+                ctrl.select.dispatchEvent(new Event('change', { bubbles: true }));
+            }
         }
     }
 
