@@ -128,6 +128,7 @@ $hidden_attr = function ($cond) {
             </div>
         </header>
 
+        <div class="wc-ras-origin-modal__body">
         <section class="wc-ras-origin-modal__section producers"
                  data-section="producers"
                  <?php echo $hidden_attr($has_producers); ?>>
@@ -217,6 +218,7 @@ $hidden_attr = function ($cond) {
                 <?php endforeach; ?>
             </ul>
         </section>
+        </div>
 
         <p class="wc-ras-origin-modal__permalink"
            <?php echo $hidden_attr($permalink !== ''); ?>>
