@@ -64,12 +64,14 @@ null), så JS-en har én uniform null-sjekk.
   Script har `wc-ras-origin-radar` som dependency, så radar-JS-en
   får auto-enqueue på produktsider som faktisk har modalen. Kjører på
   `wp_enqueue_scripts` pri 20 og er no-op hvis guarden feiler.
-- `wc_ras_origin_render_modal()` — hooket på
-  `woocommerce_product_thumbnails` pri 100. Rendrer modal-shellet som
-  søsken av gallery-figure inne i `.woocommerce-product-gallery`, slik
-  at UA-default dialog-positioning + width/height 100% fyller
-  gallery-containeren på desktop uten at plugin-CSS-en må overstyre
-  inset/margin.
+- `wc_ras_origin_prepend_modal()` — filter-hooket på
+  `woocommerce_single_product_image_thumbnail_html`. Prepender
+  modal-HTML-en til hovedbildet så dialogen blir første barn av
+  `.woocommerce-product-gallery__wrapper`. Statisk flag sikrer at
+  filteret bare injecter én gang selv om WC-core-variasjoner skulle
+  route gallery-thumbnails gjennom samme filter. UA-default
+  dialog-positioning + width/height 100% fyller gallery-containeren
+  på desktop uten at plugin-CSS-en må overstyre inset/margin.
 
 ### Modal-JS
 
@@ -184,10 +186,11 @@ Manuelt kjørte scenarioer:
   attributten som buttons/radios (f.eks. Variation Swatches)
   synkroniserer normalt mot den samme skjulte selecten, så committen
   vinner. Ikke verifisert i live-tema ennå.
-- **Desktop-plassering**: modal-shellet rendres inne i
-  `.woocommerce-product-gallery` via `woocommerce_product_thumbnails`-
-  hooken. Temaer som overstyrer product-image.php og ikke fyrer denne
-  hooken (eller ikke rendrer gallery-wrapperet) vil ikke få modalen.
+- **Desktop-plassering**: modalen rendres som første barn av
+  `.woocommerce-product-gallery__wrapper` via
+  `woocommerce_single_product_image_thumbnail_html`-filteret. Temaer
+  som overstyrer product-image.php og ikke kjører dette filteret (eller
+  ikke rendrer gallery-wrapperet) vil ikke få modalen.
   Fallback-strategi (alternativ hook eller portal-via-CSS) er ikke
   implementert.
 - **Ingen JS-test-suite**. Plugin har ingen PHPUnit- eller Jest-oppsett

@@ -156,23 +156,39 @@ function wc_ras_origin_enqueue_modal_assets() {
 add_action('wp_enqueue_scripts', 'wc_ras_origin_enqueue_modal_assets', 20);
 
 /**
- * Render the modal shell inside `.woocommerce-product-gallery`. Hooked on
- * `woocommerce_product_thumbnails` so the dialog is a sibling of the main
- * gallery figure. That gives desktop `dialog.show()` a natural positioning
- * context (the gallery wrapper sizes the dialog to width/height: 100%),
- * and mobile `showModal()` pulls itself to the top layer regardless.
+ * Inject the modal shell as the first child of
+ * `.woocommerce-product-gallery__wrapper` by prepending it to the main
+ * gallery image HTML. That puts the dialog before the image in DOM
+ * order while still scoping it inside the gallery wrapper, so desktop
+ * `dialog.show()` sizes naturally (width/height: 100% of the wrapper)
+ * and mobile `showModal()` pulls to the top layer regardless.
+ *
+ * Idempotent: static flag guards against the filter firing for gallery
+ * thumbnails too (in WC cores that route those through the same
+ * filter).
+ *
+ * @param string $html         Thumbnail HTML from wc_get_gallery_image_html().
+ * @param int    $thumbnail_id Attachment ID of the main image.
+ * @return string
  */
-function wc_ras_origin_render_modal() {
+function wc_ras_origin_prepend_modal($html, $thumbnail_id) {
+    static $rendered = false;
+    if ($rendered) {
+        return $html;
+    }
     $product = wc_ras_origin_modal_product();
     if (!$product) {
-        return;
+        return $html;
     }
+    $rendered = true;
 
-    echo wc_ras_load_template('parts/origin-modal', array(
+    $modal = wc_ras_load_template('parts/origin-modal', array(
         'origin' => wc_ras_origin_modal_initial_origin($product),
     ));
+
+    return $modal . $html;
 }
-add_action('woocommerce_product_thumbnails', 'wc_ras_origin_render_modal', 100);
+add_filter('woocommerce_single_product_image_thumbnail_html', 'wc_ras_origin_prepend_modal', 10, 2);
 
 /**
  * Fall back to plugin templates when the active theme does not provide

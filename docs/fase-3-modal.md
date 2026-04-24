@@ -56,9 +56,12 @@ selection-endring via samme `found_variation`-pipeline.
 
 ### DOM
 - Ett `<dialog class="wc-ras-origin-modal" data-wc-ras-origin-modal>`
-  rendres server-side inne i `.woocommerce-product-gallery` via
-  `woocommerce_product_thumbnails`-hooken (pri 100). Shell-en er
-  ferdig, og kortet populeres med *default-variantens* opprinnelse.
+  rendres server-side som første barn av
+  `.woocommerce-product-gallery__wrapper` ved å prependes til
+  hovedbilde-HTML-en via
+  `woocommerce_single_product_image_thumbnail_html`-filteret.
+  Shell-en er ferdig, og kortet populeres med *default-variantens*
+  opprinnelse.
 - Kortet (`article[data-origin-modal-card]`) har `data-field="…"`-
   markører rundt alle hydrerbare felter. Elementer uten initialverdi
   rendres med `hidden`-attributt.
