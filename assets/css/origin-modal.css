@@ -15,7 +15,6 @@
 .wc-ras-origin-modal {
     padding: 0;
     border: none;
-    background: transparent;
     color: inherit;
     max-width: none;
     max-height: none;
@@ -29,7 +28,7 @@
 .wc-ras-origin-modal[open] {
     display: flex;
     flex-direction: column;
-    background: var(--bg-color-selected);
+    background: var(--bg-color-selected, #fff);
 }
 
 /* ── Mobil — full viewport, blocking ──────────────────────────── */

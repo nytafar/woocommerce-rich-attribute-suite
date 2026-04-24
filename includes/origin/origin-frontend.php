@@ -133,18 +133,23 @@ function wc_ras_origin_enqueue_modal_assets() {
         return;
     }
 
+    $css_path = WC_RAS_PLUGIN_DIR . 'assets/css/origin-modal.css';
+    $js_path  = WC_RAS_PLUGIN_DIR . 'assets/js/origin-modal.js';
+    $css_ver  = WC_RAS_VERSION . '.' . (file_exists($css_path) ? filemtime($css_path) : 0);
+    $js_ver   = WC_RAS_VERSION . '.' . (file_exists($js_path)  ? filemtime($js_path)  : 0);
+
     wp_enqueue_style(
         'wc-ras-origin-modal',
         WC_RAS_PLUGIN_URL . 'assets/css/origin-modal.css',
         array(),
-        WC_RAS_VERSION
+        $css_ver
     );
 
     wp_enqueue_script(
         'wc-ras-origin-modal',
         WC_RAS_PLUGIN_URL . 'assets/js/origin-modal.js',
         array('jquery', 'wc-add-to-cart-variation', 'wc-ras-origin-radar'),
-        WC_RAS_VERSION,
+        $js_ver,
         true
     );
 }
