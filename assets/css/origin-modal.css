@@ -203,8 +203,8 @@
 }
 
 .wc-ras-origin-modal .pill img,
-.wc-ras-origin-modal .pill svg {
-    width: 1em;
+.wc-ras-origin-modal .pill svg,
+.flag-img {
     height: 1em;
 }
 

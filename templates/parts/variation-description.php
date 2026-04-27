@@ -59,7 +59,6 @@ if ($has_any_pill) : ?>
             <?php if ($flag_url) : ?>
                 <img class="flag-img" src="<?php echo esc_url($flag_url); ?>" alt="<?php echo esc_attr($country ?: ''); ?>" />
             <?php endif; ?>
-            <span><?php echo esc_html($region_label); ?></span>
         </span>
     <?php endif; ?>
 
