@@ -34,11 +34,14 @@ function wc_ras_origin_enqueue_styles() {
         return;
     }
 
+    $css_path = WC_RAS_PLUGIN_DIR . 'assets/css/origin.css';
+    $css_ver  = WC_RAS_VERSION . '.' . (file_exists($css_path) ? filemtime($css_path) : 0);
+
     wp_enqueue_style(
         'wc-ras-origin',
         WC_RAS_PLUGIN_URL . 'assets/css/origin.css',
         array(),
-        WC_RAS_VERSION
+        $css_ver
     );
 }
 add_action('wp_enqueue_scripts', 'wc_ras_origin_enqueue_styles');
@@ -47,11 +50,14 @@ add_action('wp_enqueue_scripts', 'wc_ras_origin_enqueue_styles');
  * Register the radar script. Callers enqueue on demand (modal in fase 3).
  */
 function wc_ras_origin_register_radar_script() {
+    $js_path = WC_RAS_PLUGIN_DIR . 'assets/js/origin-radar.js';
+    $js_ver  = WC_RAS_VERSION . '.' . (file_exists($js_path) ? filemtime($js_path) : 0);
+
     wp_register_script(
         'wc-ras-origin-radar',
         WC_RAS_PLUGIN_URL . 'assets/js/origin-radar.js',
         array(),
-        WC_RAS_VERSION,
+        $js_ver,
         true
     );
 

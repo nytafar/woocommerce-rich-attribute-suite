@@ -39,11 +39,22 @@ while (have_posts()) :
     ?>
     <article <?php post_class('wc-ras-origin-single'); ?>>
         <header class="header">
-            <?php if ($origin['featured_image_url']) : ?>
-                <div class="hero-image">
+            <?php
+            if ($origin['featured_image_url']) :
+                $thumb_id    = (int) get_post_thumbnail_id();
+                $thumb_cap   = $thumb_id ? wp_get_attachment_caption($thumb_id) : '';
+                // figcaption: foretrekker eksplisitt attachment-caption,
+                // ellers bare opprinnelse-navnet (kort, polaroid-aktig).
+                // Region_label er for langt for fotostripa.
+                $fig_caption = $thumb_cap !== '' ? $thumb_cap : $origin['name'];
+                ?>
+                <figure class="hero-image">
                     <img src="<?php echo esc_url($origin['featured_image_url']); ?>"
                          alt="<?php echo esc_attr($origin['name']); ?>" />
-                </div>
+                    <?php if ($fig_caption !== '') : ?>
+                        <figcaption><?php echo esc_html($fig_caption); ?></figcaption>
+                    <?php endif; ?>
+                </figure>
             <?php endif; ?>
 
             <div class="hero">
@@ -168,23 +179,12 @@ while (have_posts()) :
             <?php endif; ?>
 
             <?php
-            // ─── Certifications ───
-            if (!empty($origin['certifications'])) :
-                ?>
-                <div class="section certifications">
-                    <h2><?php esc_html_e('Sertifiseringer', 'wc-rich-attribute-suite'); ?></h2>
-                    <ul>
-                        <?php foreach ($origin['certifications'] as $cert) : ?>
-                            <li>
-                                <?php if (!empty($cert['icon_url'])) : ?>
-                                    <img src="<?php echo esc_url($cert['icon_url']); ?>" alt="" />
-                                <?php endif; ?>
-                                <span><?php echo esc_html($cert['name']); ?></span>
-                            </li>
-                        <?php endforeach; ?>
-                    </ul>
-                </div>
-            <?php endif; ?>
+            // Sertifiserings-stempler vises ikke som egen seksjon her —
+            // de eksponeres i variasjons-blurben/modalen og som inline-marker
+            // i Gutenberg-flyten i stedet (jf. designdir. fra produkteier).
+            // Dataen ($origin['certifications']) er fortsatt på structen og
+            // kan plukkes opp av andre rendrere via wc_ras_origin-strukturen.
+            ?>
         </header>
 
         <?php

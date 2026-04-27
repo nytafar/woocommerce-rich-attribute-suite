@@ -64,101 +64,7 @@
     z-index: 1;
 }
 
-/* ── Single ──────────────────────────────────────────────────── */
-
-.wc-ras-origin-single .header {
-    display: grid;
-    gap: 2rem;
-}
-
-.wc-ras-origin-single .hero {
-    display: grid;
-    gap: 1rem;
-}
-
-.wc-ras-origin-single .hero .meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    align-items: center;
-}
-
-.wc-ras-origin-single .section {
-    display: grid;
-    gap: 0.75rem;
-}
-
-.wc-ras-origin-single .section.flavour {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-}
-
-@media (min-width: 48em) {
-    .wc-ras-origin-single .section.flavour {
-        grid-template-columns: auto 1fr;
-        align-items: center;
-    }
-}
-
-.wc-ras-origin-single .section.certifications ul {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    align-items: center;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-.wc-ras-origin-single .section.certifications li {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.wc-ras-origin-single .section.certifications img {
-    width: 1.5em;
-    height: 1.5em;
-}
-
-/* ── Post-harvest hybrid item (brukt på single) ──────────────── */
-
-.wc-ras-origin-single .postharvest-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-}
-
-.wc-ras-origin-single .postharvest-item .icon {
-    flex: 0 0 auto;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.25em;
-    height: 1.25em;
-}
-
-.wc-ras-origin-single .postharvest-item .icon svg {
-    width: 100%;
-    height: 100%;
-}
-
-.wc-ras-origin-single .postharvest-item .body {
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
-}
-
-/* ── Radar ───────────────────────────────────────────────────── */
-
-.wc-ras-radar {
-    display: block;
-    width: 100%;
-    max-width: 320px;
-    height: auto;
-}
-
-/* ── Pills (brukt på kort + single hero) ─────────────────────── */
+/* ── Pills (kort + single, felles base) ─────────────────────── */
 
 .wc-ras-origin-card .pill,
 .wc-ras-origin-single .pill {
@@ -169,13 +75,552 @@
 }
 
 .wc-ras-origin-card .pill img,
-.wc-ras-origin-single .pill img {
-    width: 1em;
-    height: 1em;
-}
-
+.wc-ras-origin-single .pill img,
 .wc-ras-origin-card .pill svg,
 .wc-ras-origin-single .pill svg {
     width: 1em;
     height: 1em;
+}
+
+/* ── Radar (delt mellom single og modal) ────────────────────── */
+
+.wc-ras-radar {
+    display: block;
+    width: 100%;
+    max-width: 320px;
+    height: auto;
+}
+
+/* ════════════════════════════════════════════════════════════
+ * SINGLE — opprinnelse-CPT-side
+ *
+ * Header er et "ark" (papir-substrat) med eksplisitt grid:
+ *   hero-tekst, foto-polaroid, 3 datacelle-kolonner (produsenter,
+ *   fermentering, tørking), smak (radar + notater).
+ *   Sertifiserings-stempler vises IKKE her — eksponeres i
+ *   variasjons-blurb/modal i stedet (jf. .wc-ras-stamp util).
+ *
+ * Gutenberg-innhold er direkte barn av <article>, slik at
+ * .alignwide / .alignfull og temaets blokkstiler virker uendret.
+ *
+ * Tre tier'er via container queries (ingen viewport-breakpoints):
+ *   < 32rem   → ingen substrat, body bærer cream-bg, tett 2-kol
+ *   ≥ 32rem   → substrat tilbake, 3-kol grid
+ *   ≥ 48rem   → 4-kol grid med foto-kolonne
+ *
+ * Visuelt språk:
+ *   • myrvanns _var.scss-tokens (cream/brown/spice + skygger)
+ *   • foto = polaroid med metallisk binders, hard offset-skygge
+ *   • dataceller har ikon på TOPPEN, label/value/freetext stablet
+ *     vertikalt under — gridlinjer mellom kolonner blir lesbare
+ *   • dashed gridlinjer i col-gap mellom datacellene (rustikk)
+ * ═══════════════════════════════════════════════════════════ */
+
+/* Body på CPT-single har cream-bg slik at "arket" smelter inn
+   i bakgrunnen når substratet forsvinner på smale viewport.
+   På bredere viewport får arket subtil border + skygge oppå
+   samme cream — det føles som et papir på et papir, ikke et
+   papir på en pult. */
+body.single-attribute_page {
+    background-color: var(--bg-color-light, hsl(40, 70%, 94%));
+}
+
+.wc-ras-origin-single { container-type: inline-size; }
+
+/* ── Header · the sheet ─────────────────────────────────── */
+.wc-ras-origin-single .header {
+    /* Tweakable knobs — sett via inline style på .header for
+       overstyring per instans (sandboxen overrider via JS). */
+    --paper-tone:      var(--bg-color-light, hsl(40, 70%, 94%));
+    --paper-tilt:       0deg;
+    --photo-tilt:       1.4deg;
+    --photo-w:         22rem;
+    --photo-offset-y: -1.5rem;
+    --photo-offset-x:   0rem;
+    --clip-rotate:     -8deg;
+    --clip-color:      hsl(220, 8%, 60%);
+    --radar-size:     16rem;
+    --radar-color:     var(--color-spice-dark, hsl(34, 55%, 38%));
+    --eyebrow-color:   var(--color-clay-dark,   hsl(22, 12%, 36%));
+    --rule-color:      hsla(28, 30%, 35%, 0.28);
+    --gap-row:         1.25rem;
+    --gap-col:         1.25rem;
+
+    /* Default (mobil): tett 2-kol uten papir-chrome.
+       Producers spenner full bredde; postharvest spenner full
+       bredde og deler ferm/tørk i to interne kolonner. */
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      "hero        hero"
+      "photo       photo"
+      "producers   producers"
+      "postharvest postharvest"
+      "flavour     flavour";
+    column-gap: var(--gap-col);
+    row-gap: var(--gap-row);
+    margin-block-end: clamp(2rem, 5vw, 4rem);
+}
+
+/* Mid (≥32rem): substrat tilbake, 3-kol grid hvor hver
+   datacelle får sin egen kolonne (produsenter | ferm | tørk).
+   Foto sitter top-right, hero-tekst spenner cols 1-2. */
+@container (min-width: 32rem) {
+    .wc-ras-origin-single .header {
+        position: relative;
+        padding: clamp(1.75rem, 4cqi, 3.25rem);
+        background-color: var(--paper-tone);
+        background-image:
+          url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.45  0 0 0 0 0.32  0 0 0 0 0.18  0 0 0 0.10 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"),
+          radial-gradient(ellipse at 50% 0%, hsla(34, 30%, 80%, 0.30), transparent 70%);
+        background-blend-mode: multiply, normal;
+        border: 1px solid var(--border-color-light, hsl(38, 38%, 82%));
+        box-shadow:
+          0 1px 0 hsl(0, 0%, 100%, 0.5) inset,
+          0 1px 2px var(--shadow-color, hsla(24, 48%, 28%, 0.07)),
+          0 6px 12px -6px var(--shadow-color-medium, hsla(33, 25%, 28%, 0.08));
+        transform: rotate(var(--paper-tilt));
+        --gap-col: 1.75rem;
+        --gap-row: 1.75rem;
+        grid-template-columns:
+          minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr);
+        grid-template-areas:
+          "hero        hero         photo"
+          "producers   producers    producers"
+          "postharvest postharvest  postharvest"
+          "flavour     flavour      flavour";
+    }
+}
+
+/* Wide (≥48rem): 4-kol, foto får dedikert col 4 og spenner
+   hero+producers+postharvest-radene (rad 1-3). */
+@container (min-width: 48rem) {
+    .wc-ras-origin-single .header {
+        --gap-col: 2rem;
+        --gap-row: 2rem;
+        grid-template-columns:
+          minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) var(--photo-w);
+        grid-template-areas:
+          "hero        hero         hero         photo"
+          "producers   producers    producers    photo"
+          "postharvest postharvest  postharvest  photo"
+          "flavour     flavour      flavour      flavour";
+    }
+}
+
+/* ── Hero (h1 + tagline + pills) ────────────────────────── */
+.wc-ras-origin-single .hero {
+    grid-area: hero;
+    align-self: end;
+}
+.wc-ras-origin-single .hero h1 {
+    font-size: clamp(2rem, 6cqi, 4.4rem);
+    line-height: 1.0;
+    letter-spacing: -0.012em;
+    margin: 0 0 0.75rem;
+    color: var(--text-color-dark, hsl(22, 56%, 13%));
+    text-wrap: balance;
+}
+.wc-ras-origin-single .hero .tagline {
+    margin: 0 0 1rem;
+    font-size: clamp(1rem, 1.4cqi, 1.2rem);
+    line-height: 1.4;
+    font-style: italic;
+    color: var(--text-color-muted, hsl(30, 30%, 32%));
+    max-width: 42ch;
+    text-wrap: pretty;
+}
+.wc-ras-origin-single .hero .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1.2rem;
+    align-items: center;
+}
+
+/* ── Hero-image · paperclip + polaroid ──────────────────── */
+.wc-ras-origin-single .hero-image {
+    grid-area: photo;
+    justify-self: center;
+    align-self: start;
+    position: relative;
+    width: min(100%, var(--photo-w));
+    margin-block-start: var(--photo-offset-y);
+    margin-inline-start: var(--photo-offset-x);
+    transform: rotate(var(--photo-tilt));
+    /* Hard offset (no blur) + én kort grunnskygge — fysisk,
+       ikke soft. Bruker temaets shadow-tokens. */
+    filter:
+      drop-shadow(1.5px 3px 0 var(--shadow-color-dark, hsla(0, 0%, 0%, 0.1)))
+      drop-shadow(0 4px 6px var(--shadow-color, hsla(24, 48%, 28%, 0.07)));
+}
+.wc-ras-origin-single .hero-image > * { width: 100%; }
+.wc-ras-origin-single .hero-image img {
+    display: block;
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    background: var(--color-cream-50, hsl(0, 0%, 100%));
+    /* polaroid: lik padding 3 sider, tykkere bunn for "label-strip" */
+    padding: 12px 12px 56px;
+    background-clip: content-box, border-box;
+    box-shadow:
+      inset 0 0 0 1px hsla(28, 30%, 25%, 0.08),
+      0 1px 0 hsla(0, 0%, 0%, 0.04);
+}
+.wc-ras-origin-single .hero-image figcaption {
+    position: absolute;
+    inset: auto 12px 12px 12px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Caveat', 'Bradley Hand', 'Marker Felt', cursive;
+    font-size: 1.3rem;
+    color: var(--color-brown-500, hsl(28, 50%, 35%));
+    opacity: 0.85;
+    pointer-events: none;
+    /* Hold deg innenfor stripa selv om caption-en skulle bli lang */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+}
+/* Binders (paperclip) — kun synlig fra mid-tier hvor fotoet
+   "henger over" arket. På mobil dropper vi den. */
+@container (min-width: 32rem) {
+    .wc-ras-origin-single .hero-image::before {
+        content: "";
+        position: absolute;
+        top: -22px;
+        left: 18%;
+        width: 26px;
+        height: 70px;
+        background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 76' fill='none' stroke-width='2.6' stroke-linecap='round'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='0'><stop offset='0' stop-color='%23a0a4ab'/><stop offset='0.5' stop-color='%23dde0e4'/><stop offset='1' stop-color='%2375797f'/></linearGradient></defs><path d='M 9 6 Q 4 6 4 12 L 4 60 Q 4 70 14 70 Q 24 70 24 60 L 24 18 Q 24 12 18 12 Q 12 12 12 18 L 12 56' stroke='url(%23g)'/></svg>");
+        background-repeat: no-repeat;
+        background-size: contain;
+        transform: rotate(var(--clip-rotate));
+        transform-origin: 50% 20%;
+        filter: drop-shadow(2px 3px 0 hsla(28, 30%, 18%, 0.22));
+        pointer-events: none;
+        z-index: 3;
+    }
+}
+
+/* ── Eyebrows · alle små overskrifter i header ──────────── */
+.wc-ras-origin-single .header .section h2,
+.wc-ras-origin-single .header .postharvest-item .label {
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--eyebrow-color);
+    margin: 0;
+    line-height: 1;
+    padding-left: 1rem;
+    position: relative;
+}
+.wc-ras-origin-single .header .section h2::before,
+.wc-ras-origin-single .header .postharvest-item .label::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    width: 0.6rem;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.5;
+}
+
+/* ── Producers · spenner full datarad ────────────────────
+ *
+ * Markup: h2, p.producer-line (svg + span), p.producer-count,
+ * p.variety. .producer-line behandles som en samlet flex-pair
+ * (ikon + type) — så blir den, .producer-count og .variety
+ * tre grid-items vi kan stable eller spre horisontalt.
+ *
+ * Mobil (default): eyebrow på topp, så stablet liste under.
+ * Mid+ (≥32rem):   eyebrow på topp, så ikon-pair · antall ·
+ *                  varietet fordelt jevnt over hele bredden. */
+.wc-ras-origin-single .section.producers {
+    grid-area: producers;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    row-gap: 0.45rem;
+    align-content: start;
+    padding-block: 0.4rem;
+}
+.wc-ras-origin-single .section.producers > h2 {
+    margin: 0 0 0.1rem;
+}
+.wc-ras-origin-single .section.producers .producer-line {
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+}
+.wc-ras-origin-single .section.producers .producer-line svg {
+    width: 2.4em;
+    height: 2.4em;
+    color: var(--color-brown-600, hsl(22, 46%, 28%));
+    flex-shrink: 0;
+}
+.wc-ras-origin-single .section.producers .producer-line span {
+    font-size: 1.3rem;
+    line-height: 1.1;
+    color: var(--text-color-dark);
+}
+
+/* Mid+: tre grid-items spredt over hele bredden. */
+@container (min-width: 32rem) {
+    .wc-ras-origin-single .section.producers {
+        grid-template-columns:
+          minmax(0, auto) minmax(0, 1fr) minmax(0, 1fr);
+        grid-template-areas:
+          "label  label  label"
+          "type   count  variety";
+        column-gap: 1.5rem;
+        row-gap: 0.5rem;
+        align-items: center;
+    }
+    .wc-ras-origin-single .section.producers > h2     { grid-area: label; }
+    .wc-ras-origin-single .section.producers .producer-line  { grid-area: type; }
+    .wc-ras-origin-single .section.producers .producer-count { grid-area: count; }
+    .wc-ras-origin-single .section.producers .variety        { grid-area: variety; }
+}
+.wc-ras-origin-single .section.producers .producer-count {
+    grid-area: count;
+    margin: 0;
+    font-size: 1.05rem;
+    color: var(--text-color);
+}
+.wc-ras-origin-single .section.producers .variety {
+    grid-area: variety;
+    margin: 0;
+    font-size: 1.05rem;
+    color: var(--text-color);
+}
+.wc-ras-origin-single .section.producers .variety strong {
+    font-weight: 500;
+    color: var(--text-color-muted);
+    margin-right: 0.3em;
+}
+
+/* Mobil-spesifikt: behold den litt mer dempede italic-stilen
+   når de stables under en fellesrute, slik at hierarkiet leses
+   som type → secondary → secondary. */
+@container (max-width: 32rem) {
+    .wc-ras-origin-single .section.producers .producer-count,
+    .wc-ras-origin-single .section.producers .variety {
+        font-size: 0.95rem;
+        font-style: italic;
+        color: var(--text-color-muted);
+    }
+}
+
+/* ── Postharvest · spenner datarad, intern 2-kol ────────
+ *
+ * Postharvest-seksjonen sitter på sin egen rad og deler ferm/tørk
+ * 50/50 internt — uavhengig av macro-grid. Det betyr at den
+ * vertikale dashed gridlinjen havner alltid midt i seksjonen,
+ * ikke nødvendigvis på en macro-kolonnegrense. Det er ønsket
+ * adferd: gridlinjen kommunikerer "ferm vs tørk", ikke macro. */
+.wc-ras-origin-single .section.postharvest {
+    grid-area: postharvest;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    column-gap: var(--gap-col);
+    row-gap: 0.4rem;
+    align-content: start;
+    padding-block: 0.25rem;
+}
+.wc-ras-origin-single .section.postharvest > h2 {
+    grid-column: 1 / -1;
+    margin-bottom: 0.35rem;
+}
+.wc-ras-origin-single .section.postharvest > .postharvest-item {
+    grid-row: 2;
+}
+
+/* Postharvest item — datacelle med ikon på toppen */
+.wc-ras-origin-single .header .postharvest-item {
+    display: flex;
+    flex-direction: column;
+    align-items: start;
+}
+.wc-ras-origin-single .header .postharvest-item > .icon {
+    width: 2.4em;
+    height: 2.4em;
+    color: var(--color-brown-600, hsl(22, 46%, 28%));
+}
+.wc-ras-origin-single .header .postharvest-item > .icon svg {
+    width: 100%;
+    height: 100%;
+}
+.wc-ras-origin-single .header .postharvest-item > .body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-width: 0;
+    width: 100%;
+}
+.wc-ras-origin-single .header .postharvest-item .label {
+    margin-top: 0.6rem;
+    margin-bottom: 0.25rem;
+}
+.wc-ras-origin-single .header .postharvest-item .value {
+    font-size: 1.25rem;
+    line-height: 1.1;
+    color: var(--text-color-dark);
+}
+.wc-ras-origin-single .header .postharvest-item .freetext {
+    margin-top: 0.2rem;
+    font-size: 0.95rem;
+    line-height: 1.35;
+    font-style: italic;
+    color: var(--text-color-muted);
+    text-wrap: pretty;
+}
+
+/* ── Rustikke dashed gridlinjer ──────────────────────────
+ *
+ * Horisontalt: mellom producers og postharvest (forskjellige
+ * datarader), og før flavour. Vertikal: kun mellom ferm og tørk
+ * inne i postharvest-seksjonen.
+ * ───────────────────────────────────────────────────── */
+
+/* Vertikal mellom ferm og tørk */
+.wc-ras-origin-single .section.postharvest > .postharvest-item + .postharvest-item {
+    border-left: 1px dashed var(--rule-color);
+    padding-left: calc(var(--gap-col) * 0.5);
+    margin-left: calc(var(--gap-col) * -0.5);
+}
+
+/* Horisontal: over postharvest og over flavour */
+.wc-ras-origin-single .section.postharvest,
+.wc-ras-origin-single .section.flavour {
+    padding-top: 1.25rem;
+    border-top: 1px dashed var(--rule-color);
+}
+
+/* ── Smak · radar + notater ────────────────────────────── */
+.wc-ras-origin-single .section.flavour {
+    grid-area: flavour;
+    display: grid;
+    grid-template-columns: var(--radar-size) minmax(0, 1fr);
+    column-gap: clamp(1.25rem, 3cqi, 2.5rem);
+    align-items: center;
+}
+.wc-ras-origin-single .section.flavour .radar {
+    width: var(--radar-size);
+    height: var(--radar-size);
+    color: var(--radar-color);
+    flex-shrink: 0;
+    overflow: visible;
+}
+.wc-ras-origin-single .section.flavour .radar svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+.wc-ras-origin-single .section.flavour .radar svg text {
+    font-size: 11px;
+    font-weight: 500;
+    fill: var(--text-color-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+}
+.wc-ras-origin-single .section.flavour .notes h2 {
+    margin-bottom: 0.7rem;
+}
+.wc-ras-origin-single .section.flavour .notes p {
+    margin: 0;
+    font-style: italic;
+    font-size: clamp(1.2rem, 2.5cqi, 2rem);
+    line-height: 1.2;
+    color: var(--text-color-dark);
+    text-wrap: pretty;
+    letter-spacing: -0.005em;
+}
+
+/* På smale ark stables radar + notater */
+@container (max-width: 32rem) {
+    .wc-ras-origin-single .section.flavour {
+        grid-template-columns: minmax(0, 1fr);
+    }
+    .wc-ras-origin-single .section.flavour .radar {
+        width: min(100%, var(--radar-size));
+        height: auto;
+        aspect-ratio: 1 / 1;
+        margin-inline: auto;
+    }
+}
+
+/* ── Stamp-util · sertifiserings-stempler ───────────────
+ *
+ * Brukes UTENFOR single-headeren — variasjons-blurb, modal,
+ * inline marker i Gutenberg-flyten. Apply via .wc-ras-stamp
+ * på en <li> eller <span> som inneholder <img> + <span>-tekst.
+ *
+ * Drama er rullet tilbake fra v3: ingen SVG-displacement.
+ * Bare sepia + multiply + outline-ring + svak rotasjon.
+ * Hvis dramatisk ink-bleed ønskes på et bestemt sted, legg
+ * til .wc-ras-stamp--pressed der og inkluder filter-defs i
+ * den template-en.
+ * ────────────────────────────────────────────────────── */
+
+.wc-ras-stamp {
+    --stamp-density: 0.7;
+    --stamp-size:    2.5rem;
+    --stamp-spread:  4deg;
+    --ink-color:     var(--color-terracotta-dark, hsl(10, 48%, 34%));
+
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    transform: rotate(var(--stamp-rot, calc(var(--stamp-spread) * -1)));
+    transform-origin: center;
+    mix-blend-mode: multiply;
+    opacity: var(--stamp-density);
+}
+.wc-ras-stamp:nth-child(2n)   { --stamp-rot: calc(var(--stamp-spread) *  0.5); }
+.wc-ras-stamp:nth-child(3n)   { --stamp-rot: calc(var(--stamp-spread) * -0.3); }
+.wc-ras-stamp:nth-child(4n+1) { --stamp-rot: calc(var(--stamp-spread) *  0.7); }
+.wc-ras-stamp img {
+    width: var(--stamp-size);
+    height: var(--stamp-size);
+    filter: sepia(0.7) saturate(0.55) contrast(1.05) brightness(0.92);
+    outline: 2px solid var(--ink-color);
+    outline-offset: 4px;
+    border-radius: 50%;
+    padding: 4px;
+}
+.wc-ras-stamp span {
+    font-size: 0.95rem;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-color);
+}
+
+/* Optional dramatic variant — krever at template-en
+   inkluderer SVG-defs for #wcRasInkBleed / #wcRasInkBleedSoft. */
+.wc-ras-stamp--pressed img    { filter: url(#wcRasInkBleed) sepia(0.85) saturate(0.55) contrast(1.35) hue-rotate(-12deg) brightness(0.78); }
+.wc-ras-stamp--pressed span   { filter: url(#wcRasInkBleedSoft); }
+
+/* ── Pills i header ──────────────────────────────────── */
+.wc-ras-origin-single .pill {
+    font-size: 0.95rem;
+    color: var(--text-color);
+    line-height: 1.3;
+}
+.wc-ras-origin-single .pill img,
+.wc-ras-origin-single .pill svg {
+    height: 1em;
+    width: auto;
+}
+.wc-ras-origin-single .pill.flag img {
+    height: 0.95em;
+    border: 1px solid hsla(0, 0%, 0%, 0.1);
+    box-shadow: 0 1px 1px hsla(0, 0%, 0%, 0.1);
 }
