@@ -7,13 +7,16 @@
  *
  * Structure:
  *   <article>
- *     <header> — complex grid:
- *       1. Hero: featured image + navn + tagline + flag-pille + altitude-pille
+ *     <div class="header"> — complex grid (NB: <div>, ikke <header>,
+ *       fordi mange WP-temaer (inkl. ousia) har header>* / section>*-
+ *       regler som tvinger max-width + margin-inline:auto, som krymper
+ *       våre flex/grid-containere):
+ *       1. Hero: navn + tagline + flag-pille + altitude-pille
  *       2. Producers & Cultivation: producer_type, producer_count, variety
  *       3. Post-harvest: fermentering + tørking (hybrid layout)
  *       4. Flavour: radar-SVG + frihåndsnotater (smak)
- *       5. Certifications: badges
- *     </header>
+ *       5. Hero-image: polaroid (mobil sist; desktop høyre kolonne)
+ *     </div>
  *     6. the_content() — Gutenberg blocks (direct children of <article>)
  *     7. Related products (deferred — hook for theme/site integration)
  *   </article>
@@ -38,15 +41,19 @@ while (have_posts()) :
     $producer_types = function_exists('wc_ras_producer_types') ? wc_ras_producer_types() : array();
     ?>
     <article <?php post_class('wc-ras-origin-single'); ?>>
-        <header class="header">
+        <?php /* <div> i stedet for <header> — Ousia (og mange WP-temaer)
+                har "header > *" / "section > * { max-width: var(--max-width);
+                margin-inline: auto }". Det krymper alle våre flex/grid-
+                containere til max-content og sentrerer dem i grid-cellen.
+                Bytter vi tag, slipper vi unna uten override-spesifisitet. */ ?>
+        <div class="header">
             <?php
             if ($origin['featured_image_url']) :
                 $thumb_id    = (int) get_post_thumbnail_id();
                 $thumb_cap   = $thumb_id ? wp_get_attachment_caption($thumb_id) : '';
-                // figcaption: foretrekker eksplisitt attachment-caption,
-                // ellers bare opprinnelse-navnet (kort, polaroid-aktig).
-                // Region_label er for langt for fotostripa.
-                $fig_caption = $thumb_cap !== '' ? $thumb_cap : $origin['name'];
+                // Bare eksplisitt attachment-caption: opprinnelse-navnet
+                // ekkoer h1, og region_label er for langt for fotostripa.
+                $fig_caption = $thumb_cap;
                 ?>
                 <figure class="hero-image">
                     <img src="<?php echo esc_url($origin['featured_image_url']); ?>"
@@ -185,7 +192,7 @@ while (have_posts()) :
             // Dataen ($origin['certifications']) er fortsatt på structen og
             // kan plukkes opp av andre rendrere via wc_ras_origin-strukturen.
             ?>
-        </header>
+        </div>
 
         <?php
         // ─── Gutenberg content ───
