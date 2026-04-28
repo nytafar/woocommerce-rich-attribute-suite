@@ -125,7 +125,12 @@ body.single-attribute_page {
     background-color: var(--bg-color-light, hsl(40, 70%, 94%));
 }
 
-.wc-ras-origin-single { container-type: inline-size; }
+.wc-ras-origin-single {
+    container-type: inline-size;
+    /* Pust mellom site-header og artikkelen — ellers klistrer h1
+       (mobil) eller papir-arket (desktop) seg til nav-baren. */
+    padding-block-start: clamp(1.25rem, 4vw, 3rem);
+}
 
 /* ── Header · the sheet ─────────────────────────────────── */
 .wc-ras-origin-single .header {
