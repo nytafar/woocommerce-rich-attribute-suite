@@ -27,6 +27,19 @@ function wc_ras_is_woocommerce_active() {
     return in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')));
 }
 
+// Declare HPOS (custom order tables) compatibility. This plugin does not
+// read or write order data, so it is fully compatible with both legacy
+// post-based orders and the High-Performance Order Storage tables.
+add_action('before_woocommerce_init', function () {
+    if (class_exists(\Automattic\WooCommerce\Utilities\FeaturesUtil::class)) {
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
+            'custom_order_tables',
+            __FILE__,
+            true
+        );
+    }
+});
+
 // Include files only if WooCommerce is active
 function wc_ras_init() {
     if (!wc_ras_is_woocommerce_active()) {
