@@ -422,24 +422,22 @@ body.single-attribute_page {
     }
 }
 
-/* Mid+ (≥32rem): bytter til grid med tre items spredt — eyebrow
-   over, type/count/variety som tre kolonner under. */
+/* Mid+ (≥32rem): inline rad med · separator mellom verdiene,
+   som en spec-sheet-linje. h2 får flex-basis: 100% slik at
+   eyebrow alltid bryter til egen linje over verdi-raden.
+   ::before · på count/variety gjør jobben uten markup-endring. */
 @container (min-width: 32rem) {
     .wc-ras-origin-single .section.producers {
-        display: grid;
-        grid-template-columns:
-          minmax(0, auto) minmax(0, 1fr) minmax(0, 1fr);
-        grid-template-areas:
-          "label  label  label"
-          "type   count  variety";
-        column-gap: 1.5rem;
-        row-gap: 0.5rem;
-        align-items: center;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: baseline;
+        column-gap: clamp(1.25rem, 3cqi, 2.25rem);
+        row-gap: 0.45rem;
     }
-    .wc-ras-origin-single .section.producers > h2     { grid-area: label; }
-    .wc-ras-origin-single .section.producers .producer-line  { grid-area: type; }
-    .wc-ras-origin-single .section.producers .producer-count { grid-area: count; }
-    .wc-ras-origin-single .section.producers .variety        { grid-area: variety; }
+    .wc-ras-origin-single .section.producers > h2 {
+        flex-basis: 100%;
+        margin: 0;
+    }
     .wc-ras-origin-single .section.producers .producer-line svg {
         width: 2.4em;
         height: 2.4em;

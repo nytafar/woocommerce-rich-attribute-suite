@@ -1,1 +1,4 @@
 *backup*
+.gstack/
+assets/css/origin.css
+docs/sandbox/*
