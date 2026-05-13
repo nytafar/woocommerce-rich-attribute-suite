@@ -112,9 +112,10 @@ class WC_RAS_Variation_Improvements {
             }
 
             $page = wc_ras_get_cached_attribute_page($term->slug);
+            $is_origin_attribute = ($taxonomy === 'pa_opprinnelse');
 
             // First origin wins (typically pa_opprinnelse).
-            if ($page && !$origin) {
+            if ($is_origin_attribute && $page && !$origin) {
                 $origin = wc_ras_build_origin_struct($page);
                 if (!empty($origin['permalink'])) {
                     $cta_url = $origin['permalink'];
@@ -134,18 +135,9 @@ class WC_RAS_Variation_Improvements {
                 }
             }
 
-            // CTA URL fallbacks: legacy term meta (linked_page_id, custom_page_url),
-            // then term archive URL via the learn-more helper.
-            if ($cta_url === '') {
-                $legacy_page_id = get_term_meta($term->term_id, 'linked_page_id', true);
-                $legacy_url     = get_term_meta($term->term_id, 'custom_page_url', true);
-                if (!empty($legacy_page_id)) {
-                    $cta_url = (string) get_permalink($legacy_page_id);
-                } elseif (!empty($legacy_url)) {
-                    $cta_url = (string) $legacy_url;
-                } elseif ($page || trim((string) $term->description) !== '') {
-                    $cta_url = (string) wc_ras_get_learn_more_url($term);
-                }
+            // CTA URL is only valid when the selected origin has a rich page.
+            if ($cta_url === '' && $is_origin_attribute && $page) {
+                $cta_url = (string) get_permalink($page);
             }
         }
 

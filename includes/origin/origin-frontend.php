@@ -67,6 +67,29 @@ function wc_ras_origin_register_radar_script() {
 }
 add_action('wp_enqueue_scripts', 'wc_ras_origin_register_radar_script');
 
+function wc_ras_origin_product_has_attribute_pages($product) {
+    if (!$product instanceof WC_Product || !$product->is_type('variable')) {
+        return false;
+    }
+
+    $default_attrs = method_exists($product, 'get_default_attributes')
+        ? $product->get_default_attributes()
+        : array();
+    $default_slug = isset($default_attrs['pa_opprinnelse']) ? (string) $default_attrs['pa_opprinnelse'] : '';
+
+    if ($default_slug !== '' && wc_ras_get_cached_attribute_page($default_slug)) {
+        return true;
+    }
+
+    foreach ($product->get_children() as $variation_id) {
+        if (wc_ras_get_attribute_page_for_variation($variation_id)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
 /**
  * Product-page guard used by both modal enqueue and modal render.
  *
@@ -87,6 +110,9 @@ function wc_ras_origin_modal_product() {
     }
     $attrs = $candidate->get_variation_attributes();
     if (empty($attrs['pa_opprinnelse'])) {
+        return null;
+    }
+    if (!wc_ras_origin_product_has_attribute_pages($candidate)) {
         return null;
     }
     return $candidate;

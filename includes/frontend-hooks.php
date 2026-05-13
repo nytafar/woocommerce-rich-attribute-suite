@@ -98,6 +98,20 @@ function wc_ras_check_rewrite_rules_version() {
 }
 add_action('init', 'wc_ras_check_rewrite_rules_version', 98);
 
+function wc_ras_force_client_side_variations_threshold($threshold, $product) {
+    if (!$product instanceof WC_Product || !$product->is_type('variable')) {
+        return $threshold;
+    }
+
+    $attrs = $product->get_variation_attributes();
+    if (empty($attrs['pa_opprinnelse'])) {
+        return $threshold;
+    }
+
+    return max((int) $threshold, count($product->get_children()));
+}
+add_filter('woocommerce_ajax_variation_threshold', 'wc_ras_force_client_side_variations_threshold', 99, 2);
+
 /**
  * Get cached attribute_page by term slug.
  *
