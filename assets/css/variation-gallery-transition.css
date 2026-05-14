@@ -1,0 +1,57 @@
+/**
+ * WooCommerce Rich Attribute Suite — variation gallery transition.
+ *
+ * Crossfade between gallery images when a variation is selected. The JS
+ * snapshots the current .wp-post-image as an absolutely-positioned ghost on
+ * top of the gallery frame, lets WooCommerce swap the underlying src, then
+ * fades the ghost out — but only after the new bitmap is fully decoded.
+ *
+ * Theme-tunable via CSS custom properties on .woocommerce-product-gallery:
+ *   --wc-ras-gallery-fade-duration  (default 1200ms)
+ *   --wc-ras-gallery-fade-ease      (default cubic-bezier(0.35, 0, 0.2, 1))
+ *   --wc-ras-gallery-ghost-scale    (default 1.012)
+ *   --wc-ras-gallery-ghost-blur     (default 1.5px)
+ */
+
+/* Frame contains the ghost overlay; clip the scale+blur tail-out so it
+   never paints over the variations table, summary copy, or thumbnails. */
+.woocommerce-product-gallery__image,
+.woocommerce-product-gallery__image--placeholder {
+    position: relative;
+    overflow: hidden;
+}
+
+.wc-ras-variation-image-ghost {
+    position: absolute;
+    z-index: 4;
+    display: block;
+    object-fit: contain;
+    object-position: center;
+    pointer-events: none;
+    opacity: 1;
+    transform: scale(1);
+    filter: blur(0);
+    transition:
+        opacity var(--wc-ras-gallery-fade-duration, 1200ms) var(--wc-ras-gallery-fade-ease, cubic-bezier(0.35, 0, 0.2, 1)),
+        transform var(--wc-ras-gallery-fade-duration, 1200ms) var(--wc-ras-gallery-fade-ease, cubic-bezier(0.35, 0, 0.2, 1)),
+        filter var(--wc-ras-gallery-fade-duration, 1200ms) var(--wc-ras-gallery-fade-ease, cubic-bezier(0.35, 0, 0.2, 1));
+    will-change: opacity, transform, filter;
+}
+
+.wc-ras-variation-image-ghost.is-leaving {
+    opacity: 0;
+    transform: scale(var(--wc-ras-gallery-ghost-scale, 1.012));
+    filter: blur(var(--wc-ras-gallery-ghost-blur, 1.5px));
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wc-ras-variation-image-ghost {
+        transition: none;
+    }
+
+    .wc-ras-variation-image-ghost.is-leaving {
+        opacity: 0;
+        transform: none;
+        filter: none;
+    }
+}

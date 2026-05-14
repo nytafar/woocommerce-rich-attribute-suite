@@ -62,6 +62,7 @@ function wc_ras_init() {
     require_once WC_RAS_PLUGIN_DIR . 'includes/origin/origin-admin-certifications.php';
     require_once WC_RAS_PLUGIN_DIR . 'includes/variation-improvements.php';
     require_once WC_RAS_PLUGIN_DIR . 'includes/inline-variation-description.php';
+    require_once WC_RAS_PLUGIN_DIR . 'includes/variation-gallery-transition.php';
 }
 add_action('plugins_loaded', 'wc_ras_init');
 
