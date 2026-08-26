@@ -1,7 +1,7 @@
 # WooCommerce Rich Attribute Suite
 
 ![WooCommerce Rich Attribute Suite](https://img.shields.io/badge/WooCommerce-Rich%20Attribute%20Suite-7f54b3.svg)
-![Version 1.2.0](https://img.shields.io/badge/Version-1.2.0-brightgreen.svg)
+![Version 1.3.0](https://img.shields.io/badge/Version-1.3.0-brightgreen.svg)
 ![WooCommerce 6.0+](https://img.shields.io/badge/WooCommerce-6.0+-a46497.svg)
 ![PHP 7.4+](https://img.shields.io/badge/PHP-7.4+-8892BF.svg)
 

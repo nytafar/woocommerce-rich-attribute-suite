@@ -532,16 +532,38 @@
 
     // ── Bootstrap ───────────────────────────────────────────────
 
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
+    function boot() {
         init();
+        watchForDynamicForms();
     }
 
-    // Re-init on WC AJAX fragments (e.g. dynamically loaded variation forms).
-    document.addEventListener('ajaxComplete', function (e) {
-        if (e.detail && e.detail.url && e.detail.url.indexOf('wc-ajax') !== -1) {
-            init();
-        }
-    });
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', boot);
+    } else {
+        boot();
+    }
+
+    // Re-init when WooCommerce injects a variation form after initial load
+    // (AJAX-loaded product content, quick-view modals, fragment refreshes).
+    // A debounced MutationObserver keeps this vanilla — fitting this module's
+    // jQuery-optional design — instead of relying on jQuery's `ajaxComplete`.
+    // init() is idempotent (it skips forms already flagged with
+    // data-wc-ras-origin-modal-init), so re-running only touches new forms.
+    function watchForDynamicForms() {
+        if (typeof MutationObserver === 'undefined' || !document.body) return;
+
+        var scheduled = false;
+        var observer = new MutationObserver(function () {
+            if (scheduled) return;
+            // Cheap early-out: only act when an un-initialised form is present.
+            if (!document.querySelector('form.variations_form:not([data-wc-ras-origin-modal-init])')) return;
+            scheduled = true;
+            setTimeout(function () {
+                scheduled = false;
+                init();
+            }, 100);
+        });
+
+        observer.observe(document.body, { childList: true, subtree: true });
+    }
 })();
