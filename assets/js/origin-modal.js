@@ -3,14 +3,17 @@
  *
  * Model:
  *   One native <dialog>, one hydratable card. The card's content always
- *   mirrors the current pa_opprinnelse selection. Prev/next/swipe are
- *   gesture shortcuts that commit a new selection through the same
- *   code path an attribute click uses — there is no local modal state.
+ *   mirrors the current pa_opprinnelse selection. The origin strip along
+ *   the bottom (one tile per origin with a rich page, built here from the
+ *   preloaded variations), arrow keys and swipe all commit a new selection
+ *   through the same code path an attribute click uses — there is no
+ *   local modal state; the strip's selected tile is the position indicator.
  *
  * Pipeline:
- *   CTA click → open dialog (mobile showModal / desktop show).
- *   found_variation/show_variation → hydrateCard(origin).
- *   prev/next/arrow/swipe → selectOrigin(slug) → WC fires
+ *   CTA click → open dialog (mobile showModal / desktop show, capped to
+ *     the gallery's main image box).
+ *   found_variation/show_variation → hydrateCard(origin) → updateStrip.
+ *   strip tile/arrow/swipe → selectOrigin(slug) → WC fires
  *     found_variation → hydrateCard runs again.
  *
  * jQuery is used only as a bridge for WC variation events and for the
@@ -53,13 +56,26 @@
             return;
         }
 
+        // PHP can only render the dialog inside .woocommerce-product-gallery__wrapper
+        // (the one in-gallery filter). FlexSlider turns that wrapper into a
+        // translated, overflow-hidden slide track and the main image paints over
+        // it, so hoist the dialog to the gallery root (position:relative in WC
+        // core) before first use. Closed dialogs are display:none — no layout shift.
+        var gallery = dialog.closest('.woocommerce-product-gallery');
+        if (gallery && dialog.parentNode !== gallery) {
+            gallery.appendChild(dialog);
+        }
+
         var ctx = {
             form: form,
             dialog: dialog,
             card: card,
             origins: readOrigins(form),
+            gallery: gallery,
             lastMode: null
         };
+
+        buildStrip(ctx);
 
         // Delegated CTA click — variation-description inner HTML is swapped
         // on every variation change by inline-variation-description.js, so
@@ -85,11 +101,14 @@
                 var origin = variation && variation.wc_ras_origin;
                 if (origin) {
                     hydrateCard(ctx, origin);
+                } else if (dialog.open) {
+                    // Selected origin has no rich page: nothing to mirror, so
+                    // close rather than keep showing the previous origin.
+                    dialog.close();
                 }
             });
             window.jQuery(form).on('reset_data hide_variation', function () {
-                hideAllSections(ctx.card);
-                updateNavDisabled(ctx);
+                hideAllGroups(ctx.card);
             });
         }
 
@@ -107,18 +126,18 @@
             }
         });
 
-        // Prev / next navigation
+        // Strip tiles → selection
         dialog.addEventListener('click', function (e) {
-            var nav = e.target.closest && e.target.closest('[data-origin-modal-nav]');
-            if (!nav) {
+            var tile = e.target.closest && e.target.closest('[data-origin-modal-select]');
+            if (!tile) {
                 return;
             }
             e.preventDefault();
-            var dir = nav.getAttribute('data-origin-modal-nav') === 'next' ? 1 : -1;
-            stepSelection(ctx, dir);
+            selectOrigin(ctx, tile.getAttribute('data-origin-modal-select'));
         });
 
-        // Arrow keys while dialog is open
+        // Arrow keys while dialog is open. Escape is native only for
+        // showModal(); the desktop show() path needs it wired by hand.
         dialog.addEventListener('keydown', function (e) {
             if (e.key === 'ArrowRight') {
                 e.preventDefault();
@@ -126,28 +145,56 @@
             } else if (e.key === 'ArrowLeft') {
                 e.preventDefault();
                 stepSelection(ctx, -1);
+            } else if (e.key === 'Escape') {
+                dialog.close();
             }
         });
 
         // Swipe gesture on the card
         wireSwipe(ctx);
 
-        // Window resize → re-evaluate desktop/mobile mode
+        // Phone: drag the sheet down to close (bottom-sheet gesture)
+        wireDragToClose(ctx);
+
+        // Closing on the phone lands the user on the page's own origin
+        // tiles, which mirror what was just chosen in the sheet.
+        dialog.addEventListener('close', function () {
+            dialog.style.transform = '';
+            if (ctx.lastMode !== 'mobile') {
+                return;
+            }
+            var ctrl = findOriginControl(form);
+            var target = null;
+            for (var i = 0; i < ctrl.radios.length; i++) {
+                if (ctrl.radios[i].checked) {
+                    target = ctrl.radios[i].closest('label') || ctrl.radios[i];
+                    break;
+                }
+            }
+            target = target || ctrl.select;
+            if (target && typeof target.scrollIntoView === 'function') {
+                target.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            }
+        });
+
+        // Window resize → re-evaluate desktop/mobile mode and the desktop size
         var resizeTimer = null;
         window.addEventListener('resize', function () {
             if (resizeTimer) {
                 window.clearTimeout(resizeTimer);
             }
             resizeTimer = window.setTimeout(function () {
-                if (dialog.open && currentMode() !== ctx.lastMode) {
+                if (!dialog.open) {
+                    return;
+                }
+                if (currentMode() !== ctx.lastMode) {
                     dialog.close();
                     openDialog(ctx);
+                } else {
+                    sizeToImage(ctx);
                 }
             }, 200);
         });
-
-        // Seed nav-disabled based on the initial origin count.
-        updateNavDisabled(ctx);
     }
 
     // ── Data helpers ────────────────────────────────────────────
@@ -283,8 +330,6 @@
     function openDialog(ctx) {
         var mode = currentMode();
         ctx.lastMode = mode;
-        // Re-evaluate nav-disabled every time we open.
-        updateNavDisabled(ctx);
         try {
             if (mode === 'desktop') {
                 ctx.dialog.show();
@@ -295,6 +340,33 @@
             // Fallback: if showModal() throws (already open, etc.), force open attribute.
             ctx.dialog.setAttribute('open', '');
         }
+        sizeToImage(ctx);
+        updateStrip(ctx, currentOriginSlug(ctx));
+    }
+
+    /**
+     * Desktop (show): the dialog is absolutely positioned over the whole
+     * gallery, thumbnails included, which can run well past the viewport.
+     * The sheet sizes to its content but never past the main image box
+     * (FlexSlider's .flex-viewport, or the wrapper when there is no slider)
+     * or what is visible below the gallery's top edge. Modal mode is
+     * full-viewport by CSS; clear any inline cap there.
+     */
+    function sizeToImage(ctx) {
+        var dialog = ctx.dialog;
+        if (ctx.lastMode !== 'desktop' || !ctx.gallery) {
+            dialog.style.maxHeight = '';
+            return;
+        }
+        var box = ctx.gallery.querySelector('.flex-viewport') ||
+            ctx.gallery.querySelector('.woocommerce-product-gallery__wrapper');
+        if (!box) {
+            dialog.style.maxHeight = '';
+            return;
+        }
+        var rect = box.getBoundingClientRect();
+        var visible = window.innerHeight - Math.max(rect.top, 0) - 8;
+        dialog.style.maxHeight = Math.max(320, Math.min(rect.height, visible)) + 'px';
     }
 
     // ── Hydration ───────────────────────────────────────────────
@@ -338,14 +410,6 @@
         el.hidden = !visible;
     }
 
-    function setSection(card, sectionName, visible) {
-        var el = card.querySelector('[data-section="' + sectionName + '"]');
-        if (!el) {
-            return;
-        }
-        el.hidden = !visible;
-    }
-
     function s(v) {
         return (v === null || v === undefined) ? '' : String(v);
     }
@@ -360,66 +424,48 @@
         }
 
         // Hero
-        var imageUrl = s(origin.featured_image_url);
-        var imageEl = card.querySelector('[data-field="featured-image"]');
-        if (imageEl) {
-            if (imageUrl) {
-                imageEl.setAttribute('src', imageUrl);
-                imageEl.setAttribute('alt', s(origin.name));
-                imageEl.hidden = false;
-            } else {
-                imageEl.hidden = true;
-            }
-        }
         setField(card, 'name', s(origin.name));
-        setField(card, 'excerpt', s(origin.excerpt));
 
-        // Pills
-        var regionLabel = s(origin.region_label);
+        // Country stamp: flag + country name.
+        var country = s(origin.country);
         var flagUrl = s(origin.country_flag_url);
-        setGroup(card, 'flag', regionLabel !== '');
+        setGroup(card, 'flag', country !== '');
         var flagImgEl = card.querySelector('[data-field="flag-image"]');
         if (flagImgEl) {
             if (flagUrl) {
                 flagImgEl.setAttribute('src', flagUrl);
-                flagImgEl.setAttribute('alt', s(origin.country));
                 flagImgEl.hidden = false;
             } else {
                 flagImgEl.hidden = true;
             }
         }
-        var flagLabelEl = card.querySelector('[data-field="flag-label"]');
-        if (flagLabelEl) {
-            flagLabelEl.textContent = regionLabel;
-        }
-        setGroup(card, 'variety', s(origin.variety) !== '');
-        setField(card, 'variety', s(origin.variety));
-        setGroup(card, 'altitude', s(origin.altitude_label) !== '');
-        setField(card, 'altitude', s(origin.altitude_label));
+        setField(card, 'country', country);
 
-        // Producers
-        var producerTypeLabel = s(origin.producer_type_label);
-        var producerCountLabel = s(origin.producer_count_label);
+        // Facts — a cell hides when it has nothing to say. The theme hides
+        // the "more" cells (region, count, method, drying) on the phone.
+        var region = s(origin.region);
         var variety = s(origin.variety);
-        setGroup(card, 'producer-type', producerTypeLabel !== '');
-        setField(card, 'producer-type', producerTypeLabel);
-        setField(card, 'producer-count', producerCountLabel);
-        setGroup(card, 'variety-line', variety !== '');
-        setField(card, 'variety-line', variety);
-        setSection(card, 'producers',
-            producerTypeLabel !== '' || producerCountLabel !== '' || variety !== '');
-
-        // Post-harvest
+        var altitude = s(origin.altitude_label);
+        var producerType = s(origin.producer_type_label);
+        var producerCount = s(origin.producer_count_label);
         var fermValue = s(origin.fermentation_value);
         var fermMethod = s(origin.fermentation_method);
-        var dryMethod = s(origin.drying_method);
-        setGroup(card, 'fermentation', fermValue !== '' || fermMethod !== '');
+        var drying = s(origin.drying_method);
+
+        setField(card, 'region', region);
+        setGroup(card, 'region', region !== '');
+        setField(card, 'variety', variety);
+        setGroup(card, 'variety', variety !== '');
+        setField(card, 'altitude', altitude);
+        setGroup(card, 'altitude', altitude !== '');
+        setField(card, 'producer-type', producerType);
+        setField(card, 'producer-count', producerCount);
+        setGroup(card, 'producers', producerType !== '' || producerCount !== '');
         setField(card, 'fermentation-value', fermValue);
         setField(card, 'fermentation-method', fermMethod);
-        setGroup(card, 'drying', dryMethod !== '');
-        setField(card, 'drying-method', dryMethod);
-        setSection(card, 'postharvest',
-            fermValue !== '' || fermMethod !== '' || dryMethod !== '');
+        setGroup(card, 'fermentation', fermValue !== '' || fermMethod !== '');
+        setField(card, 'drying-method', drying);
+        setGroup(card, 'drying', drying !== '');
 
         // Flavour
         var radarEl = card.querySelector('[data-field="radar"]');
@@ -436,57 +482,94 @@
                 radarEl.hidden = true;
             }
         }
-        var tasteNotes = s(origin.taste_notes);
-        setGroup(card, 'notes', tasteNotes !== '');
-        setField(card, 'taste-notes', tasteNotes);
-        setSection(card, 'flavour', radarSvg !== '' || tasteNotes !== '');
+        var flavourLabel = card.querySelector('[data-field="flavour-label"]');
+        if (flavourLabel) {
+            flavourLabel.hidden = radarSvg === '';
+        }
+        setField(card, 'taste-notes', s(origin.taste_notes));
 
-        // Certifications
+        // Certification stamps
         renderCertifications(card, Array.isArray(origin.certifications) ? origin.certifications : []);
 
-        // Permalink
         setField(card, 'permalink', s(origin.permalink), 'href');
 
-        // Nav state (enable/disable prev/next if only one origin exists)
-        updateNavDisabled(ctx);
+        updateStrip(ctx, origin.slug);
     }
 
+    /**
+     * Certification stamps: one stamp per certification with an icon.
+     */
     function renderCertifications(card, certs) {
-        var list = card.querySelector('[data-field="certifications"]');
-        if (!list) {
+        var wrap = card.querySelector('[data-field="certifications"]');
+        if (!wrap) {
             return;
         }
-        list.innerHTML = '';
+        wrap.innerHTML = '';
         certs.forEach(function (cert) {
-            var li = document.createElement('li');
+            if (!cert.icon_url) {
+                return;
+            }
+            var stamp = document.createElement('span');
+            stamp.className = 'wc-ras-origin-modal__stamp wc-ras-origin-modal__stamp--cert';
             if (cert.slug) {
-                li.setAttribute('data-cert-slug', cert.slug);
+                stamp.setAttribute('data-cert-slug', cert.slug);
             }
-            if (cert.icon_url) {
-                var img = document.createElement('img');
-                img.setAttribute('src', cert.icon_url);
-                img.setAttribute('alt', '');
-                li.appendChild(img);
-            }
-            var label = document.createElement('span');
-            label.textContent = cert.name || '';
-            li.appendChild(label);
-            list.appendChild(li);
+            stamp.setAttribute('title', cert.name || '');
+            var img = document.createElement('img');
+            img.setAttribute('src', cert.icon_url);
+            img.setAttribute('alt', cert.name || '');
+            stamp.appendChild(img);
+            wrap.appendChild(stamp);
         });
-        setSection(card, 'certifications', certs.length > 0);
+        wrap.hidden = wrap.childNodes.length === 0;
     }
 
-    function hideAllSections(card) {
-        ['producers', 'postharvest', 'flavour', 'certifications'].forEach(function (name) {
-            setSection(card, name, false);
-        });
+    function hideAllGroups(card) {
+        var rows = card.querySelectorAll('[data-field-group]');
+        for (var i = 0; i < rows.length; i++) {
+            rows[i].hidden = true;
+        }
     }
 
-    function updateNavDisabled(ctx) {
-        var disabled = ctx.origins.length <= 1;
-        var buttons = ctx.dialog.querySelectorAll('[data-origin-modal-nav]');
-        for (var i = 0; i < buttons.length; i++) {
-            buttons[i].disabled = disabled;
+    // ── Origin strip ────────────────────────────────────────────
+
+    /**
+     * One tile per origin with a rich page. Hidden when there is nothing
+     * to switch to.
+     */
+    function buildStrip(ctx) {
+        var strip = ctx.dialog.querySelector('[data-origin-modal-strip]');
+        if (!strip) {
+            return;
+        }
+        strip.innerHTML = '';
+        ctx.origins.forEach(function (origin) {
+            var tile = document.createElement('button');
+            tile.type = 'button';
+            tile.className = 'wc-ras-origin-modal__tile';
+            tile.setAttribute('data-origin-modal-select', origin.slug);
+            tile.textContent = origin.name || origin.slug;
+            strip.appendChild(tile);
+        });
+        strip.hidden = ctx.origins.length <= 1;
+    }
+
+    /**
+     * Mark the current origin's tile and keep it in view on a strip that
+     * scrolls horizontally.
+     */
+    function updateStrip(ctx, slug) {
+        var tiles = ctx.dialog.querySelectorAll('[data-origin-modal-select]');
+        for (var i = 0; i < tiles.length; i++) {
+            var current = tiles[i].getAttribute('data-origin-modal-select') === slug;
+            if (current) {
+                tiles[i].setAttribute('aria-current', 'true');
+                if (ctx.dialog.open && typeof tiles[i].scrollIntoView === 'function') {
+                    tiles[i].scrollIntoView({ block: 'nearest', inline: 'nearest' });
+                }
+            } else {
+                tiles[i].removeAttribute('aria-current');
+            }
         }
     }
 
@@ -528,6 +611,74 @@
             }
             stepSelection(ctx, dx < 0 ? 1 : -1);
         }, { passive: true });
+    }
+
+    // ── Drag to close (phone) ───────────────────────────────────
+
+    var DRAG_CLOSE_THRESHOLD = 90;
+
+    /**
+     * A downward drag anywhere on the sheet (handle or card) pulls it down
+     * and closes it past the threshold. Only while the card body is at its
+     * scroll top, and only for gestures that are more vertical than
+     * horizontal, so scrolling and the origin swipe keep working.
+     */
+    function wireDragToClose(ctx) {
+        var body = ctx.card.querySelector('.wc-ras-origin-modal__body');
+        var startX = null;
+        var startY = null;
+        var dy = 0;
+
+        function start(e) {
+            if (!e.touches || e.touches.length !== 1 || !ctx.dialog.matches(':modal') || (body && body.scrollTop > 0)) {
+                startY = null;
+                return;
+            }
+            startX = e.touches[0].clientX;
+            startY = e.touches[0].clientY;
+            dy = 0;
+        }
+
+        function move(e) {
+            if (startY === null) {
+                return;
+            }
+            var dx = e.touches[0].clientX - startX;
+            var y = e.touches[0].clientY - startY;
+            if (y <= 0 || Math.abs(dx) > y) {
+                // Upward or sideways: not a pull-down.
+                if (dy === 0) {
+                    return;
+                }
+            }
+            dy = Math.max(0, y);
+            ctx.dialog.style.transition = 'none';
+            ctx.dialog.style.transform = 'translateY(' + dy + 'px)';
+        }
+
+        function end() {
+            if (startY === null) {
+                return;
+            }
+            startY = null;
+            ctx.dialog.style.transition = '';
+            if (dy > DRAG_CLOSE_THRESHOLD) {
+                ctx.dialog.close();
+            } else {
+                ctx.dialog.style.transform = '';
+            }
+            dy = 0;
+        }
+
+        [ctx.dialog.querySelector('[data-origin-modal-handle]'), ctx.card].forEach(function (el) {
+            if (!el) {
+                return;
+            }
+            el.addEventListener('touchstart', start, { passive: true });
+            el.addEventListener('touchmove', move, { passive: true });
+            el.addEventListener('touchend', end, { passive: true });
+            el.addEventListener('touchcancel', end, { passive: true });
+        });
     }
 
     // ── Bootstrap ───────────────────────────────────────────────

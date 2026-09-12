@@ -215,24 +215,26 @@ function wc_ras_format_fermentation_value($type, $days) {
 /**
  * Render the 8-axis taste radar as inline SVG.
  *
+ * Drawn as printed ink: hairline rings (quarter dotted, half dashed, full
+ * solid), spokes, a filled polygon with round joins, vertex marks and
+ * uppercase labels. The viewBox is 5:4 (wider than tall) so side labels have
+ * room without shrinking the chart. Every part carries a class the theme
+ * can paint (`wc-ras-radar__ring/spoke/polygon/vertex/label`).
+ *
  * Semantics:
- *   - Grid (concentric circles) is drawn at 25/50/75/100% for ALL axes.
- *   - Axis spokes are drawn for ALL defined axes in wc_ras_taste_axes().
+ *   - Rings and spokes are drawn for ALL axes in wc_ras_taste_axes().
  *   - Value polygon connects only axes with non-null scores, in axis order.
  *     Null means "not rated" — the polygon has fewer sides; points don't
  *     collapse to center.
- *   - Labels render only for axes with non-null scores.
+ *   - Labels render only for axes with non-null scores; the axis/axes at the
+ *     highest score carry `wc-ras-radar__label--peak`.
  *   - If every axis is null (or the profile is empty), returns empty string.
  *
- * Example:
- *   $profile = array('acidity' => 6, 'sweetness' => 7, 'bitterness' => null,
- *                    'body' => 5, 'fruit' => 8, 'floral' => null,
- *                    'earth' => null, 'spice' => 4);
- *   wc_ras_render_taste_radar_svg($profile)
- *     → SVG with pentagon polygon (5 rated axes of 8), 8 grid spokes.
+ * Mirror of window.WcRasOriginRadar.render() in assets/js/origin-radar.js —
+ * both MUST produce identical markup for the same input.
  *
  * @param array $taste_profile { axis_key => 0..10 | null }.
- * @param array $options       { size:int, show_labels:bool, show_grid:bool }.
+ * @param array $options       { size:int (height; width is 1.25×), show_labels:bool, show_grid:bool }.
  * @return string Inline SVG or empty string.
  */
 function wc_ras_render_taste_radar_svg($taste_profile, $options = array()) {
@@ -262,11 +264,13 @@ function wc_ras_render_taste_radar_svg($taste_profile, $options = array()) {
     if (empty($rated)) {
         return '';
     }
+    $peak = max(array_column($rated, 'value'));
 
     $size    = (int) $opt['size'];
-    $cx      = $size / 2;
+    $width   = (int) round($size * 1.25);
+    $cx      = $width / 2;
     $cy      = $size / 2;
-    $padding = $opt['show_labels'] ? max(32, $size * 0.12) : 12;
+    $padding = $opt['show_labels'] ? max(40, $size * 0.15) : 12;
     $radius  = ($size / 2) - $padding;
     $n       = count($axes);
 
@@ -277,28 +281,34 @@ function wc_ras_render_taste_radar_svg($taste_profile, $options = array()) {
         $theta = -M_PI / 2 + (2 * M_PI * $i) / $n;
         $positions[$key] = array(
             'theta' => $theta,
-            'ex'    => $cx + $radius * cos($theta),   // endpoint at value = max
-            'ey'    => $cy + $radius * sin($theta),
+            'ex'    => round($cx + $radius * cos($theta), 2),   // endpoint at value = max
+            'ey'    => round($cy + $radius * sin($theta), 2),
             'label' => $axes[$key],
         );
     }
 
-    $svg = '<svg class="wc-ras-radar" viewBox="0 0 ' . $size . ' ' . $size . '" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">';
+    $svg = '<svg class="wc-ras-radar" viewBox="0 0 ' . $width . ' ' . $size . '" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">';
 
-    // Grid: concentric circles
+    // Grid: half ring dashed, full ring solid, spokes
     if ($opt['show_grid']) {
         $svg .= '<g class="wc-ras-radar__grid">';
-        foreach (array(0.25, 0.5, 0.75, 1.0) as $level) {
-            $r = $radius * $level;
+        foreach (array(0.25, 0.75) as $level) {
             $svg .= sprintf(
-                '<circle cx="%s" cy="%s" r="%s" fill="none" stroke="currentColor" stroke-opacity="0.15" stroke-width="1"/>',
-                $cx, $cy, $r
+                '<circle class="wc-ras-radar__ring wc-ras-radar__ring--quarter" cx="%s" cy="%s" r="%s" fill="none" stroke="currentColor" stroke-opacity="0.3" stroke-width="0.75" stroke-dasharray="1 3"/>',
+                $cx, $cy, round($radius * $level, 2)
             );
         }
-        // Axis spokes
+        $svg .= sprintf(
+            '<circle class="wc-ras-radar__ring wc-ras-radar__ring--half" cx="%s" cy="%s" r="%s" fill="none" stroke="currentColor" stroke-opacity="0.42" stroke-width="0.75" stroke-dasharray="2 4"/>',
+            $cx, $cy, round($radius * 0.5, 2)
+        );
+        $svg .= sprintf(
+            '<circle class="wc-ras-radar__ring wc-ras-radar__ring--full" cx="%s" cy="%s" r="%s" fill="none" stroke="currentColor" stroke-opacity="0.45" stroke-width="1"/>',
+            $cx, $cy, $radius
+        );
         foreach ($positions as $pos) {
             $svg .= sprintf(
-                '<line x1="%s" y1="%s" x2="%s" y2="%s" stroke="currentColor" stroke-opacity="0.15" stroke-width="1"/>',
+                '<line class="wc-ras-radar__spoke" x1="%s" y1="%s" x2="%s" y2="%s" stroke="currentColor" stroke-opacity="0.22" stroke-width="0.75"/>',
                 $cx, $cy, $pos['ex'], $pos['ey']
             );
         }
@@ -320,23 +330,23 @@ function wc_ras_render_taste_radar_svg($taste_profile, $options = array()) {
     }
 
     if (count($points) >= 3) {
-        $svg .= '<polygon class="wc-ras-radar__polygon" points="' . implode(' ', $points) . '" fill="currentColor" fill-opacity="0.22" stroke="currentColor" stroke-width="1.5"/>';
+        $svg .= '<polygon class="wc-ras-radar__polygon" points="' . implode(' ', $points) . '" fill="currentColor" fill-opacity="0.42" stroke="currentColor" stroke-width="1.75" stroke-linejoin="round"/>';
     } elseif (count($points) === 2) {
         // Degenerate: line only
         list($p1, $p2) = $points;
         list($x1, $y1) = explode(',', $p1);
         list($x2, $y2) = explode(',', $p2);
-        $svg .= sprintf('<line class="wc-ras-radar__line" x1="%s" y1="%s" x2="%s" y2="%s" stroke="currentColor" stroke-width="2"/>', $x1, $y1, $x2, $y2);
+        $svg .= sprintf('<line class="wc-ras-radar__line" x1="%s" y1="%s" x2="%s" y2="%s" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>', $x1, $y1, $x2, $y2);
     } else {
         // Single point
         list($x, $y) = explode(',', $points[0]);
-        $svg .= sprintf('<circle class="wc-ras-radar__point" cx="%s" cy="%s" r="3" fill="currentColor"/>', $x, $y);
+        $svg .= sprintf('<circle class="wc-ras-radar__point" cx="%s" cy="%s" r="3.5" fill="currentColor"/>', $x, $y);
     }
 
-    // Dots on rated vertices for emphasis
+    // Vertex marks on rated axes
     foreach ($points as $pt) {
         list($x, $y) = explode(',', $pt);
-        $svg .= sprintf('<circle cx="%s" cy="%s" r="2.5" fill="currentColor"/>', $x, $y);
+        $svg .= sprintf('<circle class="wc-ras-radar__vertex" cx="%s" cy="%s" r="3.5" fill="currentColor"/>', $x, $y);
     }
 
     // Labels (only for rated axes)
@@ -346,8 +356,8 @@ function wc_ras_render_taste_radar_svg($taste_profile, $options = array()) {
             if (!isset($rated[$key])) {
                 continue;
             }
-            // Place label slightly beyond the axis endpoint
-            $label_ratio = 1.12;
+            // Place label beyond the axis endpoint
+            $label_ratio = 1.16;
             $lx = $cx + $radius * $label_ratio * cos($pos['theta']);
             $ly = $cy + $radius * $label_ratio * sin($pos['theta']);
             // text-anchor based on horizontal position
@@ -357,9 +367,10 @@ function wc_ras_render_taste_radar_svg($taste_profile, $options = array()) {
             } elseif ($lx < $cx - 2) {
                 $anchor = 'end';
             }
+            $class = 'wc-ras-radar__label' . ($rated[$key]['value'] === $peak && $peak > 0 ? ' wc-ras-radar__label--peak' : '');
             $svg .= sprintf(
-                '<text x="%s" y="%s" text-anchor="%s" dominant-baseline="middle" font-size="11" fill="currentColor">%s</text>',
-                round($lx, 2), round($ly, 2), $anchor, esc_html($pos['label'])
+                '<text class="%s" x="%s" y="%s" text-anchor="%s" dominant-baseline="middle" font-size="12" fill="currentColor">%s</text>',
+                $class, round($lx, 2), round($ly, 2), $anchor, esc_html($pos['label'])
             );
         }
         $svg .= '</g>';

@@ -9,9 +9,10 @@
  * the inner blocks.
  *
  * Rendering order:
- *   1. Pills row (flag / variety / altitude) — betinget på $origin-data.
- *   2. <p class="smak"> — betinget på $origin['taste_notes'].
- *   3. <p> — betinget på $description_text (term-/variation-desc fallback).
+ *   1. <p class="smak"> — betinget på $origin['taste_notes'].
+ *   2. <p> — betinget på $description_text (term-/variation-desc fallback).
+ *   3. <p class="origin-meta"> — flagg + land | varietet | høyde, betinget
+ *      på $origin-data. Under teksten, ikke over; ingen piller.
  *   4. <p class="term-page-link-wrapper"> — CTA, betinget på $cta_url.
  *
  * Expected variables (passed via wc_ras_load_template):
@@ -34,50 +35,41 @@ $description_text = isset($description_text) ? (string) $description_text : '';
 $cta_url   = isset($cta_url)   ? (string) $cta_url   : '';
 $cta_label = isset($cta_label) ? (string) $cta_label : __('Lær mer', 'wc-rich-attribute-suite');
 
-// ── Pills ───────────────────────────────────────────────────────
-$country  = $origin['country']  ?? null;
-$region   = $origin['region']   ?? null;
-$variety  = $origin['variety']  ?? null;
-$flag_url = $origin['country_flag_url'] ?? null;
+// ── Meta line ───────────────────────────────────────────────────
+$country  = (string) ($origin['country']  ?? '');
+$variety  = (string) ($origin['variety']  ?? '');
+$flag_url = (string) ($origin['country_flag_url'] ?? '');
 $alt_str  = (!empty($origin['altitude']) && function_exists('wc_ras_format_altitude'))
-    ? wc_ras_format_altitude($origin['altitude'])
+    ? (string) wc_ras_format_altitude($origin['altitude'])
     : '';
 
-$region_label = implode(', ', array_filter(array($country, $region)));
-$has_flag_pill     = $region_label !== '';
-$has_variety_pill  = !empty($variety);
-$has_altitude_pill = $alt_str !== '';
-$has_any_pill = $has_flag_pill || $has_variety_pill || $has_altitude_pill;
+$meta = array();
+if ($country !== '') {
+    $meta[] = ($flag_url !== '' ? '<img class="flag-img" src="' . esc_url($flag_url) . '" alt="" /> ' : '') . esc_html($country);
+}
+if ($variety !== '') {
+    $meta[] = esc_html($variety);
+}
+if ($alt_str !== '') {
+    $meta[] = esc_html($alt_str);
+}
 
 // ── Smak ────────────────────────────────────────────────────────
 $taste_notes = $origin['taste_notes'] ?? null;
 
-if ($has_any_pill) : ?>
-<div class="origin-pills">
-    <?php if ($has_flag_pill) : ?>
-        <span class="pill flag">
-            <?php if ($flag_url) : ?>
-                <img class="flag-img" src="<?php echo esc_url($flag_url); ?>" alt="<?php echo esc_attr($country ?: ''); ?>" />
-            <?php endif; ?>
-        </span>
-    <?php endif; ?>
-
-    <?php if ($has_variety_pill) : ?>
-        <span class="pill variety"><?php echo esc_html($variety); ?></span>
-    <?php endif; ?>
-
-    <?php if ($has_altitude_pill) : ?>
-        <span class="pill altitude"><?php echo esc_html($alt_str); ?></span>
-    <?php endif; ?>
-</div>
-<?php endif; ?>
-
-<?php if (!empty($taste_notes)) : ?>
+if (!empty($taste_notes)) : ?>
 <p class="smak"><?php echo esc_html($taste_notes); ?></p>
 <?php endif; ?>
 
 <?php if ($description_text !== '') : ?>
 <p><?php echo wp_kses_post($description_text); ?></p>
+<?php endif; ?>
+
+<?php if ($meta) : ?>
+<p class="origin-meta"><?php
+    // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- parts escaped above
+    echo implode(' <span class="sep" aria-hidden="true">|</span> ', $meta);
+?></p>
 <?php endif; ?>
 
 <?php if ($cta_url !== '') : ?>

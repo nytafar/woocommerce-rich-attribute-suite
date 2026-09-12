@@ -60,13 +60,29 @@ selection-endring via samme `found_variation`-pipeline.
   `.woocommerce-product-gallery__wrapper` ved å prependes til
   hovedbilde-HTML-en via
   `woocommerce_single_product_image_thumbnail_html`-filteret.
+  **2026-09-12:** `origin-modal.js` flytter dialogen til
+  `.woocommerce-product-gallery` (rot, `position:relative` i WC core) ved
+  init. Inne i wrapperen havnet den i FlexSliders transformerte,
+  `overflow:hidden` slide-track og ble malt under hovedbildet på desktop.
   Shell-en er ferdig, og kortet populeres med *default-variantens*
   opprinnelse.
 - Kortet (`article[data-origin-modal-card]`) har `data-field="…"`-
   markører rundt alle hydrerbare felter. Elementer uten initialverdi
   rendres med `hidden`-attributt.
-- Chrome: prev-knapp, close-knapp, next-knapp (`data-origin-modal-nav`,
-  `data-origin-modal-close`).
+  **2026-09-12 (opprinnelseskort):** `.wc-ras-origin-modal__panel` holder
+  chrome + kort (én sticky enhet på desktop, temaet capper den til
+  viewport); kortet er selve *taggen* og scroller ikke;
+  `.wc-ras-origin-modal__body` inni er scroll-regionen. Spec-feltene
+  er en `<dl>` (`.wc-ras-origin-modal__row` med `data-field-group` per rad:
+  region, variety, altitude, producers, fermentation, drying) i stedet for
+  seksjonene producers/postharvest. Nye felt: `country` (stempel i hero),
+  `region` (egen rad), `ref` (term-slug i stubben) og `position`
+  («2 / 3» i chrome). Plugin-CSS-en skjuler en rad der alle felt er
+  `hidden` (`:has()`); temaet (myrvann `scss/plugins/_rich-attribute-suite.scss`)
+  eier alt visuelt: kraft-grunn, eyelet, ledger-leaders, stempel,
+  cupping-chart, perforert stubb.
+- Chrome: close-knapp (`data-origin-modal-close`). **Runde 2:** prev/next
+  erstattet av opprinnelsesstripen (se nederst).
 - Seksjoner: hero, producers, postharvest, flavour (radar + notes),
   certifications, permalink.
 
@@ -170,7 +186,7 @@ custom property senere hvis tema trenger annen verdi.
       full-viewport blocking.
 - [ ] Swipe høyre/venstre (mobil) → opprinnelse endres, både
       variation-description-raden og modal-kortet oppdateres.
-- [ ] Prev/next-knapper (desktop) → samme oppførsel.
+- [ ] Stripe-tiles nederst → samme oppførsel; valgt tile får `aria-current`.
 - [ ] ArrowLeft/ArrowRight mens modal har fokus → samme oppførsel.
 - [ ] Klikk attribute-knapp i formen med modal åpen (desktop) →
       modal-kortet oppdateres.
@@ -183,11 +199,61 @@ custom property senere hvis tema trenger annen verdi.
 - [ ] Opprinnelse uten `certifications` → sertifiserings-seksjon skjult.
 - [ ] Featured image bytter korrekt ved selection-endring.
 - [ ] "Se hele siden →"-lenken oppdateres til riktig permalink.
-- [ ] Produkt med bare én opprinnelse → prev/next disabled, swipe no-op.
+- [ ] Produkt med bare én opprinnelse → stripen skjult, swipe no-op.
 - [ ] Window-resize desktop ↔ mobil med åpen modal → lukker og
       gjenåpner i riktig modus.
 - [ ] Flagg-pille: viser flagg-SVG hvis `country_flag_url` finnes,
       ellers bare landsnavn (ingen placeholder).
+
+## Runde 2 (2026-09-12): arket er dialogen
+
+Brukerfeedback på opprinnelseskortet (kraft-grunn med kort inni = «inception»,
+prev/next feil UI, for lav tetthet, chart i boks i boks, sertifiseringer
+trenger ikke seksjon, «Opprinnelseskort» redundant) ga en ny modell:
+
+- **Dialogen ER papiret.** Ingen grunn, ingen indre kort, ingen padding
+  rundt, ingen eyelet/eyebrow. Kraft-konseptet ligger i materialet
+  (papirtone + korn) og trykket (blekklinjer, stempler, type).
+- **Desktop-høyde = hovedbildet.** `origin-modal.js` (`sizeToImage`) setter
+  inline `height` på dialogen til `.flex-viewport` (eller wrapperen uten
+  slider), cappet til det som er synlig under galleriets toppkant. Panel/
+  sticky er borte; `margin:0` i plugin-CSS fordi UA-`margin:auto` ellers
+  sentrerer en cappet høyde.
+- **Front-of-pack, ikke spec-ark.** Malen har nå: navn, stempelklynge
+  (land + sertifiseringer), fire fakta (varietet, høyde, produsenter,
+  fermentering) som `dl.wc-ras-origin-modal__facts` med `data-field-group`
+  per celle, radar, smaksnotater som chart-caption, lenke. Region, tagline,
+  produsentantall, fermenteringsmetode, tørking og referanse-slug er
+  fjernet fra modalen (finnes på hele siden). Fjernede felt er ufarlige for
+  eldre JS: `setField` er no-op når elementet mangler.
+- **Chartet er ankeret.** Begge renderere (`wc_ras_render_taste_radar_svg`,
+  `WcRasOriginRadar.render`) tegner nå 5:4 viewBox (400×320), to ringer
+  (50 % stiplet, 100 % heltrukken), spokes, tung polygon (fill-opacity .7,
+  stroke 3, round joins), vertex-merker r 4.5 og labels 13 med klasser
+  `wc-ras-radar__ring/spoke/polygon/vertex/label`. Temaet maler: stempel-
+  blekk multiplisert i papiret, papirringede vertex-merker, Mendl-labels.
+  Full bredde; på desktop flexer chartet til resthøyden.
+  Paritetssjekk: `ras-port/radar-parity.php` (wp eval-file, PHP vs node,
+  exit ≠ 0 ved avvik).
+- **Stempler er én familie.** Landstempel (rektangel, flagg inni, −3.5°) og
+  sertifiseringsstempler (runde, ikon inni, +5°), samme dobbeltring og
+  blekk. Ingen seksjon, ingen overskrift; navnet ligger i `title`/`alt`.
+- **Navigasjon = opprinnelseslisten.** `nav.wc-ras-origin-modal__strip`
+  nederst, bygget av JS fra `ctx.origins` (`buildStrip`), én
+  `button[data-origin-modal-select=slug]` per opprinnelse med rik side.
+  Valgt tile = `aria-current="true"` = posisjonsindikator (`updateStrip`,
+  scroller tilen i syne). Klikk går gjennom `selectOrigin(slug)`. Prev/
+  next/«1 / 3» er borte; piltaster og swipe (`stepSelection`) beholdt.
+  Strip skjules ved ≤ 1 opprinnelse.
+- **Inline-beskrivelse.** `variation-description.php`: piller er borte;
+  rekkefølgen er smak → tekst → `p.origin-meta` (flagg + land | varietet |
+  høyde, Mendl 0.78em, dempet) → CTA. Stil i temaets
+  `_rich-attribute-suite.scss`; de døde pille-reglene i `_variations.scss`
+  er fjernet.
+
+Verifisert i nettleser (staging, 1366×900 og 390×844): body scroller ikke
+på noen av dem for Qori Inti, stripen bytter opprinnelse og speiler
+`select`-verdien, ingen konsollfeil. Skjermbilder `ras-port/qa/100–105`.
 
 ## Avgrensning
 
@@ -198,3 +264,10 @@ custom property senere hvis tema trenger annen verdi.
 - Hvis et tema rendrer `pa_opprinnelse` som noe annet enn en `<select>`
   (f.eks. via Variation Swatches-plugin), committer `selectOrigin` ved
   å oppdatere den skjulte selecten som de pluginene synkroniserer mot.
+
+### Runde 3–4 (samme dag)
+
+- Sertifiseringer: rene ikoner ved siden av landstempelet.
+- Chart: hårlinjeringer 25/75 (prikket), 50 (stiplet), 100 (heltrukket); fyll .42, strek 1.75; toppaksen(e) får `wc-ras-radar__label--peak`; eyebrow «Smaksprofil» (`data-field="flavour-label"`) over chartet.
+- Desktop: arket dimensjoneres etter innhold (`maxHeight` = bildeboksen), skygge + dempet foto under (`.woocommerce-product-gallery:has(> dialog[open]:not(:modal))::after`). To kolonner; full spec (region, antall, metode, tørking) vises. Stripen skjult.
+- Mobil: bottom sheet (`--wc-ras-sheet-offset`, avrundede topphjørner, backdrop), håndtak (`[data-origin-modal-handle]`) i stedet for ×, faner nederst med linje på toppen, «more»-celler skjult. `wireDragToClose`: dra ned hvor som helst på kortet (body på scrolltopp, mer vertikalt enn horisontalt) lukker over 90 px; `close`-event scroller sidens egen tile inn i syne.

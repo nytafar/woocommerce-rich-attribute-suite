@@ -281,7 +281,10 @@ function wc_ras_build_origin_struct($page) {
     $struct = array(
         'name'                 => $page->post_title,
         'slug'                 => $page->post_name,
-        'excerpt'              => get_the_excerpt($page),
+        // Explicit tagline only: an auto-generated excerpt is 55 words of
+        // body copy plus the theme's read-more anchor, which the modal/card
+        // would print as literal markup.
+        'excerpt'              => has_excerpt($page) ? wp_strip_all_tags(get_the_excerpt($page)) : '',
         'permalink'            => get_permalink($page),
 
         'country'              => $country_name,

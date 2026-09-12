@@ -1,17 +1,15 @@
 /**
  * Rich Attribute Suite — origin-modal structural CSS.
  *
- * Scope: only the rules the dialog needs to *function*. Mobil går til
- * blocking fullskjerm, desktop går til non-blocking over gallery-området.
- * Alt visuelt (farger, typografi, spacing, kort-layout) eier temaet.
+ * Only what the dialog needs to *function*: positioning per mode, the
+ * scroll region, the fact grid, the origin strip's horizontal scroll and
+ * `[hidden]` precedence. Paint (colour, type, texture) belongs to the
+ * theme — see the child theme's scss/plugins/_rich-attribute-suite.scss
+ * on Myrvann for the reference skin.
  *
- * Ingen breakpoints: layouten bruker intrinsic grid (`auto-fit` +
- * `minmax(min(100%, N), 1fr)`) slik at seksjonene splittes når de har
- * plass og stacker når de ikke har det. Mobil- vs desktop-oppførsel
- * på selve dialogen drives av `:modal`-pseudo-klassen (satt av
- * `showModal()`), ikke av viewport-media.
- *
- * `[hidden]` må vinne over grid/flex-display — `!important` til slutt.
+ * Mobile vs desktop is driven by the `:modal` pseudo-class (set by
+ * showModal()), not by viewport media queries. The desktop height is set
+ * capped inline by origin-modal.js to the gallery's main image box.
  */
 
 /* ── Base ─────────────────────────────────────────────────────── */
@@ -31,13 +29,16 @@
     background: var(--bg-color-selected, #fff);
 }
 
-/* Modal (showModal): full viewport, blocking, backdrop */
+/* Modal (showModal): a bottom sheet — full width, offset from the top so
+   the page shows above it, blocking, backdrop. A theme may round the top
+   corners; overflow is clipped so they hold. */
 .wc-ras-origin-modal[open]:modal {
     position: fixed;
-    inset: 0;
+    inset: var(--wc-ras-sheet-offset, 1.5rem) 0 0 0;
     width: 100vw;
-    height: 100dvh;
+    height: calc(100dvh - var(--wc-ras-sheet-offset, 1.5rem));
     margin: 0;
+    overflow: hidden;
     z-index: 1000;
 }
 
@@ -45,24 +46,67 @@
     background: rgba(0, 0, 0, 0.55);
 }
 
-/* Non-modal (show): fyller parent-containeren (gallery på desktop) */
+/* Non-modal (show): overlays .woocommerce-product-gallery, which is
+   position:relative in WC core (origin-modal.js hoists the dialog there
+   and caps max-height to the main image box; the sheet is as tall as its
+   content). z-index clears the gallery image (auto), the variation ghost
+   (4) and the lightbox trigger (99). */
 .wc-ras-origin-modal[open]:not(:modal) {
+    position: absolute;
+    inset: 0 0 auto 0;
     width: 100%;
-    height: 100%;
+    height: auto;
+    margin: 0; /* UA margin:auto would centre a capped height */
+    z-index: 100;
 }
 
-/* ── Chrome (nav + close) ─────────────────────────────────────── */
+/* The strip duplicates the page's own origin tiles, which sit right next
+   to a non-modal dialog; it is a phone control. */
+.wc-ras-origin-modal[open]:not(:modal) .wc-ras-origin-modal__strip {
+    display: none;
+}
 
-.wc-ras-origin-modal__chrome {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-    padding: 0.5rem;
+/* ── Handle (phone) / close (desktop) ─────────────────────────── */
+
+.wc-ras-origin-modal__handle {
+    display: none;
     flex: 0 0 auto;
+    width: 100%;
+    padding: 0.6rem 0 0.2rem;
+    background: transparent;
+    border: 0;
+    cursor: grab;
+    touch-action: none;
 }
 
-.wc-ras-origin-modal__chrome button {
+.wc-ras-origin-modal__handle > span {
+    display: block;
+    width: 2.75rem;
+    height: 0.3rem;
+    margin: 0 auto;
+    border-radius: 999px;
+    background: currentColor;
+    opacity: 0.35;
+}
+
+.wc-ras-origin-modal[open]:modal .wc-ras-origin-modal__handle {
+    display: block;
+}
+
+.wc-ras-origin-modal[open]:modal .wc-ras-origin-modal__close {
+    display: none;
+}
+
+.wc-ras-origin-modal[open]:modal {
+    transition: transform 200ms ease;
+}
+
+
+.wc-ras-origin-modal__close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    z-index: 2;
     cursor: pointer;
     background: transparent;
     border: 0;
@@ -72,192 +116,163 @@
     color: inherit;
 }
 
-.wc-ras-origin-modal__chrome button[disabled] {
-    opacity: 0.4;
-    cursor: default;
-}
-
-/* ── Card + seksjoner ─────────────────────────────────────────── */
-/*
- * Struktur:
- *   hero       → alltid full bredde (banner-bilde + tittel + pills)
- *   body       → flex-wrap-grid over de 4 seksjonene. flex-basis 14em
- *                + flex-grow gjør at siste seksjon i en rad fyller
- *                det som er igjen — ingen orphan-kolonner når 3 tracks
- *                fitter men vi bare har 4 items.
- *   permalink  → alltid full bredde nederst.
- *
- * Innenfor hver seksjon gjør `auto-fit + minmax(min(100%, Nem), 1fr)`
- * at sub-elementer (post-harvest ferm|tørk, flavour radar|noter)
- * splittes når seksjonen har plass, stabler seg ellers.
- *
- * `text-align: start` overstyrer temaets sentrerte p-regler som
- * ellers lekker inn.
- */
+/* ── Card ─────────────────────────────────────────────────────── */
 
 .wc-ras-origin-modal__card {
     flex: 1 1 auto;
-    overflow: auto;
     min-height: 0;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
-    padding: 1rem;
+    position: relative;
     text-align: start;
 }
 
-.wc-ras-origin-modal__hero {
-    display: grid;
-    gap: 0.75rem;
-}
-
-.wc-ras-origin-modal__image {
-    display: block;
-    width: 100%;
-    height: auto;
-    aspect-ratio: 5 / 2;
-    max-height: 18em;
-    object-fit: cover;
-}
-
-.wc-ras-origin-modal__hero-text {
-    display: grid;
-    gap: 0.5rem;
-    align-content: start;
-}
-
-.wc-ras-origin-modal__pills {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem 0.75rem;
-    align-items: center;
-}
-
 .wc-ras-origin-modal__body {
+    flex: 1 1 auto;
+    overflow: auto;
+    min-height: 0;
+    position: relative;
     display: flex;
-    flex-wrap: wrap;
-    gap: 1.25rem;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
 }
 
-.wc-ras-origin-modal__body > .wc-ras-origin-modal__section {
-    flex: 1 1 14em;
+/* Ousia-style themes give `article > *`, `header > *` and `section > *` a
+   reading max-width with auto margins; inside the card every child is a
+   layout part, not prose. */
+.wc-ras-origin-modal :is(article, header, section) > * {
+    max-width: none;
+    margin-inline: 0;
+}
+
+/* Hero: name left, stamp cluster right; wraps when the name is long. */
+.wc-ras-origin-modal__hero {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.5rem 1rem;
+}
+
+.wc-ras-origin-modal__title {
+    margin: 0;
+    font-size: 1.25em;
+    line-height: 1.2;
+    flex: 1 1 12em;
     min-width: 0;
 }
 
-.wc-ras-origin-modal__section {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0.5rem;
-    align-content: start;
-}
-
-.wc-ras-origin-modal__section > * {
-    margin: 0;
-}
-
-.wc-ras-origin-modal__section.postharvest {
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 10em), 1fr));
-    gap: 1rem;
-}
-
-.wc-ras-origin-modal__section.flavour {
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 10em), 1fr));
-    gap: 1rem;
+.wc-ras-origin-modal__stamps,
+.wc-ras-origin-modal__certs {
+    display: inline-flex;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
 }
 
-.wc-ras-origin-modal__permalink {
-    margin: 0;
-}
-
-/* ── Seksjons-interne komponenter ─────────────────────────────── */
-
-.wc-ras-origin-modal .postharvest-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.75rem;
-}
-
-.wc-ras-origin-modal .postharvest-item .icon {
-    flex: 0 0 auto;
-    width: 1.25em;
-    height: 1.25em;
-}
-
-.wc-ras-origin-modal .postharvest-item .icon svg {
-    width: 100%;
-    height: 100%;
-}
-
-.wc-ras-origin-modal .postharvest-item .body {
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
-}
-
-.wc-ras-origin-modal .pill {
+.wc-ras-origin-modal__stamp {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
     line-height: 1.2;
 }
 
-.wc-ras-origin-modal .pill img,
-.wc-ras-origin-modal .pill svg,
+.wc-ras-origin-modal__stamp img,
 .flag-img {
     height: 1em;
 }
 
-.wc-ras-origin-modal .certifications ul {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    align-items: center;
-    list-style: none;
+/* Facts: label over value, two cells per row. Hidden cells collapse and
+   the rest auto-flow. The "more" cells and spans are the fuller spec a
+   theme may hide in modal (phone) mode. */
+.wc-ras-origin-modal__facts {
     margin: 0;
-    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem 1rem;
 }
 
-.wc-ras-origin-modal .certifications li {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
+.wc-ras-origin-modal__fact {
+    min-width: 0;
 }
 
-.wc-ras-origin-modal .certifications img {
-    width: 1.5em;
-    height: 1.5em;
+.wc-ras-origin-modal__fact dt,
+.wc-ras-origin-modal__fact dd {
+    margin: 0;
+    min-width: 0;
 }
 
-.wc-ras-origin-modal .radar {
+.wc-ras-origin-modal__fact dd {
+    overflow-wrap: anywhere;
+}
+
+/* A cell with nothing visible in it disappears, even when the JS group
+   toggle has not run (server render, older hydration); so does the whole
+   list when no cell is left. */
+.wc-ras-origin-modal__fact:not(:has([data-field]:not([hidden]))),
+.wc-ras-origin-modal__facts:not(:has(.wc-ras-origin-modal__fact:not([hidden]) [data-field]:not([hidden]))) {
+    display: none;
+}
+
+.wc-ras-origin-modal__fact--wide {
+    grid-column: 1 / -1;
+}
+
+.wc-ras-origin-modal__more {
     display: block;
 }
 
-/* ── Skala: små overskrifter + em-baserte SVG-er ──────────────── */
-
-.wc-ras-origin-modal__title {
-    font-size: 1.25em;
+.wc-ras-origin-modal__flavour-label {
     margin: 0;
-    line-height: 1.2;
 }
 
-.wc-ras-origin-modal__section h3,
-.wc-ras-origin-modal .notes h3 {
-    font-size: 1em;
-    margin: 0 0 0.25em;
-    line-height: 1.2;
-}
-
-.wc-ras-origin-modal svg.wc-ras-icon {
-    width: 1em;
-    height: 1em;
+/* Chart: full width of its slot, never centred by default. */
+.wc-ras-origin-modal__radar {
+    display: block;
 }
 
 .wc-ras-origin-modal .wc-ras-radar {
     display: block;
     width: 100%;
-    max-width: 12em;
     height: auto;
+    overflow: visible;
+}
+
+.wc-ras-origin-modal__notes,
+.wc-ras-origin-modal__permalink {
+    margin: 0;
+}
+
+/* ── Origin strip: one tile per origin, horizontal scroll ──────── */
+
+.wc-ras-origin-modal__strip {
+    flex: 0 0 auto;
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem 1rem;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scroll-padding-inline: 1rem;
+    -webkit-overflow-scrolling: touch;
+}
+
+.wc-ras-origin-modal__tile {
+    flex: 0 0 auto;
+    scroll-snap-align: start;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+    background: transparent;
+    border: 1px solid currentColor;
+    padding: 0.5em 0.9em;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.wc-ras-origin-modal__tile[aria-current="true"] {
+    cursor: default;
 }
 
 /* ── [hidden] wins over our display rules ─────────────────────── */

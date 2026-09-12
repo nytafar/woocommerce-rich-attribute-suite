@@ -190,10 +190,12 @@ add_action('wp_enqueue_scripts', 'wc_ras_origin_enqueue_modal_assets', 20);
 /**
  * Inject the modal shell as the first child of
  * `.woocommerce-product-gallery__wrapper` by prepending it to the main
- * gallery image HTML. That puts the dialog before the image in DOM
- * order while still scoping it inside the gallery wrapper, so desktop
- * `dialog.show()` sizes naturally (width/height: 100% of the wrapper)
- * and mobile `showModal()` pulls to the top layer regardless.
+ * gallery image HTML — the only filter that fires inside the gallery.
+ * origin-modal.js hoists the dialog to `.woocommerce-product-gallery`
+ * on init: inside the wrapper it would sit in FlexSlider's translated,
+ * overflow-hidden slide track and paint under the main image. Desktop
+ * `dialog.show()` then overlays the gallery (position:relative in WC
+ * core); mobile `showModal()` pulls to the top layer regardless.
  *
  * Idempotent: static flag guards against the filter firing for gallery
  * thumbnails too (in WC cores that route those through the same
