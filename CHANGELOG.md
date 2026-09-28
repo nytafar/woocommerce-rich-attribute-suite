@@ -5,7 +5,41 @@ All notable changes to the WooCommerce Rich Attribute Suite plugin will be docum
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.2.0] - 2025-01-14
+## [Unreleased]
+
+### Added
+- Enriched variation description, CPT templates and an origin modal with a hydrated single card: front-of-pack card, taste radar, origin tabs, bottom sheet on phones.
+- Variation gallery image fade with theme-tunable timing.
+- Products with `pa_opprinnelse` use client-side variations; the modal/CTA only shows for rich origin pages.
+- Declared HPOS (custom order tables) compatibility.
+
+### Changed
+- Attribute page single reworked as a paper substrate with polaroid hero; tighter, data-led mobile grid; inline spec-sheet producers section at ≥32rem.
+- Modal layout: banner hero, flex-wrap body, intrinsic container-query grid, rendered as first child of the gallery wrapper; assets cache-busted by filemtime.
+- Region label dropped from the variation-description flag pill.
+- AJAX-loaded forms are detected with a MutationObserver instead of `ajaxComplete`.
+- Adopted suite kit v2: version synced from the header, generated readme.txt, `tools/release`; standard header (GitHub Plugin URI, License GPL-2.0-or-later, Requires at least 5.5, Requires Plugins: woocommerce, WC tested up to 11.1) and cart/checkout blocks compatibility declared.
+
+### Fixed
+- Modal background; prev/next selects the radio inputs correctly.
+- Rewrite rules now re-flush on every version change (the gate was hard-coded to 1.3.0).
+
+### Removed
+- Stray tracked translation backup (`languages/*-backup-*.po~`).
+
+## [1.3.0] - 2026-04-23
+
+### Added
+- Origin data model for `pa_opprinnelse`: variety, producer, fermentation, drying, 8-axis taste profile, altitude and references as registered post meta, plus `origin_country` and `certification` taxonomies and grouped admin meta boxes.
+- `attribute_page` CPT is publicly queryable with an `/opprinnelser/` archive; Producer column in its list table.
+- Variation data carries a nested `wc_ras_origin` struct (replaces the flat region/smak preload).
+
+### Changed
+- Admin menu renamed to "Attribute Suite" with dynamic attribute term links.
+- Inline description JS migrated from jQuery to vanilla, with height and text fade on variation switch.
+- Editor CSS expanded to readable source; canvas-ritual styles removed.
+
+## [1.2.0] - 2026-01-14
 
 ### Added
 - **Public Attribute Archives**: Automatically enables public archives for all WooCommerce product attribute taxonomies
@@ -30,7 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New JavaScript `assets/js/admin-quick-edit.js` for quick edit description support
 - Deferred rewrite flush using transient option
 
-## [1.1.0] - 2025-01-14
+## [1.1.0] - 2026-01-14
 
 ### Added
 - **Inline Variation Description**: New feature that renders variation descriptions directly within the variations table, eliminating Cumulative Layout Shift (CLS) and DOM manipulation issues
@@ -47,6 +81,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New class `WC_RAS_Inline_Variation_Description` in `includes/inline-variation-description.php`
 - New template `templates/variation-no-description.php` based on WooCommerce 9.3.0
 - New JavaScript `assets/js/inline-variation-description.js` for handling variation updates
+
+## [1.0.2] - 2025-05-13
+
+### Added
+- New hook `wc_ras_enable_variation_meta_display` to control whether variation meta fields are displayed in product summary (disabled by default)
+
+### Fixed
+- Fixed issue where variation meta display was not properly controlled by hooks
+- Improved prioritization for variation descriptions (variation description → term description → attribute page content)
+- Fixed newly created attributes to use term description instead of attribute page content
+- Removed unnecessary wrapper div around attribute page content in taxonomy template
+
+## [1.0.1] - 2025-05-13
+
+### Added
+- Variation description fallback feature that uses attribute term descriptions when variation descriptions are empty
+- Support for Mix and Match products to display attribute term descriptions
+- Multiple filter hooks to enable/disable specific variation improvement features:
+  - `wc_ras_enable_variation_improvements` - Master toggle for all variation improvements
+  - `wc_ras_enable_variation_description_fallback` - Toggle for description fallback feature
+  - `wc_ras_enable_mnm_description_support` - Toggle for Mix and Match support
+  - `wc_ras_show_variation_description_links` - Toggle for "Learn more" links in descriptions
+  - `wc_ras_combine_all_term_descriptions` - Toggle for combining multiple term descriptions
 
 ## [1.0.0] - 2025-05-12
 
@@ -70,34 +127,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Created extensible architecture with developer hooks for custom meta fields
 - Implemented meta boxes for attribute properties in the admin interface
 - Added template overrides with fallback to theme templates
-
-## [1.0.1]
-
-### Added
-- Variation description fallback feature that uses attribute term descriptions when variation descriptions are empty
-- Support for Mix and Match products to display attribute term descriptions
-- Multiple filter hooks to enable/disable specific variation improvement features:
-  - `wc_ras_enable_variation_improvements` - Master toggle for all variation improvements
-  - `wc_ras_enable_variation_description_fallback` - Toggle for description fallback feature
-  - `wc_ras_enable_mnm_description_support` - Toggle for Mix and Match support
-  - `wc_ras_show_variation_description_links` - Toggle for "Learn more" links in descriptions
-  - `wc_ras_combine_all_term_descriptions` - Toggle for combining multiple term descriptions
-
-## [1.0.2] - 2025-05-13
-
-### Added
-- New hook `wc_ras_enable_variation_meta_display` to control whether variation meta fields are displayed in product summary (disabled by default)
-
-### Fixed
-- Fixed issue where variation meta display was not properly controlled by hooks
-- Improved prioritization for variation descriptions (variation description → term description → attribute page content)
-- Fixed newly created attributes to use term description instead of attribute page content
-- Removed unnecessary wrapper div around attribute page content in taxonomy template
-
-### Planned Features
-- Settings page for configuring default behavior
-- Additional meta fields for different attribute types
-- Template selection for different attribute taxonomies
-- Enhanced styling options for attribute metadata display
-- Import/export functionality for attribute content
-- Analytics integration for attribute page views

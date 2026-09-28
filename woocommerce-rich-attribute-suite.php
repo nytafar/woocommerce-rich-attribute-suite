@@ -1,16 +1,19 @@
 <?php
 /**
  * Plugin Name: WooCommerce Rich Attribute Suite
- * Plugin URI: https://jellum.net
+ * Plugin URI: https://github.com/nytafar/woocommerce-rich-attribute-suite
  * Description: Enhance WooCommerce product attribute taxonomy pages with rich, translatable, and fully editable content using native WordPress tools.
  * Version: 1.3.0
  * Author: Lasse Jellum
  * Author URI: https://jellum.net
  * Text Domain: wc-rich-attribute-suite
  * Domain Path: /languages
- * WC requires at least: 6.0
- * WC tested up to: 8.0
  * Requires PHP: 7.4
+ * Requires at least: 5.5
+ * Requires Plugins: woocommerce
+ * WC requires at least: 6.0
+ * WC tested up to: 11.1
+ * License: GPL-2.0-or-later
  *
  * @package WooCommerce_Rich_Attribute_Suite
  */
@@ -27,16 +30,14 @@ function wc_ras_is_woocommerce_active() {
     return in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')));
 }
 
-// Declare HPOS (custom order tables) compatibility. This plugin does not
-// read or write order data, so it is fully compatible with both legacy
-// post-based orders and the High-Performance Order Storage tables.
+// Declare HPOS (custom order tables) and cart/checkout blocks compatibility.
+// This plugin never reads or writes order data, and only hooks the single
+// product page (variations, gallery thumbnails, attribute taxonomies), so
+// neither order storage nor the block cart/checkout is affected.
 add_action('before_woocommerce_init', function () {
     if (class_exists(\Automattic\WooCommerce\Utilities\FeaturesUtil::class)) {
-        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility(
-            'custom_order_tables',
-            __FILE__,
-            true
-        );
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__, true);
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('cart_checkout_blocks', __FILE__, true);
     }
 });
 

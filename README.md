@@ -1,13 +1,12 @@
 # WooCommerce Rich Attribute Suite
 
 ![WooCommerce Rich Attribute Suite](https://img.shields.io/badge/WooCommerce-Rich%20Attribute%20Suite-7f54b3.svg)
-![Version 1.3.0](https://img.shields.io/badge/Version-1.3.0-brightgreen.svg)
 ![WooCommerce 6.0+](https://img.shields.io/badge/WooCommerce-6.0+-a46497.svg)
 ![PHP 7.4+](https://img.shields.io/badge/PHP-7.4+-8892BF.svg)
 
-Enhance WooCommerce product attribute taxonomy pages with rich, translatable, and fully editable content using native WordPress tools — without any external dependencies or plugins.
+## Description
 
-## 🎯 Purpose
+Enhance WooCommerce product attribute taxonomy pages with rich, translatable, and fully editable content using native WordPress tools — without any external dependencies or plugins.
 
 WooCommerce Rich Attribute Suite transforms standard attribute taxonomy pages into rich content experiences. It creates a seamless bridge between WooCommerce's attribute system and WordPress's powerful content editing capabilities.
 
@@ -39,7 +38,7 @@ WooCommerce Rich Attribute Suite transforms standard attribute taxonomy pages in
 | URL structure | Uses native attribute term archive URLs |
 | Extendability | Developers can register new meta fields or templates via hooks |
 
-## 🛠️ Installation
+## Installation
 
 1. Upload the `woocommerce-rich-attribute-suite` folder to the `/wp-content/plugins/` directory
 2. Activate the plugin through the 'Plugins' menu in WordPress
@@ -48,7 +47,7 @@ WooCommerce Rich Attribute Suite transforms standard attribute taxonomy pages in
 
 ## 📋 Requirements
 
-- WordPress 6.x or newer (block editor enabled)
+- WordPress 5.5 or newer (block editor enabled)
 - WooCommerce 6.0 or newer
 - PHP 7.4+ (recommended 8.x)
 - Object cache (optional, but performance boost)
@@ -164,6 +163,12 @@ add_filter('wc_ras_inline_description_animation_duration', function() {
 ## 📝 Changelog
 
 See [CHANGELOG.md](CHANGELOG.md) for a detailed history of changes.
+
+## Releasing
+
+Suite kit: https://github.com/nytafar/kaupang-docs/tree/main/kit. The header `Version:` is the only version source; the
+pre-commit hook syncs `WC_RAS_VERSION` and regenerates readme.txt (never edit it). Add lines under `## [Unreleased]` in
+CHANGELOG.md, then release with `sudo -u myrvann tools/release patch|minor|major [--push]`.
 
 ## 👨‍💻 Author
 

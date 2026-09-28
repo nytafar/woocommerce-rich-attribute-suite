@@ -91,7 +91,7 @@ add_action('init', 'wc_ras_maybe_flush_rewrite_rules', 99);
 function wc_ras_check_rewrite_rules_version() {
     $current_version = get_option('wc_ras_rewrite_version', '0');
 
-    if (version_compare($current_version, '1.3.0', '<')) {
+    if (version_compare($current_version, WC_RAS_VERSION, '<')) {
         update_option('wc_ras_flush_rewrite_rules', true);
         update_option('wc_ras_rewrite_version', WC_RAS_VERSION);
     }

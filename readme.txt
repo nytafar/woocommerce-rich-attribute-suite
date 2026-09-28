@@ -1,0 +1,126 @@
+=== WooCommerce Rich Attribute Suite ===
+Contributors: lassejellum
+Requires at least: 5.5
+Tested up to: 7.1
+Requires PHP: 7.4
+Stable tag: 1.3.0
+License: GPL-2.0-or-later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+
+Enhance WooCommerce product attribute taxonomy pages with rich, translatable, and fully editable content using native WordPress tools.
+
+== Description ==
+
+Enhance WooCommerce product attribute taxonomy pages with rich, translatable, and fully editable content using native WordPress tools — without any external dependencies or plugins.
+
+WooCommerce Rich Attribute Suite transforms standard attribute taxonomy pages into rich content experiences. It creates a seamless bridge between WooCommerce's attribute system and WordPress's powerful content editing capabilities.
+
+== Installation ==
+
+1. Upload the `woocommerce-rich-attribute-suite` folder to the `/wp-content/plugins/` directory
+2. Activate the plugin through the 'Plugins' menu in WordPress
+3. Navigate to Products → Attributes and ensure you have at least one attribute with "Enable archives" checked
+4. Edit an attribute term to access its rich content page
+
+== Changelog ==
+
+= 1.3.0 – 2026-04-23 =
+
+**Added**
+* Origin data model for `pa_opprinnelse`: variety, producer, fermentation, drying, 8-axis taste profile, altitude and references as registered post meta, plus `origin_country` and `certification` taxonomies and grouped admin meta boxes.
+* `attribute_page` CPT is publicly queryable with an `/opprinnelser/` archive; Producer column in its list table.
+* Variation data carries a nested `wc_ras_origin` struct (replaces the flat region/smak preload).
+
+**Changed**
+* Admin menu renamed to "Attribute Suite" with dynamic attribute term links.
+* Inline description JS migrated from jQuery to vanilla, with height and text fade on variation switch.
+* Editor CSS expanded to readable source; canvas-ritual styles removed.
+
+= 1.2.0 – 2026-01-14 =
+
+**Added**
+* **Public Attribute Archives**: Automatically enables public archives for all WooCommerce product attribute taxonomies
+  * Ensures `get_term_link()` returns proper permalink URLs instead of query-string URLs
+  * Sets up rewrite rules for attribute term archives
+  * Includes automatic rewrite flush on plugin activation
+* **Term List Enhancements**: New columns in attribute term list tables (Products → Attributes → Configure terms)
+  * Description column showing truncated term descriptions
+  * Rich Content column with Edit/Create buttons for attribute pages
+* **Quick Edit Description**: Edit term descriptions directly from the term list using Quick Edit
+  * Adds description textarea to the quick edit form
+  * Pre-populates with existing description
+* **Improved Attribute Page Creation**: When creating an attribute page from the term edit screen
+  * Title is pre-filled with the term name
+  * Post slug is automatically set to match the term slug
+  * Term linkage metadata is properly saved
+
+**Technical**
+* New function `wc_ras_enable_attribute_archives()` to filter taxonomy registration
+* New function `wc_ras_prefill_attribute_page_from_url()` for handling URL parameters
+* New function `wc_ras_save_attribute_page_term_link()` for saving term linkage on manual creation
+* New JavaScript `assets/js/admin-quick-edit.js` for quick edit description support
+* Deferred rewrite flush using transient option
+
+= 1.1.0 – 2026-01-14 =
+
+**Added**
+* **Inline Variation Description**: New feature that renders variation descriptions directly within the variations table, eliminating Cumulative Layout Shift (CLS) and DOM manipulation issues
+  * Must be explicitly enabled by theme using `add_filter('wc_ras_enable_inline_variation_description', '__return_true')`
+  * Auto-detects which attribute has term descriptions, or can be configured via `wc_ras_inline_variation_description_config` filter
+  * Overrides WooCommerce's variation template to remove default description div
+  * Uses JavaScript to update inline content on variation change without DOM manipulation
+* New filter hooks:
+  * `wc_ras_enable_inline_variation_description` - Enable/disable inline description (default: false)
+  * `wc_ras_inline_variation_description_config` - Configure target attribute and auto-detection
+  * `wc_ras_inline_description_animation_duration` - Customize show/hide animation duration
+
+**Technical**
+* New class `WC_RAS_Inline_Variation_Description` in `includes/inline-variation-description.php`
+* New template `templates/variation-no-description.php` based on WooCommerce 9.3.0
+* New JavaScript `assets/js/inline-variation-description.js` for handling variation updates
+
+= 1.0.2 – 2025-05-13 =
+
+**Added**
+* New hook `wc_ras_enable_variation_meta_display` to control whether variation meta fields are displayed in product summary (disabled by default)
+
+**Fixed**
+* Fixed issue where variation meta display was not properly controlled by hooks
+* Improved prioritization for variation descriptions (variation description → term description → attribute page content)
+* Fixed newly created attributes to use term description instead of attribute page content
+* Removed unnecessary wrapper div around attribute page content in taxonomy template
+
+= 1.0.1 – 2025-05-13 =
+
+**Added**
+* Variation description fallback feature that uses attribute term descriptions when variation descriptions are empty
+* Support for Mix and Match products to display attribute term descriptions
+* Multiple filter hooks to enable/disable specific variation improvement features:
+  * `wc_ras_enable_variation_improvements` - Master toggle for all variation improvements
+  * `wc_ras_enable_variation_description_fallback` - Toggle for description fallback feature
+  * `wc_ras_enable_mnm_description_support` - Toggle for Mix and Match support
+  * `wc_ras_show_variation_description_links` - Toggle for "Learn more" links in descriptions
+  * `wc_ras_combine_all_term_descriptions` - Toggle for combining multiple term descriptions
+
+= 1.0.0 – 2025-05-12 =
+
+**Added**
+* Initial release of WooCommerce Rich Attribute Suite
+* Custom Post Type (CPT) for attribute pages with full block editor support
+* Automatic content linkage between attribute terms and CPT by slug
+* Meta fields for region and taste profile (smak)
+* Admin UI integration with links between term edit screen and content pages
+* Custom columns in admin list view showing attribute metadata
+* Frontend template override for attribute archives
+* JavaScript for displaying attribute metadata on product variation changes
+* Performance optimization with object caching for all attribute page lookups
+* Full WooCommerce compatibility with attribute archives
+* Support for all product attribute taxonomies
+* Variation-level access to attribute metadata
+
+**Technical**
+* Implemented helper function `wc_ras_is_product_attribute()` for detecting attribute taxonomy pages
+* Added object cache integration for attribute page lookups
+* Created extensible architecture with developer hooks for custom meta fields
+* Implemented meta boxes for attribute properties in the admin interface
+* Added template overrides with fallback to theme templates
