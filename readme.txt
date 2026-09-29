@@ -3,7 +3,7 @@ Contributors: lassejellum
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.3.1
+Stable tag: 2.0.0
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -23,6 +23,34 @@ Kaupang Attribute Suite transforms standard attribute taxonomy pages into rich c
 4. Edit an attribute term to access its rich content page
 
 == Changelog ==
+
+= 2.0.0 – 2026-09-29 =
+
+Renamed WooCommerce Rich Attribute Suite → **Kaupang Attribute Suite** (Kaupang rename wave 2). Identity moved, the
+content model and the front-end contract stay frozen. No back-compat aliases (all consumers are in-house; the myrvann theme
+and the myrvann.no mu-plugin already listen on the new hook names).
+
+**Changed**
+* **Breaking — moved:** folder/main file/text domain `kaupang-attribute-suite` (catalogues renamed, `.mo`/`.l10n.php` regenerated),
+  constants `KAUPANG_ATTRIBUTE_SUITE_{VERSION,FILE,DIR,URL}`, functions `wc_ras_*` → `kaupang_attribute_suite_*`, classes
+  `WC_RAS_*` → `Kaupang_Attribute_Suite_*`, public hooks `wc_ras_*` → `kaupang/attribute-suite/*`
+  (`attribute_page_meta_box_fields`, `combine_all_term_descriptions`, `country_flag_map`, `enable_inline_variation_description`,
+  `enable_mnm_description_support`, `enable_variation_description_fallback`, `enable_variation_gallery_transition`,
+  `enable_variation_improvements`, `enable_variation_meta_display`, `fermentation_types`, `inline_description_animation_duration`,
+  `inline_variation_description_config`, `origin_single_after_content`, `origin_struct`, `producer_types`,
+  `register_attribute_page_meta_fields`, `save_attribute_page_meta`, `show_variation_description_links`, `taste_axes`),
+  options `kaupang_attribute_suite_{rewrite_version,flush_rewrite_rules}` (activation deletes the old `wc_ras_*` rows),
+  transient `kaupang_attribute_suite_pending_attribute_page_*`, admin nonces/AJAX (`kaupang_attribute_suite_save_term_description`),
+  admin form field names and object-cache groups, admin handle `kaupang-attribute-suite-admin-cert-picker`, block pattern
+  `kaupang-attribute-suite/origin-starter` + category `kaupang-attribute-suite`, theme override path
+  `{theme}/kaupang-attribute-suite/…`, the `kaupang_attribute_suite_inline_description` flag in the
+  `woocommerce_available_variation` struct (nothing reads it). Header per suite standard (GitHub Plugin URI,
+  `@package Kaupang\AttributeSuite`, Requires at least 6.5); the `active_plugins` scan is replaced by
+  `Requires Plugins: woocommerce` plus a `class_exists('WooCommerce')` bail that leaves the plugin inert without Woo.
+  Explicit `load_plugin_textdomain` added as belt and braces (core already registers the header's Text Domain + Domain Path).
+* **Kept (frozen contract):** CPT `attribute_page`, taxonomies `origin_country`/`certification`, all post/term meta, URL slugs
+  `opprinnelser/*` and the forced `pa_*` rewrites, the `wc_ras_origin` key in the `woocommerce_available_variation` struct,
+  front-end handles `wc-ras-*`, CSS `.wc-ras-*`/`--wc-ras-*`, JS globals `wcRas*` and `window.WcRasOriginRadar`, admin menu slugs.
 
 = 1.3.1 – 2026-09-29 =
 

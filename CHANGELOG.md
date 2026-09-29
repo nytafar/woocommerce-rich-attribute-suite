@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-09-29
+
 Renamed WooCommerce Rich Attribute Suite → **Kaupang Attribute Suite** (Kaupang rename wave 2). Identity moved, the
 content model and the front-end contract stay frozen. No back-compat aliases (all consumers are in-house; the myrvann theme
 and the myrvann.no mu-plugin already listen on the new hook names).

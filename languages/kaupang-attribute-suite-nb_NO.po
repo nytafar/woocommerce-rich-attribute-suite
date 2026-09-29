@@ -153,12 +153,9 @@ msgstr "Smaksprofilen for denne egenskapen"
 msgid "View Attribute Page"
 msgstr "Vis attributtside"
 
-#: kaupang-attribute-suite.php:74
-msgid "Kaupang Attribute Suite requires WooCommerce to be installed and activated."
-msgstr "Kaupang Attribute Suite krever at WooCommerce er installert og aktivert."
-
 #. Plugin Name of the plugin
 #: kaupang-attribute-suite.php
+#: includes/origin/block-patterns.php:25
 msgid "Kaupang Attribute Suite"
 msgstr ""
 
@@ -219,10 +216,6 @@ msgid "%d produsent"
 msgid_plural "%d produsenter"
 msgstr[0] ""
 msgstr[1] ""
-
-#: includes/origin/block-patterns.php:25
-msgid "Rich Attribute Suite"
-msgstr ""
 
 #: includes/origin/block-patterns.php:30
 msgid "Opprinnelse — 3-kolonne-start"
