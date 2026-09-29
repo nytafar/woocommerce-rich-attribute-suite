@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Region label dropped from the variation-description flag pill.
 - AJAX-loaded forms are detected with a MutationObserver instead of `ajaxComplete`.
 - Adopted suite kit v2: version synced from the header, generated readme.txt, `tools/release`; standard header (GitHub Plugin URI, License GPL-2.0-or-later, Requires at least 5.5, Requires Plugins: woocommerce, WC tested up to 11.1) and cart/checkout blocks compatibility declared.
+- Suite kit v2.1 (tooling, generated readme.txt); no runtime change.
 
 ### Fixed
 - Modal background; prev/next selects the radio inputs correctly.
