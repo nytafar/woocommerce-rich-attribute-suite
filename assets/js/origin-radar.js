@@ -1,7 +1,7 @@
 /**
- * WooCommerce Rich Attribute Suite — origin taste radar (vanilla JS).
+ * Kaupang Attribute Suite — origin taste radar (vanilla JS).
  *
- * Mirror of wc_ras_render_taste_radar_svg() in PHP. Both implementations
+ * Mirror of kaupang_attribute_suite_render_taste_radar_svg() in PHP. Both implementations
  * MUST produce visually identical output for the same input.
  *
  * Axis definitions come from window.wcRasTasteAxes (localized by
@@ -23,7 +23,7 @@
  *   const svg = window.WcRasOriginRadar.render(profile);
  *   // → SVG string with pentagon polygon (5 rated of 8), 8 spokes, 4 rings.
  *
- * @package WooCommerce_Rich_Attribute_Suite
+ * @package Kaupang\AttributeSuite
  */
 (function () {
     'use strict';

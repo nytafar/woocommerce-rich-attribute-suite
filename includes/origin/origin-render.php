@@ -6,7 +6,7 @@
  * PHP-only rendering (no enqueue). Keeps markup in helpers so both
  * template files and inline usage share output.
  *
- * @package WooCommerce_Rich_Attribute_Suite
+ * @package Kaupang\AttributeSuite
  */
 
 defined('ABSPATH') || exit;
@@ -15,7 +15,7 @@ defined('ABSPATH') || exit;
  * Resolve a flag URL for an origin_country term slug.
  *
  * Strategy:
- *   1. Filter `wc_ras_country_flag_map` can override with a slug→URL map
+ *   1. Filter `kaupang_attribute_suite_country_flag_map` can override with a slug→URL map
  *      (for CDN or attachment-based hosting).
  *   2. Otherwise, look for `/assets/flags/{slug}.svg` in the plugin.
  *   3. Return null if nothing found. Callers must null-handle.
@@ -23,20 +23,20 @@ defined('ABSPATH') || exit;
  * @param string $slug Country term slug.
  * @return string|null
  */
-function wc_ras_country_flag_url($slug) {
+function kaupang_attribute_suite_country_flag_url($slug) {
     if (empty($slug)) {
         return null;
     }
 
-    $map = function_exists('wc_ras_country_flag_map') ? wc_ras_country_flag_map() : array();
+    $map = function_exists('kaupang_attribute_suite_country_flag_map') ? kaupang_attribute_suite_country_flag_map() : array();
     if (!empty($map[$slug])) {
         return $map[$slug];
     }
 
     $rel  = 'assets/flags/' . $slug . '.svg';
-    $path = WC_RAS_PLUGIN_DIR . $rel;
+    $path = KAUPANG_ATTRIBUTE_SUITE_DIR . $rel;
     if (file_exists($path)) {
-        return WC_RAS_PLUGIN_URL . $rel;
+        return KAUPANG_ATTRIBUTE_SUITE_URL . $rel;
     }
 
     return null;
@@ -48,8 +48,8 @@ function wc_ras_country_flag_url($slug) {
  * @param string $slug Term slug (matches the attribute_page post slug).
  * @return string|null Permalink, or null if no matching CPT exists.
  */
-function wc_ras_get_origin_url($slug) {
-    $page = wc_ras_get_cached_attribute_page($slug);
+function kaupang_attribute_suite_get_origin_url($slug) {
+    $page = kaupang_attribute_suite_get_cached_attribute_page($slug);
     return $page ? get_permalink($page) : null;
 }
 
@@ -59,7 +59,7 @@ function wc_ras_get_origin_url($slug) {
  * @param array|null $altitude { min, max, unit } or null.
  * @return string Empty string if input invalid, else "1200 moh" / "1200–1450 moh".
  */
-function wc_ras_format_altitude($altitude) {
+function kaupang_attribute_suite_format_altitude($altitude) {
     if (!is_array($altitude)) {
         return '';
     }
@@ -89,20 +89,20 @@ function wc_ras_format_altitude($altitude) {
  * @param string $slug pa_opprinnelse term slug.
  * @return int
  */
-function wc_ras_origin_product_count($slug) {
+function kaupang_attribute_suite_origin_product_count($slug) {
     if (empty($slug)) {
         return 0;
     }
 
     $cache_key = 'origin_product_count_' . md5($slug);
-    $cached = wp_cache_get($cache_key, 'wc_ras_origin');
+    $cached = wp_cache_get($cache_key, 'kaupang_attribute_suite_origin');
     if ($cached !== false) {
         return (int) $cached;
     }
 
     $term = get_term_by('slug', $slug, 'pa_opprinnelse');
     if (!$term || is_wp_error($term)) {
-        wp_cache_set($cache_key, 0, 'wc_ras_origin', HOUR_IN_SECONDS);
+        wp_cache_set($cache_key, 0, 'kaupang_attribute_suite_origin', HOUR_IN_SECONDS);
         return 0;
     }
 
@@ -120,7 +120,7 @@ function wc_ras_origin_product_count($slug) {
     ));
 
     $count = (int) $query->found_posts;
-    wp_cache_set($cache_key, $count, 'wc_ras_origin', HOUR_IN_SECONDS);
+    wp_cache_set($cache_key, $count, 'kaupang_attribute_suite_origin', HOUR_IN_SECONDS);
     return $count;
 }
 
@@ -132,7 +132,7 @@ function wc_ras_origin_product_count($slug) {
  * @param string $class Extra CSS classes for the <svg>.
  * @return string
  */
-function wc_ras_origin_icon($key, $class = '') {
+function kaupang_attribute_suite_origin_icon($key, $class = '') {
     $class = $class ? ' ' . esc_attr($class) : '';
     $base  = 'wc-ras-icon wc-ras-icon--' . sanitize_html_class($key);
 
@@ -158,13 +158,13 @@ function wc_ras_origin_icon($key, $class = '') {
  *
  * If both $value and $freetext are empty, returns empty string (caller skips).
  *
- * @param string $icon_key Icon key for wc_ras_origin_icon().
+ * @param string $icon_key Icon key for kaupang_attribute_suite_origin_icon().
  * @param string $label    Translated label.
  * @param string $value    Structured value (e.g., "6 dager"). Optional.
  * @param string $freetext Free-text method description. Optional.
  * @return string
  */
-function wc_ras_render_postharvest_item($icon_key, $label, $value = '', $freetext = '') {
+function kaupang_attribute_suite_render_postharvest_item($icon_key, $label, $value = '', $freetext = '') {
     $value    = (string) $value;
     $freetext = (string) $freetext;
 
@@ -175,7 +175,7 @@ function wc_ras_render_postharvest_item($icon_key, $label, $value = '', $freetex
     ob_start();
     ?>
     <div class="postharvest-item">
-        <div class="icon"><?php echo wc_ras_origin_icon($icon_key); ?></div>
+        <div class="icon"><?php echo kaupang_attribute_suite_origin_icon($icon_key); ?></div>
         <div class="body">
             <div class="label"><?php echo esc_html($label); ?></div>
             <?php if ($value !== '') : ?>
@@ -197,15 +197,15 @@ function wc_ras_render_postharvest_item($icon_key, $label, $value = '', $freetex
  * @param int|null    $days  Days count.
  * @return string
  */
-function wc_ras_format_fermentation_value($type, $days) {
+function kaupang_attribute_suite_format_fermentation_value($type, $days) {
     $parts = array();
     if ($type) {
-        $types = function_exists('wc_ras_fermentation_types') ? wc_ras_fermentation_types() : array();
+        $types = function_exists('kaupang_attribute_suite_fermentation_types') ? kaupang_attribute_suite_fermentation_types() : array();
         $parts[] = isset($types[$type]) ? $types[$type] : $type;
     }
     if ($days) {
         $parts[] = sprintf(
-            _n('%d dag', '%d dager', (int) $days, 'wc-rich-attribute-suite'),
+            _n('%d dag', '%d dager', (int) $days, 'kaupang-attribute-suite'),
             (int) $days
         );
     }
@@ -222,7 +222,7 @@ function wc_ras_format_fermentation_value($type, $days) {
  * can paint (`wc-ras-radar__ring/spoke/polygon/vertex/label`).
  *
  * Semantics:
- *   - Rings and spokes are drawn for ALL axes in wc_ras_taste_axes().
+ *   - Rings and spokes are drawn for ALL axes in kaupang_attribute_suite_taste_axes().
  *   - Value polygon connects only axes with non-null scores, in axis order.
  *     Null means "not rated" — the polygon has fewer sides; points don't
  *     collapse to center.
@@ -237,7 +237,7 @@ function wc_ras_format_fermentation_value($type, $days) {
  * @param array $options       { size:int (height; width is 1.25×), show_labels:bool, show_grid:bool }.
  * @return string Inline SVG or empty string.
  */
-function wc_ras_render_taste_radar_svg($taste_profile, $options = array()) {
+function kaupang_attribute_suite_render_taste_radar_svg($taste_profile, $options = array()) {
     $defaults = array(
         'size'        => 320,
         'show_labels' => true,
@@ -246,7 +246,7 @@ function wc_ras_render_taste_radar_svg($taste_profile, $options = array()) {
     );
     $opt = array_merge($defaults, $options);
 
-    $axes = function_exists('wc_ras_taste_axes') ? wc_ras_taste_axes() : array();
+    $axes = function_exists('kaupang_attribute_suite_taste_axes') ? kaupang_attribute_suite_taste_axes() : array();
     if (empty($axes) || !is_array($taste_profile)) {
         return '';
     }
@@ -315,7 +315,7 @@ function wc_ras_render_taste_radar_svg($taste_profile, $options = array()) {
         $svg .= '</g>';
     }
 
-    // Value polygon — rated axes only, in wc_ras_taste_axes() order
+    // Value polygon — rated axes only, in kaupang_attribute_suite_taste_axes() order
     $points = array();
     foreach ($axis_keys as $key) {
         if (!isset($rated[$key])) {

@@ -1,5 +1,5 @@
 /**
- * WooCommerce Rich Attribute Suite — variation gallery transition.
+ * Kaupang Attribute Suite — variation gallery transition.
  *
  * Crossfades the gallery's main image when a variation is selected.
  *
@@ -24,7 +24,7 @@
  *
  * Vanilla JS for DOM work; jQuery only as the bridge to WC's variation events.
  *
- * @package WooCommerce_Rich_Attribute_Suite
+ * @package Kaupang\AttributeSuite
  */
 (function () {
     'use strict';

@@ -7,7 +7,7 @@
  * Editors can freely edit, add, or remove blocks — the pattern is a
  * starting point, not a rigid structure.
  *
- * @package WooCommerce_Rich_Attribute_Suite
+ * @package Kaupang\AttributeSuite
  */
 
 defined('ABSPATH') || exit;
@@ -15,26 +15,26 @@ defined('ABSPATH') || exit;
 /**
  * Register block patterns and category on init.
  */
-function wc_ras_origin_register_block_patterns() {
+function kaupang_attribute_suite_origin_register_block_patterns() {
     if (!function_exists('register_block_pattern')) {
         return;
     }
 
     if (function_exists('register_block_pattern_category')) {
-        register_block_pattern_category('wc-ras', array(
-            'label' => __('Rich Attribute Suite', 'wc-rich-attribute-suite'),
+        register_block_pattern_category('kaupang-attribute-suite', array(
+            'label' => __('Kaupang Attribute Suite', 'kaupang-attribute-suite'),
         ));
     }
 
-    register_block_pattern('wc-ras/origin-starter', array(
-        'title'       => __('Opprinnelse — 3-kolonne-start', 'wc-rich-attribute-suite'),
-        'description' => __('Startmal for opprinnelsesside: produsenter, sted, håndverk. Rediger fritt.', 'wc-rich-attribute-suite'),
-        'categories'  => array('wc-ras'),
+    register_block_pattern('kaupang-attribute-suite/origin-starter', array(
+        'title'       => __('Opprinnelse — 3-kolonne-start', 'kaupang-attribute-suite'),
+        'description' => __('Startmal for opprinnelsesside: produsenter, sted, håndverk. Rediger fritt.', 'kaupang-attribute-suite'),
+        'categories'  => array('kaupang-attribute-suite'),
         'keywords'    => array('opprinnelse', 'origin', 'columns'),
-        'content'     => wc_ras_origin_starter_pattern_markup(),
+        'content'     => kaupang_attribute_suite_origin_starter_pattern_markup(),
     ));
 }
-add_action('init', 'wc_ras_origin_register_block_patterns', 20);
+add_action('init', 'kaupang_attribute_suite_origin_register_block_patterns', 20);
 
 /**
  * Return the block markup for the origin-starter pattern.
@@ -44,14 +44,14 @@ add_action('init', 'wc_ras_origin_register_block_patterns', 20);
  *
  * @return string
  */
-function wc_ras_origin_starter_pattern_markup() {
-    $h_producers = esc_html__('Produsentene', 'wc-rich-attribute-suite');
-    $h_place     = esc_html__('Stedet', 'wc-rich-attribute-suite');
-    $h_craft     = esc_html__('Håndverket', 'wc-rich-attribute-suite');
+function kaupang_attribute_suite_origin_starter_pattern_markup() {
+    $h_producers = esc_html__('Produsentene', 'kaupang-attribute-suite');
+    $h_place     = esc_html__('Stedet', 'kaupang-attribute-suite');
+    $h_craft     = esc_html__('Håndverket', 'kaupang-attribute-suite');
 
-    $p_producers = esc_html__('Hvem dyrker kakaoen? Kooperativet, familien, den sosiale virksomheten. Skriv om menneskene bak bønnene.', 'wc-rich-attribute-suite');
-    $p_place     = esc_html__('Hvor ligger opprinnelsen? Klima, jordsmonn, landskap, høyde. Det stedet smaken kommer fra.', 'wc-rich-attribute-suite');
-    $p_craft     = esc_html__('Hvordan behandles bønnene? Fermentering, tørking, lokal tradisjon. Det som gjør akkurat denne opprinnelsen distinkt.', 'wc-rich-attribute-suite');
+    $p_producers = esc_html__('Hvem dyrker kakaoen? Kooperativet, familien, den sosiale virksomheten. Skriv om menneskene bak bønnene.', 'kaupang-attribute-suite');
+    $p_place     = esc_html__('Hvor ligger opprinnelsen? Klima, jordsmonn, landskap, høyde. Det stedet smaken kommer fra.', 'kaupang-attribute-suite');
+    $p_craft     = esc_html__('Hvordan behandles bønnene? Fermentering, tørking, lokal tradisjon. Det som gjør akkurat denne opprinnelsen distinkt.', 'kaupang-attribute-suite');
 
     return '<!-- wp:columns -->
 <div class="wp-block-columns">

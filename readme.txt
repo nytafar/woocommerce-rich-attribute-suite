@@ -1,6 +1,6 @@
-=== WooCommerce Rich Attribute Suite ===
+=== Kaupang Attribute Suite ===
 Contributors: lassejellum
-Requires at least: 5.5
+Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 7.4
 Stable tag: 1.3.1
@@ -13,11 +13,11 @@ Enhance WooCommerce product attribute taxonomy pages with rich, translatable, an
 
 Enhance WooCommerce product attribute taxonomy pages with rich, translatable, and fully editable content using native WordPress tools — without any external dependencies or plugins.
 
-WooCommerce Rich Attribute Suite transforms standard attribute taxonomy pages into rich content experiences. It creates a seamless bridge between WooCommerce's attribute system and WordPress's powerful content editing capabilities.
+Kaupang Attribute Suite transforms standard attribute taxonomy pages into rich content experiences. It creates a seamless bridge between WooCommerce's attribute system and WordPress's powerful content editing capabilities.
 
 == Installation ==
 
-1. Upload the `woocommerce-rich-attribute-suite` folder to the `/wp-content/plugins/` directory
+1. Upload the `kaupang-attribute-suite` folder to the `/wp-content/plugins/` directory
 2. Activate the plugin through the 'Plugins' menu in WordPress
 3. Navigate to Products → Attributes and ensure you have at least one attribute with "Enable archives" checked
 4. Edit an attribute term to access its rich content page

@@ -1,9 +1,9 @@
 /**
- * WooCommerce Rich Attribute Suite - Admin Quick Edit
+ * Kaupang Attribute Suite - Admin Quick Edit
  * 
  * Handles the description field in quick edit for product attribute terms.
  *
- * @package WooCommerce_Rich_Attribute_Suite
+ * @package Kaupang\AttributeSuite
  * @since 1.2.0
  */
 (function($) {

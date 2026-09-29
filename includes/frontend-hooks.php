@@ -19,7 +19,7 @@
  *   - woocommerce_taxonomy_archive_description output — ditto.
  *   - variation-display.js enqueue — lives in variation-improvements.php.
  *
- * @package WooCommerce_Rich_Attribute_Suite
+ * @package Kaupang\AttributeSuite
  */
 
 defined('ABSPATH') || exit;
@@ -30,7 +30,7 @@ defined('ABSPATH') || exit;
  * Ensures get_term_link() returns proper permalinks so Woo-style attribute
  * filtering URLs keep working independently of our CPT archive.
  */
-function wc_ras_enable_attribute_archives() {
+function kaupang_attribute_suite_enable_attribute_archives() {
     $attribute_taxonomies = wc_get_attribute_taxonomies();
 
     if (empty($attribute_taxonomies)) {
@@ -39,11 +39,11 @@ function wc_ras_enable_attribute_archives() {
 
     foreach ($attribute_taxonomies as $tax) {
         $taxonomy_name = wc_attribute_taxonomy_name($tax->attribute_name);
-        add_filter("woocommerce_taxonomy_args_{$taxonomy_name}", 'wc_ras_filter_attribute_taxonomy_args', 10, 1);
+        add_filter("woocommerce_taxonomy_args_{$taxonomy_name}", 'kaupang_attribute_suite_filter_attribute_taxonomy_args', 10, 1);
     }
 }
 // Run early, before WooCommerce registers taxonomies
-add_action('init', 'wc_ras_enable_attribute_archives', 1);
+add_action('init', 'kaupang_attribute_suite_enable_attribute_archives', 1);
 
 /**
  * Filter attribute taxonomy args to enable public archives.
@@ -51,7 +51,7 @@ add_action('init', 'wc_ras_enable_attribute_archives', 1);
  * @param array $args Taxonomy registration args.
  * @return array Modified args.
  */
-function wc_ras_filter_attribute_taxonomy_args($args) {
+function kaupang_attribute_suite_filter_attribute_taxonomy_args($args) {
     $args['public'] = true;
     $args['query_var'] = true;
 
@@ -76,29 +76,29 @@ function wc_ras_filter_attribute_taxonomy_args($args) {
 /**
  * Flush rewrite rules when the plugin is activated or settings change.
  */
-function wc_ras_maybe_flush_rewrite_rules() {
-    if (get_option('wc_ras_flush_rewrite_rules')) {
+function kaupang_attribute_suite_maybe_flush_rewrite_rules() {
+    if (get_option('kaupang_attribute_suite_flush_rewrite_rules')) {
         flush_rewrite_rules();
-        delete_option('wc_ras_flush_rewrite_rules');
+        delete_option('kaupang_attribute_suite_flush_rewrite_rules');
     }
 }
-add_action('init', 'wc_ras_maybe_flush_rewrite_rules', 99);
+add_action('init', 'kaupang_attribute_suite_maybe_flush_rewrite_rules', 99);
 
 /**
  * Bump rewrite-flush on version change so new CPT/taxonomy rewrite rules
  * take effect without asking the admin to visit Permalinks manually.
  */
-function wc_ras_check_rewrite_rules_version() {
-    $current_version = get_option('wc_ras_rewrite_version', '0');
+function kaupang_attribute_suite_check_rewrite_rules_version() {
+    $current_version = get_option('kaupang_attribute_suite_rewrite_version', '0');
 
-    if (version_compare($current_version, WC_RAS_VERSION, '<')) {
-        update_option('wc_ras_flush_rewrite_rules', true);
-        update_option('wc_ras_rewrite_version', WC_RAS_VERSION);
+    if (version_compare($current_version, KAUPANG_ATTRIBUTE_SUITE_VERSION, '<')) {
+        update_option('kaupang_attribute_suite_flush_rewrite_rules', true);
+        update_option('kaupang_attribute_suite_rewrite_version', KAUPANG_ATTRIBUTE_SUITE_VERSION);
     }
 }
-add_action('init', 'wc_ras_check_rewrite_rules_version', 98);
+add_action('init', 'kaupang_attribute_suite_check_rewrite_rules_version', 98);
 
-function wc_ras_force_client_side_variations_threshold($threshold, $product) {
+function kaupang_attribute_suite_force_client_side_variations_threshold($threshold, $product) {
     if (!$product instanceof WC_Product || !$product->is_type('variable')) {
         return $threshold;
     }
@@ -110,25 +110,25 @@ function wc_ras_force_client_side_variations_threshold($threshold, $product) {
 
     return max((int) $threshold, count($product->get_children()));
 }
-add_filter('woocommerce_ajax_variation_threshold', 'wc_ras_force_client_side_variations_threshold', 99, 2);
+add_filter('woocommerce_ajax_variation_threshold', 'kaupang_attribute_suite_force_client_side_variations_threshold', 99, 2);
 
 /**
  * Get cached attribute_page by term slug.
  *
- * Cache group `wc_ras_attribute_page` — kept in sync with the legacy
- * `wc_ras_attribute_pages` group by wc_ras_invalidate_attribute_page_cache.
+ * Cache group `kaupang_attribute_suite_attribute_page` — kept in sync with the legacy
+ * `kaupang_attribute_suite_attribute_pages` group by kaupang_attribute_suite_invalidate_attribute_page_cache.
  *
  * @param string $slug The attribute term slug.
  * @return WP_Post|null The attribute page or null if not found.
  */
-function wc_ras_get_cached_attribute_page($slug) {
+function kaupang_attribute_suite_get_cached_attribute_page($slug) {
     $key = 'attribute_page_' . md5($slug);
-    $cached = wp_cache_get($key, 'wc_ras_attribute_page');
+    $cached = wp_cache_get($key, 'kaupang_attribute_suite_attribute_page');
 
     if ($cached === false) {
         $post = get_page_by_path($slug, OBJECT, 'attribute_page');
         $cached = $post ? $post->ID : 0;
-        wp_cache_set($key, $cached, 'wc_ras_attribute_page', HOUR_IN_SECONDS);
+        wp_cache_set($key, $cached, 'kaupang_attribute_suite_attribute_page', HOUR_IN_SECONDS);
     }
 
     return $cached ? get_post($cached) : null;
@@ -178,7 +178,7 @@ function wc_ras_get_cached_attribute_page($slug) {
  * @param WP_Post|null $page Attribute page post.
  * @return array|null Origin struct, or null if $page is null.
  */
-function wc_ras_build_origin_struct($page) {
+function kaupang_attribute_suite_build_origin_struct($page) {
     if (!$page instanceof WP_Post) {
         return null;
     }
@@ -196,8 +196,8 @@ function wc_ras_build_origin_struct($page) {
     }
 
     // Flag URL (null if no SVG present)
-    $country_flag_url = $country_slug && function_exists('wc_ras_country_flag_url')
-        ? wc_ras_country_flag_url($country_slug)
+    $country_flag_url = $country_slug && function_exists('kaupang_attribute_suite_country_flag_url')
+        ? kaupang_attribute_suite_country_flag_url($country_slug)
         : null;
     if (empty($country_flag_url)) {
         $country_flag_url = null;
@@ -259,9 +259,9 @@ function wc_ras_build_origin_struct($page) {
 
     $region_label = implode(', ', array_filter(array($country_name, $region_raw)));
 
-    $altitude_label = function_exists('wc_ras_format_altitude') ? wc_ras_format_altitude($altitude) : '';
+    $altitude_label = function_exists('kaupang_attribute_suite_format_altitude') ? kaupang_attribute_suite_format_altitude($altitude) : '';
 
-    $producer_types_map = function_exists('wc_ras_producer_types') ? wc_ras_producer_types() : array();
+    $producer_types_map = function_exists('kaupang_attribute_suite_producer_types') ? kaupang_attribute_suite_producer_types() : array();
     $producer_type_label = ($producer_type_raw && isset($producer_types_map[$producer_type_raw]))
         ? $producer_types_map[$producer_type_raw]
         : '';
@@ -269,13 +269,13 @@ function wc_ras_build_origin_struct($page) {
     $producer_count_label = ($producer_count_value !== null)
         ? sprintf(
             /* translators: %d: number of producers */
-            _n('%d produsent', '%d produsenter', $producer_count_value, 'wc-rich-attribute-suite'),
+            _n('%d produsent', '%d produsenter', $producer_count_value, 'kaupang-attribute-suite'),
             $producer_count_value
         )
         : '';
 
-    $fermentation_value = function_exists('wc_ras_format_fermentation_value')
-        ? wc_ras_format_fermentation_value($fermentation_type_raw, $fermentation_days_val)
+    $fermentation_value = function_exists('kaupang_attribute_suite_format_fermentation_value')
+        ? kaupang_attribute_suite_format_fermentation_value($fermentation_type_raw, $fermentation_days_val)
         : '';
 
     $struct = array(
@@ -322,7 +322,7 @@ function wc_ras_build_origin_struct($page) {
      * @param array   $struct The built origin struct.
      * @param WP_Post $page   The source attribute_page post.
      */
-    return apply_filters('wc_ras_origin_struct', $struct, $page);
+    return apply_filters('kaupang/attribute-suite/origin_struct', $struct, $page);
 }
 
 /**
@@ -332,7 +332,7 @@ function wc_ras_build_origin_struct($page) {
  * @param string $attribute    Attribute taxonomy (default: pa_opprinnelse).
  * @return WP_Post|null Matching attribute_page post, or null.
  */
-function wc_ras_get_attribute_page_for_variation($variation_id, $attribute = 'pa_opprinnelse') {
+function kaupang_attribute_suite_get_attribute_page_for_variation($variation_id, $attribute = 'pa_opprinnelse') {
     $product = wc_get_product($variation_id);
     if (!$product || !$product->is_type('variation')) {
         return null;
@@ -348,7 +348,7 @@ function wc_ras_get_attribute_page_for_variation($variation_id, $attribute = 'pa
         return null;
     }
 
-    return wc_ras_get_cached_attribute_page($term->slug);
+    return kaupang_attribute_suite_get_cached_attribute_page($term->slug);
 }
 
 /**
@@ -359,17 +359,17 @@ function wc_ras_get_attribute_page_for_variation($variation_id, $attribute = 'pa
  * @param WC_Product_Variation $variation Variation object.
  * @return array
  */
-function wc_ras_add_origin_to_variation($data, $product, $variation) {
-    $page = wc_ras_get_attribute_page_for_variation($variation->get_id());
+function kaupang_attribute_suite_add_origin_to_variation($data, $product, $variation) {
+    $page = kaupang_attribute_suite_get_attribute_page_for_variation($variation->get_id());
     if (!$page) {
         return $data;
     }
 
-    $struct = wc_ras_build_origin_struct($page);
+    $struct = kaupang_attribute_suite_build_origin_struct($page);
     if ($struct) {
         $data['wc_ras_origin'] = $struct;
     }
 
     return $data;
 }
-add_filter('woocommerce_available_variation', 'wc_ras_add_origin_to_variation', 20, 3);
+add_filter('woocommerce_available_variation', 'kaupang_attribute_suite_add_origin_to_variation', 20, 3);

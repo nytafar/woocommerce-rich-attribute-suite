@@ -7,7 +7,7 @@
  * producer types, fermentation types, and country flag mappings without
  * touching storage or the database.
  *
- * @package WooCommerce_Rich_Attribute_Suite
+ * @package Kaupang\AttributeSuite
  */
 
 defined('ABSPATH') || exit;
@@ -22,19 +22,19 @@ defined('ABSPATH') || exit;
  *
  * @return array<string,string> Map of axis_key => translated label.
  */
-function wc_ras_taste_axes() {
+function kaupang_attribute_suite_taste_axes() {
     $axes = array(
-        'acidity'    => __('Syre', 'wc-rich-attribute-suite'),
-        'sweetness'  => __('Sødme', 'wc-rich-attribute-suite'),
-        'bitterness' => __('Bitter', 'wc-rich-attribute-suite'),
-        'body'       => __('Kropp', 'wc-rich-attribute-suite'),
-        'fruit'      => __('Frukt', 'wc-rich-attribute-suite'),
-        'floral'     => __('Blomst', 'wc-rich-attribute-suite'),
-        'earth'      => __('Jord', 'wc-rich-attribute-suite'),
-        'spice'      => __('Krydder', 'wc-rich-attribute-suite'),
+        'acidity'    => __('Syre', 'kaupang-attribute-suite'),
+        'sweetness'  => __('Sødme', 'kaupang-attribute-suite'),
+        'bitterness' => __('Bitter', 'kaupang-attribute-suite'),
+        'body'       => __('Kropp', 'kaupang-attribute-suite'),
+        'fruit'      => __('Frukt', 'kaupang-attribute-suite'),
+        'floral'     => __('Blomst', 'kaupang-attribute-suite'),
+        'earth'      => __('Jord', 'kaupang-attribute-suite'),
+        'spice'      => __('Krydder', 'kaupang-attribute-suite'),
     );
 
-    return apply_filters('wc_ras_taste_axes', $axes);
+    return apply_filters('kaupang/attribute-suite/taste_axes', $axes);
 }
 
 /**
@@ -42,16 +42,16 @@ function wc_ras_taste_axes() {
  *
  * @return array<string,string> Map of enum_value => translated label.
  */
-function wc_ras_producer_types() {
+function kaupang_attribute_suite_producer_types() {
     $types = array(
-        'single_estate'     => __('Single estate', 'wc-rich-attribute-suite'),
-        'family_farm'       => __('Family farm', 'wc-rich-attribute-suite'),
-        'cooperative'       => __('Cooperative', 'wc-rich-attribute-suite'),
-        'social_enterprise' => __('Social enterprise', 'wc-rich-attribute-suite'),
-        'smallholders'      => __('Smallholders', 'wc-rich-attribute-suite'),
+        'single_estate'     => __('Single estate', 'kaupang-attribute-suite'),
+        'family_farm'       => __('Family farm', 'kaupang-attribute-suite'),
+        'cooperative'       => __('Cooperative', 'kaupang-attribute-suite'),
+        'social_enterprise' => __('Social enterprise', 'kaupang-attribute-suite'),
+        'smallholders'      => __('Smallholders', 'kaupang-attribute-suite'),
     );
 
-    return apply_filters('wc_ras_producer_types', $types);
+    return apply_filters('kaupang/attribute-suite/producer_types', $types);
 }
 
 /**
@@ -59,14 +59,14 @@ function wc_ras_producer_types() {
  *
  * @return array<string,string> Map of enum_value => translated label.
  */
-function wc_ras_fermentation_types() {
+function kaupang_attribute_suite_fermentation_types() {
     $types = array(
-        'centralized'   => __('Sentralisert', 'wc-rich-attribute-suite'),
-        'decentralized' => __('Desentralisert', 'wc-rich-attribute-suite'),
-        'mixed'         => __('Blandet', 'wc-rich-attribute-suite'),
+        'centralized'   => __('Sentralisert', 'kaupang-attribute-suite'),
+        'decentralized' => __('Desentralisert', 'kaupang-attribute-suite'),
+        'mixed'         => __('Blandet', 'kaupang-attribute-suite'),
     );
 
-    return apply_filters('wc_ras_fermentation_types', $types);
+    return apply_filters('kaupang/attribute-suite/fermentation_types', $types);
 }
 
 /**
@@ -74,11 +74,11 @@ function wc_ras_fermentation_types() {
  *
  * Default is empty. Site owners register mappings via the filter if they
  * want to override the file-based resolution in
- * wc_ras_country_flag_url() (origin-render.php). Slug convention:
+ * kaupang_attribute_suite_country_flag_url() (origin-render.php). Slug convention:
  * ISO-ish lowercase names (peru, tanzania, nicaragua, …).
  *
  * @return array<string,string>
  */
-function wc_ras_country_flag_map() {
-    return apply_filters('wc_ras_country_flag_map', array());
+function kaupang_attribute_suite_country_flag_map() {
+    return apply_filters('kaupang/attribute-suite/country_flag_map', array());
 }

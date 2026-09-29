@@ -3,7 +3,7 @@
  * certification taxonomy's icon_svg_id term meta. Vanilla JS; no jQuery
  * required. wp.media is loaded by wp_enqueue_media() from the PHP side.
  *
- * @package WooCommerce_Rich_Attribute_Suite
+ * @package Kaupang\AttributeSuite
  */
 (function () {
     'use strict';

@@ -4,7 +4,7 @@
  *
  * Handles admin UI integration for attribute pages.
  *
- * @package WooCommerce_Rich_Attribute_Suite
+ * @package Kaupang\AttributeSuite
  */
 
 defined('ABSPATH') || exit;
@@ -14,7 +14,7 @@ defined('ABSPATH') || exit;
  *
  * @param WP_Term $term The term being edited
  */
-function wc_ras_add_term_edit_link($term) {
+function kaupang_attribute_suite_add_term_edit_link($term) {
     // Only proceed if this is a WooCommerce product attribute taxonomy
     if (strpos($term->taxonomy, 'pa_') !== 0) {
         return;
@@ -28,14 +28,14 @@ function wc_ras_add_term_edit_link($term) {
         ?>
         <tr class="form-field">
             <th scope="row" valign="top">
-                <label><?php _e('Rich Content', 'wc-rich-attribute-suite'); ?></label>
+                <label><?php _e('Rich Content', 'kaupang-attribute-suite'); ?></label>
             </th>
             <td>
                 <a href="<?php echo esc_url($edit_url); ?>" class="button">
-                    <?php _e('Edit Rich Content', 'wc-rich-attribute-suite'); ?>
+                    <?php _e('Edit Rich Content', 'kaupang-attribute-suite'); ?>
                 </a>
                 <p class="description">
-                    <?php _e('Edit the rich content page for this attribute term using the block editor.', 'wc-rich-attribute-suite'); ?>
+                    <?php _e('Edit the rich content page for this attribute term using the block editor.', 'kaupang-attribute-suite'); ?>
                 </p>
             </td>
         </tr>
@@ -46,14 +46,14 @@ function wc_ras_add_term_edit_link($term) {
         ?>
         <tr class="form-field">
             <th scope="row" valign="top">
-                <label><?php _e('Rich Content', 'wc-rich-attribute-suite'); ?></label>
+                <label><?php _e('Rich Content', 'kaupang-attribute-suite'); ?></label>
             </th>
             <td>
                 <a href="<?php echo esc_url($create_url); ?>" class="button">
-                    <?php _e('Create Rich Content Page', 'wc-rich-attribute-suite'); ?>
+                    <?php _e('Create Rich Content Page', 'kaupang-attribute-suite'); ?>
                 </a>
                 <p class="description">
-                    <?php _e('No rich content page exists for this attribute term. Click to create one.', 'wc-rich-attribute-suite'); ?>
+                    <?php _e('No rich content page exists for this attribute term. Click to create one.', 'kaupang-attribute-suite'); ?>
                 </p>
             </td>
         </tr>
@@ -62,17 +62,17 @@ function wc_ras_add_term_edit_link($term) {
 }
 
 // Add the link to all product attribute taxonomy term edit screens
-function wc_ras_register_term_edit_hooks() {
+function kaupang_attribute_suite_register_term_edit_hooks() {
     $attribute_taxonomies = wc_get_attribute_taxonomies();
     
     if (!empty($attribute_taxonomies)) {
         foreach ($attribute_taxonomies as $taxonomy) {
             $taxonomy_name = wc_attribute_taxonomy_name($taxonomy->attribute_name);
-            add_action("{$taxonomy_name}_edit_form_fields", 'wc_ras_add_term_edit_link', 10, 1);
+            add_action("{$taxonomy_name}_edit_form_fields", 'kaupang_attribute_suite_add_term_edit_link', 10, 1);
         }
     }
 }
-add_action('admin_init', 'wc_ras_register_term_edit_hooks');
+add_action('admin_init', 'kaupang_attribute_suite_register_term_edit_hooks');
 
 /**
  * Add custom columns to the attribute_page post type admin list
@@ -80,7 +80,7 @@ add_action('admin_init', 'wc_ras_register_term_edit_hooks');
  * @param array $columns Existing columns
  * @return array Modified columns
  */
-function wc_ras_add_attribute_page_columns($columns) {
+function kaupang_attribute_suite_add_attribute_page_columns($columns) {
     $new_columns = array();
     
     // Insert columns after title but before date
@@ -88,17 +88,17 @@ function wc_ras_add_attribute_page_columns($columns) {
         $new_columns[$key] = $value;
         
         if ($key === 'title') {
-            $new_columns['attribute_taxonomy'] = __('Attribute Type', 'wc-rich-attribute-suite');
-            $new_columns['attribute_term'] = __('Attribute Term', 'wc-rich-attribute-suite');
-            $new_columns['region'] = __('Region', 'wc-rich-attribute-suite');
-            $new_columns['smak'] = __('Smak', 'wc-rich-attribute-suite');
-            $new_columns['producer_type'] = __('Producer', 'wc-rich-attribute-suite');
+            $new_columns['attribute_taxonomy'] = __('Attribute Type', 'kaupang-attribute-suite');
+            $new_columns['attribute_term'] = __('Attribute Term', 'kaupang-attribute-suite');
+            $new_columns['region'] = __('Region', 'kaupang-attribute-suite');
+            $new_columns['smak'] = __('Smak', 'kaupang-attribute-suite');
+            $new_columns['producer_type'] = __('Producer', 'kaupang-attribute-suite');
         }
     }
     
     return $new_columns;
 }
-add_filter('manage_attribute_page_posts_columns', 'wc_ras_add_attribute_page_columns');
+add_filter('manage_attribute_page_posts_columns', 'kaupang_attribute_suite_add_attribute_page_columns');
 
 /**
  * Populate custom columns in the attribute_page post type admin list
@@ -106,7 +106,7 @@ add_filter('manage_attribute_page_posts_columns', 'wc_ras_add_attribute_page_col
  * @param string $column Column name
  * @param int    $post_id Post ID
  */
-function wc_ras_populate_attribute_page_columns($column, $post_id) {
+function kaupang_attribute_suite_populate_attribute_page_columns($column, $post_id) {
     switch ($column) {
         case 'attribute_taxonomy':
             $taxonomy = get_post_meta($post_id, '_attribute_taxonomy', true);
@@ -150,35 +150,35 @@ function wc_ras_populate_attribute_page_columns($column, $post_id) {
                 echo '—';
                 break;
             }
-            $types = function_exists('wc_ras_producer_types') ? wc_ras_producer_types() : array();
+            $types = function_exists('kaupang_attribute_suite_producer_types') ? kaupang_attribute_suite_producer_types() : array();
             echo esc_html(isset($types[$value]) ? $types[$value] : $value);
             break;
     }
 }
-add_action('manage_attribute_page_posts_custom_column', 'wc_ras_populate_attribute_page_columns', 10, 2);
+add_action('manage_attribute_page_posts_custom_column', 'kaupang_attribute_suite_populate_attribute_page_columns', 10, 2);
 
 /**
  * Add meta box for attribute page fields
  */
-function wc_ras_add_attribute_page_meta_box() {
+function kaupang_attribute_suite_add_attribute_page_meta_box() {
     add_meta_box(
-        'wc_ras_attribute_meta',
-        __('Attribute Properties', 'wc-rich-attribute-suite'),
-        'wc_ras_render_attribute_page_meta_box',
+        'kaupang_attribute_suite_attribute_meta',
+        __('Attribute Properties', 'kaupang-attribute-suite'),
+        'kaupang_attribute_suite_render_attribute_page_meta_box',
         'attribute_page',
         'normal',
         'default'
     );
 }
-add_action('add_meta_boxes', 'wc_ras_add_attribute_page_meta_box');
+add_action('add_meta_boxes', 'kaupang_attribute_suite_add_attribute_page_meta_box');
 
 /**
  * Render meta box for attribute page fields
  *
  * @param WP_Post $post Current post object
  */
-function wc_ras_render_attribute_page_meta_box($post) {
-    wp_nonce_field('wc_ras_save_attribute_meta', 'wc_ras_attribute_meta_nonce');
+function kaupang_attribute_suite_render_attribute_page_meta_box($post) {
+    wp_nonce_field('kaupang_attribute_suite_save_attribute_meta', 'kaupang_attribute_suite_attribute_meta_nonce');
     
     $region = get_post_meta($post->ID, 'region', true);
     $smak = get_post_meta($post->ID, 'smak', true);
@@ -187,20 +187,20 @@ function wc_ras_render_attribute_page_meta_box($post) {
     <table class="form-table">
         <tr>
             <th scope="row">
-                <label for="wc_ras_region"><?php _e('Region', 'wc-rich-attribute-suite'); ?></label>
+                <label for="kaupang_attribute_suite_region"><?php _e('Region', 'kaupang-attribute-suite'); ?></label>
             </th>
             <td>
-                <input type="text" id="wc_ras_region" name="wc_ras_region" value="<?php echo esc_attr($region); ?>" class="regular-text" />
-                <p class="description"><?php _e('The region for this attribute (e.g., geographical location)', 'wc-rich-attribute-suite'); ?></p>
+                <input type="text" id="kaupang_attribute_suite_region" name="kaupang_attribute_suite_region" value="<?php echo esc_attr($region); ?>" class="regular-text" />
+                <p class="description"><?php _e('The region for this attribute (e.g., geographical location)', 'kaupang-attribute-suite'); ?></p>
             </td>
         </tr>
         <tr>
             <th scope="row">
-                <label for="wc_ras_smak"><?php _e('Smak', 'wc-rich-attribute-suite'); ?></label>
+                <label for="kaupang_attribute_suite_smak"><?php _e('Smak', 'kaupang-attribute-suite'); ?></label>
             </th>
             <td>
-                <input type="text" id="wc_ras_smak" name="wc_ras_smak" value="<?php echo esc_attr($smak); ?>" class="regular-text" />
-                <p class="description"><?php _e('The taste profile for this attribute', 'wc-rich-attribute-suite'); ?></p>
+                <input type="text" id="kaupang_attribute_suite_smak" name="kaupang_attribute_suite_smak" value="<?php echo esc_attr($smak); ?>" class="regular-text" />
+                <p class="description"><?php _e('The taste profile for this attribute', 'kaupang-attribute-suite'); ?></p>
             </td>
         </tr>
     </table>
@@ -211,7 +211,7 @@ function wc_ras_render_attribute_page_meta_box($post) {
      * 
      * @param WP_Post $post Current post object
      */
-    do_action('wc_ras_attribute_page_meta_box_fields', $post);
+    do_action('kaupang/attribute-suite/attribute_page_meta_box_fields', $post);
 }
 
 /**
@@ -219,9 +219,9 @@ function wc_ras_render_attribute_page_meta_box($post) {
  *
  * @param int $post_id Post ID
  */
-function wc_ras_save_attribute_meta($post_id) {
+function kaupang_attribute_suite_save_attribute_meta($post_id) {
     // Check if our nonce is set and verify it
-    if (!isset($_POST['wc_ras_attribute_meta_nonce']) || !wp_verify_nonce($_POST['wc_ras_attribute_meta_nonce'], 'wc_ras_save_attribute_meta')) {
+    if (!isset($_POST['kaupang_attribute_suite_attribute_meta_nonce']) || !wp_verify_nonce($_POST['kaupang_attribute_suite_attribute_meta_nonce'], 'kaupang_attribute_suite_save_attribute_meta')) {
         return;
     }
     
@@ -231,13 +231,13 @@ function wc_ras_save_attribute_meta($post_id) {
     }
     
     // Save region
-    if (isset($_POST['wc_ras_region'])) {
-        update_post_meta($post_id, 'region', sanitize_text_field($_POST['wc_ras_region']));
+    if (isset($_POST['kaupang_attribute_suite_region'])) {
+        update_post_meta($post_id, 'region', sanitize_text_field($_POST['kaupang_attribute_suite_region']));
     }
     
     // Save smak
-    if (isset($_POST['wc_ras_smak'])) {
-        update_post_meta($post_id, 'smak', sanitize_text_field($_POST['wc_ras_smak']));
+    if (isset($_POST['kaupang_attribute_suite_smak'])) {
+        update_post_meta($post_id, 'smak', sanitize_text_field($_POST['kaupang_attribute_suite_smak']));
     }
     
     /**
@@ -245,9 +245,9 @@ function wc_ras_save_attribute_meta($post_id) {
      * 
      * @param int $post_id Post ID
      */
-    do_action('wc_ras_save_attribute_page_meta', $post_id);
+    do_action('kaupang/attribute-suite/save_attribute_page_meta', $post_id);
 }
-add_action('save_post_attribute_page', 'wc_ras_save_attribute_meta');
+add_action('save_post_attribute_page', 'kaupang_attribute_suite_save_attribute_meta');
 
 /**
  * Add custom columns to product attribute term list tables
@@ -255,7 +255,7 @@ add_action('save_post_attribute_page', 'wc_ras_save_attribute_meta');
  * @param array $columns Existing columns
  * @return array Modified columns
  */
-function wc_ras_add_term_columns($columns) {
+function kaupang_attribute_suite_add_term_columns($columns) {
     // Only add Rich Content column - WooCommerce already has Description column
     $new_columns = array();
     
@@ -263,7 +263,7 @@ function wc_ras_add_term_columns($columns) {
         $new_columns[$key] = $value;
         // Insert Rich Content column after the description column
         if ($key === 'description') {
-            $new_columns['rich_content'] = __('Rich Content', 'wc-rich-attribute-suite');
+            $new_columns['rich_content'] = __('Rich Content', 'kaupang-attribute-suite');
         }
     }
     
@@ -278,7 +278,7 @@ function wc_ras_add_term_columns($columns) {
  * @param int    $term_id     Term ID
  * @return string Modified column content
  */
-function wc_ras_populate_term_columns($content, $column_name, $term_id) {
+function kaupang_attribute_suite_populate_term_columns($content, $column_name, $term_id) {
     $term = get_term($term_id);
     if (!$term || is_wp_error($term)) {
         return '—';
@@ -292,12 +292,12 @@ function wc_ras_populate_term_columns($content, $column_name, $term_id) {
             if ($linked_page) {
                 $edit_url = get_edit_post_link($linked_page->ID);
                 return '<a href="' . esc_url($edit_url) . '" class="button button-small">' . 
-                       esc_html__('Edit', 'wc-rich-attribute-suite') . '</a>';
+                       esc_html__('Edit', 'kaupang-attribute-suite') . '</a>';
             } else {
                 $create_url = admin_url('post-new.php?post_type=attribute_page&attribute_term=' . $term->slug . '&attribute_taxonomy=' . $term->taxonomy);
                 return '<a href="' . esc_url($create_url) . '" class="button button-small button-secondary" title="' . 
-                       esc_attr__('No rich content page exists. Click to create one.', 'wc-rich-attribute-suite') . '">' . 
-                       esc_html__('Create', 'wc-rich-attribute-suite') . '</a>';
+                       esc_attr__('No rich content page exists. Click to create one.', 'kaupang-attribute-suite') . '">' . 
+                       esc_html__('Create', 'kaupang-attribute-suite') . '</a>';
             }
     }
     
@@ -307,7 +307,7 @@ function wc_ras_populate_term_columns($content, $column_name, $term_id) {
 /**
  * Register term column hooks for all product attribute taxonomies
  */
-function wc_ras_register_term_column_hooks() {
+function kaupang_attribute_suite_register_term_column_hooks() {
     $attribute_taxonomies = wc_get_attribute_taxonomies();
     
     if (empty($attribute_taxonomies)) {
@@ -316,11 +316,11 @@ function wc_ras_register_term_column_hooks() {
     
     foreach ($attribute_taxonomies as $taxonomy) {
         $taxonomy_name = wc_attribute_taxonomy_name($taxonomy->attribute_name);
-        add_filter("manage_edit-{$taxonomy_name}_columns", 'wc_ras_add_term_columns');
-        add_filter("manage_{$taxonomy_name}_custom_column", 'wc_ras_populate_term_columns', 10, 3);
+        add_filter("manage_edit-{$taxonomy_name}_columns", 'kaupang_attribute_suite_add_term_columns');
+        add_filter("manage_{$taxonomy_name}_custom_column", 'kaupang_attribute_suite_populate_term_columns', 10, 3);
     }
 }
-add_action('admin_init', 'wc_ras_register_term_column_hooks');
+add_action('admin_init', 'kaupang_attribute_suite_register_term_column_hooks');
 
 /**
  * Add description textarea to quick edit form via JavaScript
@@ -329,7 +329,7 @@ add_action('admin_init', 'wc_ras_register_term_column_hooks');
  * We inject the description field via JavaScript since the quick_edit_custom_box
  * hook doesn't fire for taxonomies with show_in_quick_edit = false.
  */
-function wc_ras_add_quick_edit_description_js() {
+function kaupang_attribute_suite_add_quick_edit_description_js() {
     global $pagenow;
     
     if ($pagenow !== 'edit-tags.php') {
@@ -364,14 +364,14 @@ function wc_ras_add_quick_edit_description_js() {
                 var $tagRow = $('#tag-' + id);
                 
                 // Check if we already added the description field
-                if ($editRow.find('textarea[name="wc_ras_description"]').length === 0) {
+                if ($editRow.find('textarea[name="kaupang_attribute_suite_description"]').length === 0) {
                     // Create description field
                     var descriptionHtml = '<fieldset class="wc-ras-description-field">' +
                         '<div class="inline-edit-col">' +
                         '<label>' +
-                        '<span class="title"><?php echo esc_js(__('Description', 'wc-rich-attribute-suite')); ?></span>' +
+                        '<span class="title"><?php echo esc_js(__('Description', 'kaupang-attribute-suite')); ?></span>' +
                         '<span class="input-text-wrap">' +
-                        '<textarea name="wc_ras_description" rows="3" class="ptitle" style="width:100%;"></textarea>' +
+                        '<textarea name="kaupang_attribute_suite_description" rows="3" class="ptitle" style="width:100%;"></textarea>' +
                         '</span>' +
                         '</label>' +
                         '</div>' +
@@ -389,7 +389,7 @@ function wc_ras_add_quick_edit_description_js() {
                 if (description === 'No description' || description === '—') {
                     description = '';
                 }
-                $editRow.find('textarea[name="wc_ras_description"]').val(description);
+                $editRow.find('textarea[name="kaupang_attribute_suite_description"]').val(description);
                 
                 // Store term ID for save
                 $editRow.data('wc-ras-term-id', id);
@@ -402,13 +402,13 @@ function wc_ras_add_quick_edit_description_js() {
                 }
                 
                 var $editRow = $('#edit-' + id);
-                var description = $editRow.find('textarea[name="wc_ras_description"]').val();
+                var description = $editRow.find('textarea[name="kaupang_attribute_suite_description"]').val();
                 var termId = $editRow.data('wc-ras-term-id') || id;
                 
                 // Save description via our custom AJAX
                 if (typeof wcRasDescNonce !== 'undefined') {
                     $.post(ajaxurl, {
-                        action: 'wc_ras_save_term_description',
+                        action: 'kaupang_attribute_suite_save_term_description',
                         nonce: wcRasDescNonce,
                         term_id: termId,
                         taxonomy: taxonomy,
@@ -424,14 +424,14 @@ function wc_ras_add_quick_edit_description_js() {
     </script>
     <?php
 }
-add_action('admin_footer', 'wc_ras_add_quick_edit_description_js');
+add_action('admin_footer', 'kaupang_attribute_suite_add_quick_edit_description_js');
 
 /**
  * AJAX handler to save term description
  */
-function wc_ras_ajax_save_term_description() {
+function kaupang_attribute_suite_ajax_save_term_description() {
     // Verify nonce
-    check_ajax_referer('wc_ras_save_description', 'nonce');
+    check_ajax_referer('kaupang_attribute_suite_save_description', 'nonce');
     
     $term_id = isset($_POST['term_id']) ? intval($_POST['term_id']) : 0;
     $taxonomy = isset($_POST['taxonomy']) ? sanitize_text_field($_POST['taxonomy']) : '';
@@ -464,12 +464,12 @@ function wc_ras_ajax_save_term_description() {
         'description' => $description,
     ));
 }
-add_action('wp_ajax_wc_ras_save_term_description', 'wc_ras_ajax_save_term_description');
+add_action('wp_ajax_kaupang_attribute_suite_save_term_description', 'kaupang_attribute_suite_ajax_save_term_description');
 
 /**
  * Add nonce for description save AJAX
  */
-function wc_ras_add_description_save_nonce() {
+function kaupang_attribute_suite_add_description_save_nonce() {
     global $pagenow;
     
     if ($pagenow !== 'edit-tags.php') {
@@ -483,8 +483,8 @@ function wc_ras_add_description_save_nonce() {
     
     ?>
     <script type="text/javascript">
-    var wcRasDescNonce = '<?php echo wp_create_nonce('wc_ras_save_description'); ?>';
+    var wcRasDescNonce = '<?php echo wp_create_nonce('kaupang_attribute_suite_save_description'); ?>';
     </script>
     <?php
 }
-add_action('admin_head', 'wc_ras_add_description_save_nonce');
+add_action('admin_head', 'kaupang_attribute_suite_add_description_save_nonce');

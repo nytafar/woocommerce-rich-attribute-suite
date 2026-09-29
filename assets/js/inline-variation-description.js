@@ -1,11 +1,11 @@
 /**
- * WooCommerce Rich Attribute Suite - Inline Variation Description
+ * Kaupang Attribute Suite - Inline Variation Description
  * 
  * Injects and updates an inline description row in the variations table.
  * This script works with the inline-variation-description.php class
  * to provide a CLS-free variation description experience.
  *
- * @package WooCommerce_Rich_Attribute_Suite
+ * @package Kaupang\AttributeSuite
  * @since 1.2.0
  */
 (function() {

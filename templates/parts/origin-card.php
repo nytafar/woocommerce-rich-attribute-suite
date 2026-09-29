@@ -3,14 +3,14 @@
  * Origin card (used on archive grid and anywhere else we list origins).
  *
  * Expected variable:
- *   $card_origin (array) — origin struct from wc_ras_build_origin_struct().
+ *   $card_origin (array) — origin struct from kaupang_attribute_suite_build_origin_struct().
  *                          Caller is responsible for building it.
  *
  * Entire card is link-covered: the overlay <a> makes the whole card
  * clickable while keeping semantic elements (heading, etc.) in the source
  * for screen readers.
  *
- * @package WooCommerce_Rich_Attribute_Suite
+ * @package Kaupang\AttributeSuite
  */
 
 defined('ABSPATH') || exit;
@@ -24,7 +24,7 @@ $country       = $card_origin['country']  ?? null;
 $region        = $card_origin['region']   ?? null;
 $variety       = $card_origin['variety']  ?? null;
 $flag_url      = $card_origin['country_flag_url'] ?? null;
-$alt_str       = $card_origin['altitude'] ? wc_ras_format_altitude($card_origin['altitude']) : '';
+$alt_str       = $card_origin['altitude'] ? kaupang_attribute_suite_format_altitude($card_origin['altitude']) : '';
 $tagline       = $card_origin['excerpt']  ?? '';
 $producer_type = $card_origin['producer_type'] ?? null;
 $permalink     = $card_origin['permalink'] ?? '#';
@@ -32,8 +32,8 @@ $name          = $card_origin['name']     ?? '';
 $img           = $card_origin['featured_image_url'] ?? null;
 
 $region_label = implode(', ', array_filter(array($country, $region)));
-$product_count = function_exists('wc_ras_origin_product_count') && !empty($card_origin['slug'])
-    ? wc_ras_origin_product_count($card_origin['slug'])
+$product_count = function_exists('kaupang_attribute_suite_origin_product_count') && !empty($card_origin['slug'])
+    ? kaupang_attribute_suite_origin_product_count($card_origin['slug'])
     : 0;
 ?>
 <article class="wc-ras-origin-card">
@@ -63,7 +63,7 @@ $product_count = function_exists('wc_ras_origin_product_count') && !empty($card_
 
                 <?php if ($alt_str !== '') : ?>
                     <span class="pill altitude">
-                        <?php echo wc_ras_origin_icon('altitude'); ?>
+                        <?php echo kaupang_attribute_suite_origin_icon('altitude'); ?>
                         <span><?php echo esc_html($alt_str); ?></span>
                     </span>
                 <?php endif; ?>
@@ -76,9 +76,9 @@ $product_count = function_exists('wc_ras_origin_product_count') && !empty($card_
 
         <?php if ($producer_type) : ?>
             <div class="producer">
-                <?php echo wc_ras_origin_icon('producer'); ?>
+                <?php echo kaupang_attribute_suite_origin_icon('producer'); ?>
                 <?php
-                $types = function_exists('wc_ras_producer_types') ? wc_ras_producer_types() : array();
+                $types = function_exists('kaupang_attribute_suite_producer_types') ? kaupang_attribute_suite_producer_types() : array();
                 $producer_label = isset($types[$producer_type]) ? $types[$producer_type] : $producer_type;
                 ?>
                 <span><?php echo esc_html($producer_label); ?></span>
@@ -90,7 +90,7 @@ $product_count = function_exists('wc_ras_origin_product_count') && !empty($card_
                 <?php
                 printf(
                     /* translators: %d: number of chocolates/products using this origin */
-                    esc_html(_n('Brukes i %d sjokolade', 'Brukes i %d sjokolader', $product_count, 'wc-rich-attribute-suite')),
+                    esc_html(_n('Brukes i %d sjokolade', 'Brukes i %d sjokolader', $product_count, 'kaupang-attribute-suite')),
                     (int) $product_count
                 );
                 ?>

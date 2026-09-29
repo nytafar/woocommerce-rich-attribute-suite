@@ -1,5 +1,5 @@
 /**
- * WooCommerce Rich Attribute Suite — origin modal.
+ * Kaupang Attribute Suite — origin modal.
  *
  * Model:
  *   One native <dialog>, one hydratable card. The card's content always
@@ -20,7 +20,7 @@
  * canonical .val().trigger('change') commit. All other DOM work is
  * vanilla.
  *
- * @package WooCommerce_Rich_Attribute_Suite
+ * @package Kaupang\AttributeSuite
  */
 (function () {
     'use strict';

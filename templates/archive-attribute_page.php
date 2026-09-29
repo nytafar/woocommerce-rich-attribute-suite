@@ -5,7 +5,7 @@
  * Rendered at /opprinnelser/ unless the theme overrides via standard WP
  * template hierarchy (archive-attribute_page.php in the active theme).
  *
- * @package WooCommerce_Rich_Attribute_Suite
+ * @package Kaupang\AttributeSuite
  */
 
 defined('ABSPATH') || exit;
@@ -27,9 +27,9 @@ get_header();
         <div class="grid">
             <?php while (have_posts()) : the_post(); ?>
                 <?php
-                $card_origin = wc_ras_build_origin_struct(get_post());
+                $card_origin = kaupang_attribute_suite_build_origin_struct(get_post());
                 if ($card_origin) {
-                    include WC_RAS_PLUGIN_DIR . 'templates/parts/origin-card.php';
+                    include KAUPANG_ATTRIBUTE_SUITE_DIR . 'templates/parts/origin-card.php';
                 }
                 ?>
             <?php endwhile; ?>
@@ -37,13 +37,13 @@ get_header();
 
         <?php
         the_posts_pagination(array(
-            'prev_text' => __('Forrige', 'wc-rich-attribute-suite'),
-            'next_text' => __('Neste', 'wc-rich-attribute-suite'),
+            'prev_text' => __('Forrige', 'kaupang-attribute-suite'),
+            'next_text' => __('Neste', 'kaupang-attribute-suite'),
         ));
         ?>
     <?php else : ?>
         <p class="empty">
-            <?php esc_html_e('Ingen opprinnelser publisert enda.', 'wc-rich-attribute-suite'); ?>
+            <?php esc_html_e('Ingen opprinnelser publisert enda.', 'kaupang-attribute-suite'); ?>
         </p>
     <?php endif; ?>
 </main>

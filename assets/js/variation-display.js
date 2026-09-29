@@ -1,7 +1,7 @@
 /**
- * WooCommerce Rich Attribute Suite — variation meta display (legacy mode).
+ * Kaupang Attribute Suite — variation meta display (legacy mode).
  *
- * Opt-in via filter `wc_ras_enable_variation_meta_display` (default false).
+ * Opt-in via filter `kaupang/attribute-suite/enable_variation_meta_display` (default false).
  * Renders region and taste notes as standalone rows in the product summary
  * area when a variation is selected. This is separate from the richer
  * origin blurb (see origin-blurb.js) — it exists for sites that only want
@@ -14,7 +14,7 @@
  * found_variation / reset_data events (jQuery trigger via triggerHandler
  * does not bubble as native DOM events).
  *
- * @package WooCommerce_Rich_Attribute_Suite
+ * @package Kaupang\AttributeSuite
  */
 (function () {
     'use strict';

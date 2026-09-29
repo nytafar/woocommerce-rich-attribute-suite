@@ -24,12 +24,12 @@
  * cell whose fields are all hidden (`:has()`).
  *
  * Theme override path:
- *   {theme}/woocommerce-rich-attribute-suite/parts/origin-modal.php
+ *   {theme}/kaupang-attribute-suite/parts/origin-modal.php
  *
  * Expected variable:
  *   @var array|null $origin wc_ras_origin struct or null.
  *
- * @package WooCommerce_Rich_Attribute_Suite
+ * @package Kaupang\AttributeSuite
  */
 
 defined('ABSPATH') || exit;
@@ -51,8 +51,8 @@ $alt_str       = (string) ($origin['altitude_label']      ?? '');
 $producer_type = (string) ($origin['producer_type_label'] ?? '');
 $ferm_value    = (string) ($origin['fermentation_value']  ?? '');
 
-$radar_svg = ($origin && !empty($origin['taste_profile']) && function_exists('wc_ras_render_taste_radar_svg'))
-    ? wc_ras_render_taste_radar_svg($origin['taste_profile'])
+$radar_svg = ($origin && !empty($origin['taste_profile']) && function_exists('kaupang_attribute_suite_render_taste_radar_svg'))
+    ? kaupang_attribute_suite_render_taste_radar_svg($origin['taste_profile'])
     : '';
 
 $certs = (is_array($origin['certifications'] ?? null)) ? $origin['certifications'] : array();
@@ -66,12 +66,12 @@ $hidden_attr = function ($cond) {
             class="wc-ras-origin-modal__handle"
             data-origin-modal-handle
             data-origin-modal-close
-            aria-label="<?php esc_attr_e('Lukk', 'wc-rich-attribute-suite'); ?>"><span aria-hidden="true"></span></button>
+            aria-label="<?php esc_attr_e('Lukk', 'kaupang-attribute-suite'); ?>"><span aria-hidden="true"></span></button>
 
     <button type="button"
             class="wc-ras-origin-modal__close"
             data-origin-modal-close
-            aria-label="<?php esc_attr_e('Lukk', 'wc-rich-attribute-suite'); ?>">
+            aria-label="<?php esc_attr_e('Lukk', 'kaupang-attribute-suite'); ?>">
         <span aria-hidden="true">×</span>
     </button>
 
@@ -111,22 +111,22 @@ $hidden_attr = function ($cond) {
 
         <dl class="wc-ras-origin-modal__facts">
             <div class="wc-ras-origin-modal__fact wc-ras-origin-modal__fact--wide" data-field-group="region"<?php echo $hidden_attr($region !== ''); ?>>
-                <dt><?php esc_html_e('Region', 'wc-rich-attribute-suite'); ?></dt>
+                <dt><?php esc_html_e('Region', 'kaupang-attribute-suite'); ?></dt>
                 <dd data-field="region"<?php echo $hidden_attr($region !== ''); ?>><?php echo esc_html($region); ?></dd>
             </div>
 
             <div class="wc-ras-origin-modal__fact" data-field-group="variety"<?php echo $hidden_attr($variety !== ''); ?>>
-                <dt><?php esc_html_e('Varietet', 'wc-rich-attribute-suite'); ?></dt>
+                <dt><?php esc_html_e('Varietet', 'kaupang-attribute-suite'); ?></dt>
                 <dd data-field="variety"<?php echo $hidden_attr($variety !== ''); ?>><?php echo esc_html($variety); ?></dd>
             </div>
 
             <div class="wc-ras-origin-modal__fact" data-field-group="altitude"<?php echo $hidden_attr($alt_str !== ''); ?>>
-                <dt><?php esc_html_e('Høyde', 'wc-rich-attribute-suite'); ?></dt>
+                <dt><?php esc_html_e('Høyde', 'kaupang-attribute-suite'); ?></dt>
                 <dd data-field="altitude"<?php echo $hidden_attr($alt_str !== ''); ?>><?php echo esc_html($alt_str); ?></dd>
             </div>
 
             <div class="wc-ras-origin-modal__fact" data-field-group="producers"<?php echo $hidden_attr($producer_type !== ''); ?>>
-                <dt><?php esc_html_e('Produsenter', 'wc-rich-attribute-suite'); ?></dt>
+                <dt><?php esc_html_e('Produsenter', 'kaupang-attribute-suite'); ?></dt>
                 <dd>
                     <span data-field="producer-type"<?php echo $hidden_attr($producer_type !== ''); ?>><?php echo esc_html($producer_type); ?></span>
                     <span class="wc-ras-origin-modal__more" data-field="producer-count"<?php echo $hidden_attr($producer_cnt !== ''); ?>><?php echo esc_html($producer_cnt); ?></span>
@@ -134,7 +134,7 @@ $hidden_attr = function ($cond) {
             </div>
 
             <div class="wc-ras-origin-modal__fact" data-field-group="fermentation"<?php echo $hidden_attr($ferm_value !== ''); ?>>
-                <dt><?php esc_html_e('Fermentering', 'wc-rich-attribute-suite'); ?></dt>
+                <dt><?php esc_html_e('Fermentering', 'kaupang-attribute-suite'); ?></dt>
                 <dd>
                     <span data-field="fermentation-value"<?php echo $hidden_attr($ferm_value !== ''); ?>><?php echo esc_html($ferm_value); ?></span>
                     <span class="wc-ras-origin-modal__more freetext" data-field="fermentation-method"<?php echo $hidden_attr($ferm_method !== ''); ?>><?php echo esc_html($ferm_method); ?></span>
@@ -142,14 +142,14 @@ $hidden_attr = function ($cond) {
             </div>
 
             <div class="wc-ras-origin-modal__fact wc-ras-origin-modal__fact--more" data-field-group="drying"<?php echo $hidden_attr($drying !== ''); ?>>
-                <dt><?php esc_html_e('Tørking', 'wc-rich-attribute-suite'); ?></dt>
+                <dt><?php esc_html_e('Tørking', 'kaupang-attribute-suite'); ?></dt>
                 <dd data-field="drying-method"<?php echo $hidden_attr($drying !== ''); ?>><?php echo esc_html($drying); ?></dd>
             </div>
         </dl>
 
         <p class="wc-ras-origin-modal__flavour-label"
            data-field="flavour-label"
-           <?php echo $hidden_attr($radar_svg !== ''); ?>><?php esc_html_e('Smaksprofil', 'wc-rich-attribute-suite'); ?></p>
+           <?php echo $hidden_attr($radar_svg !== ''); ?>><?php esc_html_e('Smaksprofil', 'kaupang-attribute-suite'); ?></p>
 
         <div class="wc-ras-origin-modal__radar"
              data-field="radar"
@@ -167,7 +167,7 @@ $hidden_attr = function ($cond) {
             <a data-field="permalink"
                href="<?php echo esc_url($permalink); ?>"
                class="term-page-link">
-                <?php esc_html_e('Se hele siden →', 'wc-rich-attribute-suite'); ?>
+                <?php esc_html_e('Se hele siden →', 'kaupang-attribute-suite'); ?>
             </a>
         </p>
 
@@ -176,6 +176,6 @@ $hidden_attr = function ($cond) {
 
     <nav class="wc-ras-origin-modal__strip wc-ras-origin-modal__tabs"
          data-origin-modal-strip
-         aria-label="<?php esc_attr_e('Opprinnelser', 'wc-rich-attribute-suite'); ?>"
+         aria-label="<?php esc_attr_e('Opprinnelser', 'kaupang-attribute-suite'); ?>"
          hidden></nav>
 </dialog>

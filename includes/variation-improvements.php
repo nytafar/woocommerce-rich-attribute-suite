@@ -4,7 +4,7 @@
  *
  * Enhances WooCommerce variations with additional functionality.
  *
- * @package WooCommerce_Rich_Attribute_Suite
+ * @package Kaupang\AttributeSuite
  */
 
 defined('ABSPATH') || exit;
@@ -12,14 +12,14 @@ defined('ABSPATH') || exit;
 /**
  * Class for managing variation improvements
  */
-class WC_RAS_Variation_Improvements {
+class Kaupang_Attribute_Suite_Variation_Improvements {
 
     /**
      * Constructor
      */
     public function __construct() {
         // Only initialize if enabled
-        if (apply_filters('wc_ras_enable_variation_improvements', true)) {
+        if (apply_filters('kaupang/attribute-suite/enable_variation_improvements', true)) {
             $this->init();
         }
     }
@@ -29,17 +29,17 @@ class WC_RAS_Variation_Improvements {
      */
     public function init() {
         // Enable description fallback if the feature is enabled
-        if (apply_filters('wc_ras_enable_variation_description_fallback', true)) {
+        if (apply_filters('kaupang/attribute-suite/enable_variation_description_fallback', true)) {
             add_filter('woocommerce_available_variation', array($this, 'variation_description_fallback'), 10, 3);
         }
 
         // Enable Mix and Match support if the feature is enabled
-        if (apply_filters('wc_ras_enable_mnm_description_support', true) && class_exists('WC_Mix_and_Match')) {
+        if (apply_filters('kaupang/attribute-suite/enable_mnm_description_support', true) && class_exists('WC_Mix_and_Match')) {
             add_action('wc_mnm_child_item_details', array($this, 'mnm_variation_description_support'), 105, 2);
         }
         
         // Add meta display in product summary (disabled by default)
-        if (apply_filters('wc_ras_enable_variation_meta_display', false)) {
+        if (apply_filters('kaupang/attribute-suite/enable_variation_meta_display', false)) {
             add_action('wp_enqueue_scripts', array($this, 'enqueue_variation_display_script'));
         }
         
@@ -53,9 +53,9 @@ class WC_RAS_Variation_Improvements {
     public function register_scripts() {
         wp_register_script(
             'wc-ras-variation-display',
-            WC_RAS_PLUGIN_URL . 'assets/js/variation-display.js',
+            KAUPANG_ATTRIBUTE_SUITE_URL . 'assets/js/variation-display.js',
             array('jquery', 'wc-add-to-cart-variation'),
-            WC_RAS_VERSION,
+            KAUPANG_ATTRIBUTE_SUITE_VERSION,
             true
         );
     }
@@ -111,12 +111,12 @@ class WC_RAS_Variation_Improvements {
                 continue;
             }
 
-            $page = wc_ras_get_cached_attribute_page($term->slug);
+            $page = kaupang_attribute_suite_get_cached_attribute_page($term->slug);
             $is_origin_attribute = ($taxonomy === 'pa_opprinnelse');
 
             // First origin wins (typically pa_opprinnelse).
             if ($is_origin_attribute && $page && !$origin) {
-                $origin = wc_ras_build_origin_struct($page);
+                $origin = kaupang_attribute_suite_build_origin_struct($page);
                 if (!empty($origin['permalink'])) {
                     $cta_url = $origin['permalink'];
                 }
@@ -146,15 +146,15 @@ class WC_RAS_Variation_Improvements {
             return $variation_data;
         }
 
-        if (!apply_filters('wc_ras_show_variation_description_links', true)) {
+        if (!apply_filters('kaupang/attribute-suite/show_variation_description_links', true)) {
             $cta_url = '';
         }
 
-        $html = wc_ras_load_template('parts/variation-description', array(
+        $html = kaupang_attribute_suite_load_template('parts/variation-description', array(
             'origin'           => $origin,
             'description_text' => $description_text,
             'cta_url'          => $cta_url,
-            'cta_label'        => __('Lær mer', 'wc-rich-attribute-suite'),
+            'cta_label'        => __('Lær mer', 'kaupang-attribute-suite'),
         ));
 
         if ($html !== '') {
@@ -230,17 +230,17 @@ class WC_RAS_Variation_Improvements {
                         // Add page link if available
                         if (!empty($page_id) || !empty($custom_url)) {
                             $link_url = !empty($page_id) ? get_permalink($page_id) : $custom_url;
-                            $link_text = !empty($page_id) ? get_the_title($page_id) : __('Learn more', 'wc-rich-attribute-suite');
+                            $link_text = !empty($page_id) ? get_the_title($page_id) : __('Learn more', 'kaupang-attribute-suite');
                             
                             $term_page_links[] = '<a href="' . esc_url($link_url) . '" class="term-page-link">' . esc_html($link_text) . '</a>';
                         } else {
                             // Default to term archive link
-                            $term_page_links[] = '<a href="' . esc_url(wc_ras_get_learn_more_url($term)) . '" class="term-page-link">' .
-                                                 esc_html__('Learn more', 'wc-rich-attribute-suite') . '</a>';
+                            $term_page_links[] = '<a href="' . esc_url(kaupang_attribute_suite_get_learn_more_url($term)) . '" class="term-page-link">' .
+                                                 esc_html__('Learn more', 'kaupang-attribute-suite') . '</a>';
                         }
                     } else {
                         // Fallback to attribute page if no term description exists
-                        $attribute_page = wc_ras_get_cached_attribute_page($term->slug);
+                        $attribute_page = kaupang_attribute_suite_get_cached_attribute_page($term->slug);
                         
                         if ($attribute_page) {
                             // Use the attribute page excerpt if available, otherwise use the content
@@ -250,8 +250,8 @@ class WC_RAS_Variation_Improvements {
                                 $term_descriptions[] = wp_trim_words($content, 30, '...');
 
                                 // Add link to attribute page (CPT permalink)
-                                $term_page_links[] = '<a href="' . esc_url(wc_ras_get_learn_more_url($term)) . '" class="term-page-link">' .
-                                                     esc_html__('Learn more', 'wc-rich-attribute-suite') . '</a>';
+                                $term_page_links[] = '<a href="' . esc_url(kaupang_attribute_suite_get_learn_more_url($term)) . '" class="term-page-link">' .
+                                                     esc_html__('Learn more', 'kaupang-attribute-suite') . '</a>';
                             }
                         }
                     }
@@ -264,16 +264,16 @@ class WC_RAS_Variation_Improvements {
                 $variation_description = '<p>' . $term_descriptions[0] . '</p>';
                 
                 // Add page link if available and enabled
-                if (!empty($term_page_links[0]) && apply_filters('wc_ras_show_variation_description_links', true)) {
+                if (!empty($term_page_links[0]) && apply_filters('kaupang/attribute-suite/show_variation_description_links', true)) {
                     $variation_description .= '<p class="term-page-link-wrapper">' . $term_page_links[0] . '</p>';
                 }
                 
                 // Allow combining all term descriptions if enabled
-                if (apply_filters('wc_ras_combine_all_term_descriptions', false) && count($term_descriptions) > 1) {
+                if (apply_filters('kaupang/attribute-suite/combine_all_term_descriptions', false) && count($term_descriptions) > 1) {
                     $variation_description = '<p>' . implode('</p><p>', $term_descriptions) . '</p>';
                     
                     // Add all links if showing links is enabled
-                    if (apply_filters('wc_ras_show_variation_description_links', true) && !empty($term_page_links)) {
+                    if (apply_filters('kaupang/attribute-suite/show_variation_description_links', true) && !empty($term_page_links)) {
                         $variation_description .= '<p class="term-page-link-wrapper">' . 
                                                  implode(' | ', $term_page_links) . '</p>';
                     }
@@ -291,7 +291,7 @@ class WC_RAS_Variation_Improvements {
 }
 
 // Initialize the class
-new WC_RAS_Variation_Improvements();
+new Kaupang_Attribute_Suite_Variation_Improvements();
 
 /**
  * Resolve the canonical "Learn more" URL for an attribute term.
@@ -302,12 +302,12 @@ new WC_RAS_Variation_Improvements();
  * @param WP_Term $term
  * @return string
  */
-function wc_ras_get_learn_more_url($term) {
+function kaupang_attribute_suite_get_learn_more_url($term) {
     if (!$term || is_wp_error($term)) {
         return '';
     }
-    $page = function_exists('wc_ras_get_cached_attribute_page')
-        ? wc_ras_get_cached_attribute_page($term->slug)
+    $page = function_exists('kaupang_attribute_suite_get_cached_attribute_page')
+        ? kaupang_attribute_suite_get_cached_attribute_page($term->slug)
         : null;
     if ($page) {
         return (string) get_permalink($page);

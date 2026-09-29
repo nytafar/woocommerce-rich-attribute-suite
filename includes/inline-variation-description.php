@@ -5,7 +5,7 @@
  * Renders variation descriptions inline within the variations table,
  * eliminating CLS and DOM manipulation issues.
  *
- * @package WooCommerce_Rich_Attribute_Suite
+ * @package Kaupang\AttributeSuite
  * @since 1.1.0
  */
 
@@ -15,7 +15,7 @@ defined('ABSPATH') || exit;
  * Class for inline variation description rendering
  * 
  * This feature must be explicitly enabled by the theme using:
- * add_filter('wc_ras_enable_inline_variation_description', '__return_true');
+ * add_filter('kaupang/attribute-suite/enable_inline_variation_description', '__return_true');
  * 
  * When enabled, this class:
  * 1. Uses JavaScript to inject a placeholder row into the variations table
@@ -27,7 +27,7 @@ defined('ABSPATH') || exit;
  * - Description duplication issues
  * - Race conditions between WooCommerce's template rendering and theme JS
  */
-class WC_RAS_Inline_Variation_Description {
+class Kaupang_Attribute_Suite_Inline_Variation_Description {
 
     /**
      * Whether the feature is enabled (cached after first check)
@@ -62,7 +62,7 @@ class WC_RAS_Inline_Variation_Description {
      */
     private function is_enabled() {
         if ($this->is_enabled === null) {
-            $this->is_enabled = apply_filters('wc_ras_enable_inline_variation_description', false);
+            $this->is_enabled = apply_filters('kaupang/attribute-suite/enable_inline_variation_description', false);
         }
         return $this->is_enabled;
     }
@@ -93,7 +93,7 @@ class WC_RAS_Inline_Variation_Description {
      */
     public function override_variation_template($template, $template_name, $args, $template_path, $default_path) {
         if ($template_name === 'single-product/add-to-cart/variation.php') {
-            $plugin_template = WC_RAS_PLUGIN_DIR . 'templates/variation-no-description.php';
+            $plugin_template = KAUPANG_ATTRIBUTE_SUITE_DIR . 'templates/variation-no-description.php';
             if (file_exists($plugin_template)) {
                 return $plugin_template;
             }
@@ -110,18 +110,18 @@ class WC_RAS_Inline_Variation_Description {
         }
 
         // Get configuration from filter
-        $config = apply_filters('wc_ras_inline_variation_description_config', array(
+        $config = apply_filters('kaupang/attribute-suite/inline_variation_description_config', array(
             'target_attribute' => '', // Empty = auto-detect or first attribute
             'auto_detect' => true,    // Auto-detect attribute with description
         ));
 
-        $script_version = WC_RAS_VERSION . '.' . filemtime(
-            WC_RAS_PLUGIN_DIR . 'assets/js/inline-variation-description.js'
+        $script_version = KAUPANG_ATTRIBUTE_SUITE_VERSION . '.' . filemtime(
+            KAUPANG_ATTRIBUTE_SUITE_DIR . 'assets/js/inline-variation-description.js'
         );
 
         wp_enqueue_script(
             'wc-ras-inline-description',
-            WC_RAS_PLUGIN_URL . 'assets/js/inline-variation-description.js',
+            KAUPANG_ATTRIBUTE_SUITE_URL . 'assets/js/inline-variation-description.js',
             array('jquery', 'wc-add-to-cart-variation'),
             $script_version,
             true
@@ -129,7 +129,7 @@ class WC_RAS_Inline_Variation_Description {
 
         // Pass configuration to JS
         wp_localize_script('wc-ras-inline-description', 'wcRasInlineDesc', array(
-            'animationDuration' => apply_filters('wc_ras_inline_description_animation_duration', 400),
+            'animationDuration' => apply_filters('kaupang/attribute-suite/inline_description_animation_duration', 400),
             'targetAttribute' => $config['target_attribute'],
             'autoDetect' => $config['auto_detect'],
         ));
@@ -149,11 +149,11 @@ class WC_RAS_Inline_Variation_Description {
     public function add_description_data_to_variation($variation_data, $product, $variation) {
         // The description should already be populated by variation_description_fallback
         // We just need to ensure it's marked for inline display
-        $variation_data['wc_ras_inline_description'] = true;
+        $variation_data['kaupang_attribute_suite_inline_description'] = true;
         
         return $variation_data;
     }
 }
 
 // Initialize the class
-new WC_RAS_Inline_Variation_Description();
+new Kaupang_Attribute_Suite_Inline_Variation_Description();

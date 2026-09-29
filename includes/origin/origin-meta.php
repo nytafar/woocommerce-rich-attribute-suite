@@ -3,10 +3,10 @@
  * Origin module — post meta registration.
  *
  * Registers the origin-specific meta fields on the attribute_page CPT via
- * the existing wc_ras_register_attribute_page_meta_fields action hook fired
+ * the existing kaupang_attribute_suite_register_attribute_page_meta_fields action hook fired
  * from cpt-attribute-page.php.
  *
- * @package WooCommerce_Rich_Attribute_Suite
+ * @package Kaupang\AttributeSuite
  */
 
 defined('ABSPATH') || exit;
@@ -16,7 +16,7 @@ defined('ABSPATH') || exit;
  *
  * @param string $post_type Post type slug (passed by the hook).
  */
-function wc_ras_origin_register_meta($post_type) {
+function kaupang_attribute_suite_origin_register_meta($post_type) {
     if ($post_type !== 'attribute_page') {
         return;
     }
@@ -24,7 +24,7 @@ function wc_ras_origin_register_meta($post_type) {
     // Cultivation
     register_post_meta('attribute_page', 'variety', array(
         'type'              => 'string',
-        'description'       => __('Cacao variety (e.g., Chuncho, Criollo).', 'wc-rich-attribute-suite'),
+        'description'       => __('Cacao variety (e.g., Chuncho, Criollo).', 'kaupang-attribute-suite'),
         'single'            => true,
         'show_in_rest'      => true,
         'sanitize_callback' => 'sanitize_text_field',
@@ -33,40 +33,40 @@ function wc_ras_origin_register_meta($post_type) {
     // People & Producers
     register_post_meta('attribute_page', 'producer_type', array(
         'type'              => 'string',
-        'description'       => __('Producer organization type.', 'wc-rich-attribute-suite'),
+        'description'       => __('Producer organization type.', 'kaupang-attribute-suite'),
         'single'            => true,
         'show_in_rest'      => true,
-        'sanitize_callback' => 'wc_ras_sanitize_producer_type',
+        'sanitize_callback' => 'kaupang_attribute_suite_sanitize_producer_type',
     ));
 
     register_post_meta('attribute_page', 'producer_count', array(
         'type'              => 'integer',
-        'description'       => __('Number of producers (nullable).', 'wc-rich-attribute-suite'),
+        'description'       => __('Number of producers (nullable).', 'kaupang-attribute-suite'),
         'single'            => true,
         'show_in_rest'      => true,
-        'sanitize_callback' => 'wc_ras_sanitize_nullable_int',
+        'sanitize_callback' => 'kaupang_attribute_suite_sanitize_nullable_int',
     ));
 
     // Post-harvest
     register_post_meta('attribute_page', 'fermentation_type', array(
         'type'              => 'string',
-        'description'       => __('Fermentation organization type.', 'wc-rich-attribute-suite'),
+        'description'       => __('Fermentation organization type.', 'kaupang-attribute-suite'),
         'single'            => true,
         'show_in_rest'      => true,
-        'sanitize_callback' => 'wc_ras_sanitize_fermentation_type',
+        'sanitize_callback' => 'kaupang_attribute_suite_sanitize_fermentation_type',
     ));
 
     register_post_meta('attribute_page', 'fermentation_days', array(
         'type'              => 'integer',
-        'description'       => __('Fermentation duration in days (nullable).', 'wc-rich-attribute-suite'),
+        'description'       => __('Fermentation duration in days (nullable).', 'kaupang-attribute-suite'),
         'single'            => true,
         'show_in_rest'      => true,
-        'sanitize_callback' => 'wc_ras_sanitize_nullable_int',
+        'sanitize_callback' => 'kaupang_attribute_suite_sanitize_nullable_int',
     ));
 
     register_post_meta('attribute_page', 'fermentation_method', array(
         'type'              => 'string',
-        'description'       => __('Free-text fermentation method description.', 'wc-rich-attribute-suite'),
+        'description'       => __('Free-text fermentation method description.', 'kaupang-attribute-suite'),
         'single'            => true,
         'show_in_rest'      => true,
         'sanitize_callback' => 'sanitize_text_field',
@@ -74,7 +74,7 @@ function wc_ras_origin_register_meta($post_type) {
 
     register_post_meta('attribute_page', 'drying_method', array(
         'type'              => 'string',
-        'description'       => __('Free-text drying method description.', 'wc-rich-attribute-suite'),
+        'description'       => __('Free-text drying method description.', 'kaupang-attribute-suite'),
         'single'            => true,
         'show_in_rest'      => true,
         'sanitize_callback' => 'sanitize_text_field',
@@ -83,7 +83,7 @@ function wc_ras_origin_register_meta($post_type) {
     // Flavour — taste_profile stored as object keyed by axis slug
     register_post_meta('attribute_page', 'taste_profile', array(
         'type'              => 'object',
-        'description'       => __('8-axis taste profile, values 0–10 per axis.', 'wc-rich-attribute-suite'),
+        'description'       => __('8-axis taste profile, values 0–10 per axis.', 'kaupang-attribute-suite'),
         'single'            => true,
         'show_in_rest'      => array(
             'schema' => array(
@@ -95,13 +95,13 @@ function wc_ras_origin_register_meta($post_type) {
                 ),
             ),
         ),
-        'sanitize_callback' => 'wc_ras_sanitize_taste_profile',
+        'sanitize_callback' => 'kaupang_attribute_suite_sanitize_taste_profile',
     ));
 
     // Altitude — stored for future direct-trade partners, not frontend-rendered
     register_post_meta('attribute_page', 'altitude', array(
         'type'              => 'object',
-        'description'       => __('Altitude range {min, max, unit}.', 'wc-rich-attribute-suite'),
+        'description'       => __('Altitude range {min, max, unit}.', 'kaupang-attribute-suite'),
         'single'            => true,
         'show_in_rest'      => array(
             'schema' => array(
@@ -113,19 +113,19 @@ function wc_ras_origin_register_meta($post_type) {
                 ),
             ),
         ),
-        'sanitize_callback' => 'wc_ras_sanitize_altitude',
+        'sanitize_callback' => 'kaupang_attribute_suite_sanitize_altitude',
     ));
 
     // References
     register_post_meta('attribute_page', 'id_archivo', array(
         'type'              => 'string',
-        'description'       => __('External archive identifier (e.g., Silva GT-047).', 'wc-rich-attribute-suite'),
+        'description'       => __('External archive identifier (e.g., Silva GT-047).', 'kaupang-attribute-suite'),
         'single'            => true,
         'show_in_rest'      => true,
         'sanitize_callback' => 'sanitize_text_field',
     ));
 }
-add_action('wc_ras_register_attribute_page_meta_fields', 'wc_ras_origin_register_meta');
+add_action('kaupang/attribute-suite/register_attribute_page_meta_fields', 'kaupang_attribute_suite_origin_register_meta');
 
 /**
  * Sanitize producer_type against the configured enum.
@@ -133,9 +133,9 @@ add_action('wc_ras_register_attribute_page_meta_fields', 'wc_ras_origin_register
  * @param mixed $value Submitted value.
  * @return string Valid enum value, or empty string.
  */
-function wc_ras_sanitize_producer_type($value) {
+function kaupang_attribute_suite_sanitize_producer_type($value) {
     $value = is_string($value) ? $value : '';
-    $allowed = array_keys(wc_ras_producer_types());
+    $allowed = array_keys(kaupang_attribute_suite_producer_types());
     return in_array($value, $allowed, true) ? $value : '';
 }
 
@@ -145,9 +145,9 @@ function wc_ras_sanitize_producer_type($value) {
  * @param mixed $value Submitted value.
  * @return string Valid enum value, or empty string.
  */
-function wc_ras_sanitize_fermentation_type($value) {
+function kaupang_attribute_suite_sanitize_fermentation_type($value) {
     $value = is_string($value) ? $value : '';
-    $allowed = array_keys(wc_ras_fermentation_types());
+    $allowed = array_keys(kaupang_attribute_suite_fermentation_types());
     return in_array($value, $allowed, true) ? $value : '';
 }
 
@@ -160,7 +160,7 @@ function wc_ras_sanitize_fermentation_type($value) {
  * @param mixed $value Submitted value.
  * @return int|string Sanitized int, or '' to signal "no value".
  */
-function wc_ras_sanitize_nullable_int($value) {
+function kaupang_attribute_suite_sanitize_nullable_int($value) {
     if ($value === '' || $value === null) {
         return '';
     }
@@ -173,18 +173,18 @@ function wc_ras_sanitize_nullable_int($value) {
 /**
  * Sanitize the taste_profile object.
  *
- * Keeps only keys that appear in wc_ras_taste_axes(). Values are clamped to
+ * Keeps only keys that appear in kaupang_attribute_suite_taste_axes(). Values are clamped to
  * 0–10 or preserved as null. Any unknown axis or invalid value is dropped.
  *
  * @param mixed $value Submitted object/array.
  * @return array Sanitized map of axis_key => int|null.
  */
-function wc_ras_sanitize_taste_profile($value) {
+function kaupang_attribute_suite_sanitize_taste_profile($value) {
     if (!is_array($value)) {
         return array();
     }
 
-    $allowed = array_keys(wc_ras_taste_axes());
+    $allowed = array_keys(kaupang_attribute_suite_taste_axes());
     $out = array();
 
     foreach ($allowed as $axis) {
@@ -218,7 +218,7 @@ function wc_ras_sanitize_taste_profile($value) {
  * @param mixed $value Submitted object/array.
  * @return array Sanitized {min, max, unit}.
  */
-function wc_ras_sanitize_altitude($value) {
+function kaupang_attribute_suite_sanitize_altitude($value) {
     if (!is_array($value)) {
         return array();
     }

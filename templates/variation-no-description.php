@@ -7,7 +7,7 @@
  * since the description is rendered inline within the variations table.
  *
  * @see https://woocommerce.com/document/template-structure/
- * @package WooCommerce_Rich_Attribute_Suite
+ * @package Kaupang\AttributeSuite
  * @version 1.1.0
  * @since 1.1.0
  * 

@@ -3,9 +3,9 @@
  * Template loader — theme-overridable template parts.
  *
  * Shared helper for rendering plugin template files with theme override.
- * Themes place overrides at `{theme}/woocommerce-rich-attribute-suite/{slug}.php`.
+ * Themes place overrides at `{theme}/kaupang-attribute-suite/{slug}.php`.
  *
- * @package WooCommerce_Rich_Attribute_Suite
+ * @package Kaupang\AttributeSuite
  */
 
 defined('ABSPATH') || exit;
@@ -17,7 +17,7 @@ defined('ABSPATH') || exit;
  * @param array  $args Associative array of variables made available to the template.
  * @return string Rendered HTML, or empty string if the template is missing.
  */
-function wc_ras_load_template($slug, array $args = array()) {
+function kaupang_attribute_suite_load_template($slug, array $args = array()) {
     $slug = ltrim((string) $slug, '/');
     if ($slug === '') {
         return '';
@@ -26,10 +26,10 @@ function wc_ras_load_template($slug, array $args = array()) {
 
     // Theme overrides take priority.
     $theme_hit = locate_template(array(
-        'woocommerce-rich-attribute-suite/' . $rel,
+        'kaupang-attribute-suite/' . $rel,
     ));
 
-    $path = $theme_hit ? $theme_hit : WC_RAS_PLUGIN_DIR . 'templates/' . $rel;
+    $path = $theme_hit ? $theme_hit : KAUPANG_ATTRIBUTE_SUITE_DIR . 'templates/' . $rel;
 
     if (!file_exists($path)) {
         return '';

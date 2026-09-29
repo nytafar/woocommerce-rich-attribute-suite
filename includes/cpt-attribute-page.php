@@ -4,7 +4,7 @@
  *
  * Registers the attribute_page CPT and related meta fields.
  *
- * @package WooCommerce_Rich_Attribute_Suite
+ * @package Kaupang\AttributeSuite
  */
 
 defined('ABSPATH') || exit;
@@ -12,26 +12,26 @@ defined('ABSPATH') || exit;
 /**
  * Register the attribute_page custom post type
  */
-function wc_ras_register_attribute_page_cpt() {
+function kaupang_attribute_suite_register_attribute_page_cpt() {
     $labels = array(
-        'name'                  => _x('Attribute Pages', 'Post type general name', 'wc-rich-attribute-suite'),
-        'singular_name'         => _x('Attribute Page', 'Post type singular name', 'wc-rich-attribute-suite'),
-        'menu_name'             => _x('Attribute Suite', 'Admin Menu text', 'wc-rich-attribute-suite'),
-        'name_admin_bar'        => _x('Attribute Page', 'Add New on Toolbar', 'wc-rich-attribute-suite'),
-        'add_new'               => __('Add New', 'wc-rich-attribute-suite'),
-        'add_new_item'          => __('Add New Attribute Page', 'wc-rich-attribute-suite'),
-        'new_item'              => __('New Attribute Page', 'wc-rich-attribute-suite'),
-        'edit_item'             => __('Edit Attribute Page', 'wc-rich-attribute-suite'),
-        'view_item'             => __('View Attribute Page', 'wc-rich-attribute-suite'),
-        'all_items'             => __('All Pages', 'wc-rich-attribute-suite'),
-        'search_items'          => __('Search Attribute Pages', 'wc-rich-attribute-suite'),
-        'parent_item_colon'     => __('Parent Attribute Pages:', 'wc-rich-attribute-suite'),
-        'not_found'             => __('No attribute pages found.', 'wc-rich-attribute-suite'),
-        'not_found_in_trash'    => __('No attribute pages found in Trash.', 'wc-rich-attribute-suite'),
-        'featured_image'        => _x('Attribute Image', 'Overrides the "Featured Image" phrase', 'wc-rich-attribute-suite'),
-        'set_featured_image'    => _x('Set attribute image', 'Overrides the "Set featured image" phrase', 'wc-rich-attribute-suite'),
-        'remove_featured_image' => _x('Remove attribute image', 'Overrides the "Remove featured image" phrase', 'wc-rich-attribute-suite'),
-        'use_featured_image'    => _x('Use as attribute image', 'Overrides the "Use as featured image" phrase', 'wc-rich-attribute-suite'),
+        'name'                  => _x('Attribute Pages', 'Post type general name', 'kaupang-attribute-suite'),
+        'singular_name'         => _x('Attribute Page', 'Post type singular name', 'kaupang-attribute-suite'),
+        'menu_name'             => _x('Attribute Suite', 'Admin Menu text', 'kaupang-attribute-suite'),
+        'name_admin_bar'        => _x('Attribute Page', 'Add New on Toolbar', 'kaupang-attribute-suite'),
+        'add_new'               => __('Add New', 'kaupang-attribute-suite'),
+        'add_new_item'          => __('Add New Attribute Page', 'kaupang-attribute-suite'),
+        'new_item'              => __('New Attribute Page', 'kaupang-attribute-suite'),
+        'edit_item'             => __('Edit Attribute Page', 'kaupang-attribute-suite'),
+        'view_item'             => __('View Attribute Page', 'kaupang-attribute-suite'),
+        'all_items'             => __('All Pages', 'kaupang-attribute-suite'),
+        'search_items'          => __('Search Attribute Pages', 'kaupang-attribute-suite'),
+        'parent_item_colon'     => __('Parent Attribute Pages:', 'kaupang-attribute-suite'),
+        'not_found'             => __('No attribute pages found.', 'kaupang-attribute-suite'),
+        'not_found_in_trash'    => __('No attribute pages found in Trash.', 'kaupang-attribute-suite'),
+        'featured_image'        => _x('Attribute Image', 'Overrides the "Featured Image" phrase', 'kaupang-attribute-suite'),
+        'set_featured_image'    => _x('Set attribute image', 'Overrides the "Set featured image" phrase', 'kaupang-attribute-suite'),
+        'remove_featured_image' => _x('Remove attribute image', 'Overrides the "Remove featured image" phrase', 'kaupang-attribute-suite'),
+        'use_featured_image'    => _x('Use as attribute image', 'Overrides the "Use as featured image" phrase', 'kaupang-attribute-suite'),
     );
 
     $args = array(
@@ -56,12 +56,12 @@ function wc_ras_register_attribute_page_cpt() {
 
     register_post_type('attribute_page', $args);
 }
-add_action('init', 'wc_ras_register_attribute_page_cpt');
+add_action('init', 'kaupang_attribute_suite_register_attribute_page_cpt');
 
 /**
  * Add custom admin menu structure for Attribute Suite
  */
-function wc_ras_customize_admin_menu() {
+function kaupang_attribute_suite_customize_admin_menu() {
     global $submenu;
     
     // Get all product attributes
@@ -103,16 +103,16 @@ function wc_ras_customize_admin_menu() {
         $submenu['edit.php?post_type=attribute_page'] = $new_submenu;
     }
 }
-add_action('admin_menu', 'wc_ras_customize_admin_menu', 999);
+add_action('admin_menu', 'kaupang_attribute_suite_customize_admin_menu', 999);
 
 /**
  * Register meta fields for attribute_page CPT
  */
-function wc_ras_register_attribute_page_meta() {
+function kaupang_attribute_suite_register_attribute_page_meta() {
     // Register region meta field
     register_post_meta('attribute_page', 'region', array(
         'type'              => 'string',
-        'description'       => __('Region information for the attribute', 'wc-rich-attribute-suite'),
+        'description'       => __('Region information for the attribute', 'kaupang-attribute-suite'),
         'single'            => true,
         'show_in_rest'      => true,
         'sanitize_callback' => 'sanitize_text_field',
@@ -121,7 +121,7 @@ function wc_ras_register_attribute_page_meta() {
     // Register smak (taste) meta field
     register_post_meta('attribute_page', 'smak', array(
         'type'              => 'string',
-        'description'       => __('Taste profile for the attribute', 'wc-rich-attribute-suite'),
+        'description'       => __('Taste profile for the attribute', 'kaupang-attribute-suite'),
         'single'            => true,
         'show_in_rest'      => true,
         'sanitize_callback' => 'sanitize_text_field',
@@ -132,9 +132,9 @@ function wc_ras_register_attribute_page_meta() {
      * 
      * @param string $post_type The post type (attribute_page)
      */
-    do_action('wc_ras_register_attribute_page_meta_fields', 'attribute_page');
+    do_action('kaupang/attribute-suite/register_attribute_page_meta_fields', 'attribute_page');
 }
-add_action('init', 'wc_ras_register_attribute_page_meta');
+add_action('init', 'kaupang_attribute_suite_register_attribute_page_meta');
 
 /**
  * Auto-create attribute_page CPT for each relevant attribute term.
@@ -143,7 +143,7 @@ add_action('init', 'wc_ras_register_attribute_page_meta');
  * @param int    $term_id  Term ID
  * @param string $taxonomy Taxonomy name
  */
-function wc_ras_sync_attribute_pages_on_term_create($term_id, $taxonomy) {
+function kaupang_attribute_suite_sync_attribute_pages_on_term_create($term_id, $taxonomy) {
     // Check if the taxonomy is a product attribute
     if (strpos($taxonomy, 'pa_') !== 0) {
         return;
@@ -175,24 +175,24 @@ function wc_ras_sync_attribute_pages_on_term_create($term_id, $taxonomy) {
 }
 
 // Hook into all product attribute taxonomy term creation
-function wc_ras_register_attribute_term_hooks() {
+function kaupang_attribute_suite_register_attribute_term_hooks() {
     $attribute_taxonomies = wc_get_attribute_taxonomies();
     
     if (!empty($attribute_taxonomies)) {
         foreach ($attribute_taxonomies as $taxonomy) {
             $taxonomy_name = wc_attribute_taxonomy_name($taxonomy->attribute_name);
-            add_action("created_{$taxonomy_name}", 'wc_ras_sync_attribute_pages_on_term_create', 10, 2);
+            add_action("created_{$taxonomy_name}", 'kaupang_attribute_suite_sync_attribute_pages_on_term_create', 10, 2);
         }
     }
 }
-add_action('init', 'wc_ras_register_attribute_term_hooks', 20);
+add_action('init', 'kaupang_attribute_suite_register_attribute_term_hooks', 20);
 
 /**
  * Pre-fill attribute page data when creating from term edit screen
  * 
  * Captures URL parameters and sets up default title/slug
  */
-function wc_ras_prefill_attribute_page_from_url() {
+function kaupang_attribute_suite_prefill_attribute_page_from_url() {
     global $pagenow;
     
     // Only on new post screen for attribute_page
@@ -215,7 +215,7 @@ function wc_ras_prefill_attribute_page_from_url() {
     }
     
     // Store in transient for use when post is saved
-    set_transient('wc_ras_pending_attribute_page_' . get_current_user_id(), array(
+    set_transient('kaupang_attribute_suite_pending_attribute_page_' . get_current_user_id(), array(
         'term_id' => $term->term_id,
         'term_slug' => $term_slug,
         'term_name' => $term->name,
@@ -243,21 +243,21 @@ function wc_ras_prefill_attribute_page_from_url() {
         <?php
     });
 }
-add_action('admin_init', 'wc_ras_prefill_attribute_page_from_url');
+add_action('admin_init', 'kaupang_attribute_suite_prefill_attribute_page_from_url');
 
 /**
  * Save attribute term meta when attribute page is created manually
  *
  * @param int $post_id Post ID
  */
-function wc_ras_save_attribute_page_term_link($post_id) {
+function kaupang_attribute_suite_save_attribute_page_term_link($post_id) {
     // Check if this is an attribute_page
     if (get_post_type($post_id) !== 'attribute_page') {
         return;
     }
     
     // Check for pending attribute page data
-    $pending_data = get_transient('wc_ras_pending_attribute_page_' . get_current_user_id());
+    $pending_data = get_transient('kaupang_attribute_suite_pending_attribute_page_' . get_current_user_id());
     if (!$pending_data) {
         return;
     }
@@ -278,9 +278,9 @@ function wc_ras_save_attribute_page_term_link($post_id) {
     }
     
     // Clean up transient
-    delete_transient('wc_ras_pending_attribute_page_' . get_current_user_id());
+    delete_transient('kaupang_attribute_suite_pending_attribute_page_' . get_current_user_id());
 }
-add_action('save_post_attribute_page', 'wc_ras_save_attribute_page_term_link', 5);
+add_action('save_post_attribute_page', 'kaupang_attribute_suite_save_attribute_page_term_link', 5);
 
 /**
  * Get or create an attribute page for a specific term
@@ -288,14 +288,14 @@ add_action('save_post_attribute_page', 'wc_ras_save_attribute_page_term_link', 5
  * @param string $term_slug The term slug
  * @return WP_Post|null The attribute page post or null if not found/created
  */
-function wc_ras_get_attribute_page($term_slug) {
+function kaupang_attribute_suite_get_attribute_page($term_slug) {
     $cache_key = 'attribute_page_' . md5($term_slug);
-    $page_id = wp_cache_get($cache_key, 'wc_ras_attribute_pages');
+    $page_id = wp_cache_get($cache_key, 'kaupang_attribute_suite_attribute_pages');
 
     if (false === $page_id) {
         $page = get_page_by_path($term_slug, OBJECT, 'attribute_page');
         $page_id = $page ? $page->ID : 0;
-        wp_cache_set($cache_key, $page_id, 'wc_ras_attribute_pages');
+        wp_cache_set($cache_key, $page_id, 'kaupang_attribute_suite_attribute_pages');
     }
 
     return $page_id ? get_post($page_id) : null;
@@ -304,21 +304,21 @@ function wc_ras_get_attribute_page($term_slug) {
 /**
  * Invalidate cached attribute_page lookups when a post is saved or deleted.
  *
- * Two cache groups exist historically (`wc_ras_attribute_page` in
- * frontend-hooks.php and `wc_ras_attribute_pages` in this file). Both are
+ * Two cache groups exist historically (`kaupang_attribute_suite_attribute_page` in
+ * frontend-hooks.php and `kaupang_attribute_suite_attribute_pages` in this file). Both are
  * cleared here so variation preload and archive fallbacks always see the
  * latest state without waiting for the 1-hour TTL.
  *
  * @param int $post_id Post ID.
  */
-function wc_ras_invalidate_attribute_page_cache($post_id) {
+function kaupang_attribute_suite_invalidate_attribute_page_cache($post_id) {
     $post = get_post($post_id);
     if (!$post || $post->post_type !== 'attribute_page' || empty($post->post_name)) {
         return;
     }
     $key = 'attribute_page_' . md5($post->post_name);
-    wp_cache_delete($key, 'wc_ras_attribute_page');
-    wp_cache_delete($key, 'wc_ras_attribute_pages');
+    wp_cache_delete($key, 'kaupang_attribute_suite_attribute_page');
+    wp_cache_delete($key, 'kaupang_attribute_suite_attribute_pages');
 }
-add_action('save_post_attribute_page', 'wc_ras_invalidate_attribute_page_cache');
-add_action('deleted_post', 'wc_ras_invalidate_attribute_page_cache');
+add_action('save_post_attribute_page', 'kaupang_attribute_suite_invalidate_attribute_page_cache');
+add_action('deleted_post', 'kaupang_attribute_suite_invalidate_attribute_page_cache');

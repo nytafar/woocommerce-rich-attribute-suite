@@ -21,7 +21,7 @@
  *     7. Related products (deferred — hook for theme/site integration)
  *   </article>
  *
- * @package WooCommerce_Rich_Attribute_Suite
+ * @package Kaupang\AttributeSuite
  */
 
 defined('ABSPATH') || exit;
@@ -31,14 +31,14 @@ get_header();
 while (have_posts()) :
     the_post();
 
-    $origin = wc_ras_build_origin_struct(get_post());
+    $origin = kaupang_attribute_suite_build_origin_struct(get_post());
     if (!$origin) {
         continue;
     }
 
     $region_label = implode(', ', array_filter(array($origin['country'], $origin['region'])));
-    $alt_str      = $origin['altitude'] ? wc_ras_format_altitude($origin['altitude']) : '';
-    $producer_types = function_exists('wc_ras_producer_types') ? wc_ras_producer_types() : array();
+    $alt_str      = $origin['altitude'] ? kaupang_attribute_suite_format_altitude($origin['altitude']) : '';
+    $producer_types = function_exists('kaupang_attribute_suite_producer_types') ? kaupang_attribute_suite_producer_types() : array();
     ?>
     <article <?php post_class('wc-ras-origin-single'); ?>>
         <?php /* <div> i stedet for <header> — Ousia (og mange WP-temaer)
@@ -84,7 +84,7 @@ while (have_posts()) :
 
                         <?php if ($alt_str !== '') : ?>
                             <span class="pill altitude">
-                                <?php echo wc_ras_origin_icon('altitude'); ?>
+                                <?php echo kaupang_attribute_suite_origin_icon('altitude'); ?>
                                 <span><?php echo esc_html($alt_str); ?></span>
                             </span>
                         <?php endif; ?>
@@ -105,11 +105,11 @@ while (have_posts()) :
             if ($show_producer_line || $show_count_line || $show_variety) :
                 ?>
                 <div class="section producers">
-                    <h2><?php esc_html_e('Produsenter og dyrking', 'wc-rich-attribute-suite'); ?></h2>
+                    <h2><?php esc_html_e('Produsenter og dyrking', 'kaupang-attribute-suite'); ?></h2>
 
                     <?php if ($show_producer_line) : ?>
                         <p class="producer-line">
-                            <?php echo wc_ras_origin_icon('producer'); ?>
+                            <?php echo kaupang_attribute_suite_origin_icon('producer'); ?>
                             <span><?php echo esc_html($producer_type_label); ?></span>
                         </p>
                     <?php endif; ?>
@@ -119,7 +119,7 @@ while (have_posts()) :
                             <?php
                             printf(
                                 /* translators: %d: number of producers */
-                                esc_html(_n('%d produsent', '%d produsenter', (int) $origin['producer_count'], 'wc-rich-attribute-suite')),
+                                esc_html(_n('%d produsent', '%d produsenter', (int) $origin['producer_count'], 'kaupang-attribute-suite')),
                                 (int) $origin['producer_count']
                             );
                             ?>
@@ -128,7 +128,7 @@ while (have_posts()) :
 
                     <?php if ($show_variety) : ?>
                         <p class="variety">
-                            <strong><?php esc_html_e('Varietet:', 'wc-rich-attribute-suite'); ?></strong>
+                            <strong><?php esc_html_e('Varietet:', 'kaupang-attribute-suite'); ?></strong>
                             <?php echo esc_html($origin['variety']); ?>
                         </p>
                     <?php endif; ?>
@@ -137,19 +137,19 @@ while (have_posts()) :
 
             <?php
             // ─── Post-harvest ───
-            $fermentation_value = wc_ras_format_fermentation_value(
+            $fermentation_value = kaupang_attribute_suite_format_fermentation_value(
                 $origin['fermentation_type'],
                 $origin['fermentation_days']
             );
-            $ferm_item = wc_ras_render_postharvest_item(
+            $ferm_item = kaupang_attribute_suite_render_postharvest_item(
                 'fermentation',
-                __('Fermentering', 'wc-rich-attribute-suite'),
+                __('Fermentering', 'kaupang-attribute-suite'),
                 $fermentation_value,
                 (string) ($origin['fermentation_method'] ?? '')
             );
-            $dry_item = wc_ras_render_postharvest_item(
+            $dry_item = kaupang_attribute_suite_render_postharvest_item(
                 'drying',
-                __('Tørking', 'wc-rich-attribute-suite'),
+                __('Tørking', 'kaupang-attribute-suite'),
                 '',
                 (string) ($origin['drying_method'] ?? '')
             );
@@ -157,7 +157,7 @@ while (have_posts()) :
             if ($ferm_item || $dry_item) :
                 ?>
                 <div class="section postharvest">
-                    <h2><?php esc_html_e('Etter innhøsting', 'wc-rich-attribute-suite'); ?></h2>
+                    <h2><?php esc_html_e('Etter innhøsting', 'kaupang-attribute-suite'); ?></h2>
                     <?php
                     echo $ferm_item; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- pre-escaped inside helper
                     echo $dry_item;  // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- pre-escaped inside helper
@@ -167,7 +167,7 @@ while (have_posts()) :
 
             <?php
             // ─── Flavour ───
-            $radar_svg = wc_ras_render_taste_radar_svg($origin['taste_profile']);
+            $radar_svg = kaupang_attribute_suite_render_taste_radar_svg($origin['taste_profile']);
             $has_notes = !empty($origin['taste_notes']);
 
             if ($radar_svg || $has_notes) :
@@ -178,7 +178,7 @@ while (have_posts()) :
                     <?php endif; ?>
                     <?php if ($has_notes) : ?>
                         <div class="notes">
-                            <h2><?php esc_html_e('Smaksnotater', 'wc-rich-attribute-suite'); ?></h2>
+                            <h2><?php esc_html_e('Smaksnotater', 'kaupang-attribute-suite'); ?></h2>
                             <p><?php echo esc_html($origin['taste_notes']); ?></p>
                         </div>
                     <?php endif; ?>
@@ -204,7 +204,7 @@ while (have_posts()) :
         // Intentionally no default rendering — hook leveraged by theme/site
         // integration. Kept for fase 3/4 when we ship the related-products
         // query that filters by pa_opprinnelse.
-        do_action('wc_ras_origin_single_after_content', $origin);
+        do_action('kaupang/attribute-suite/origin_single_after_content', $origin);
         ?>
     </article>
     <?php

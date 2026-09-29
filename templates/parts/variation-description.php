@@ -15,16 +15,16 @@
  *      på $origin-data. Under teksten, ikke over; ingen piller.
  *   4. <p class="term-page-link-wrapper"> — CTA, betinget på $cta_url.
  *
- * Expected variables (passed via wc_ras_load_template):
+ * Expected variables (passed via kaupang_attribute_suite_load_template):
  *   @var array|null $origin           wc_ras_origin struct or null.
  *   @var string     $description_text Free-text fallback (may be empty).
  *   @var string     $cta_url          Canonical URL for CTA ("" disables).
  *   @var string     $cta_label        Translated label for CTA.
  *
  * Theme override path:
- *   {theme}/woocommerce-rich-attribute-suite/parts/variation-description.php
+ *   {theme}/kaupang-attribute-suite/parts/variation-description.php
  *
- * @package WooCommerce_Rich_Attribute_Suite
+ * @package Kaupang\AttributeSuite
  */
 
 defined('ABSPATH') || exit;
@@ -33,14 +33,14 @@ defined('ABSPATH') || exit;
 $origin = isset($origin) && is_array($origin) ? $origin : null;
 $description_text = isset($description_text) ? (string) $description_text : '';
 $cta_url   = isset($cta_url)   ? (string) $cta_url   : '';
-$cta_label = isset($cta_label) ? (string) $cta_label : __('Lær mer', 'wc-rich-attribute-suite');
+$cta_label = isset($cta_label) ? (string) $cta_label : __('Lær mer', 'kaupang-attribute-suite');
 
 // ── Meta line ───────────────────────────────────────────────────
 $country  = (string) ($origin['country']  ?? '');
 $variety  = (string) ($origin['variety']  ?? '');
 $flag_url = (string) ($origin['country_flag_url'] ?? '');
-$alt_str  = (!empty($origin['altitude']) && function_exists('wc_ras_format_altitude'))
-    ? (string) wc_ras_format_altitude($origin['altitude'])
+$alt_str  = (!empty($origin['altitude']) && function_exists('kaupang_attribute_suite_format_altitude'))
+    ? (string) kaupang_attribute_suite_format_altitude($origin['altitude'])
     : '';
 
 $meta = array();

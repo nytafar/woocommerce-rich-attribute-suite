@@ -8,7 +8,7 @@
  * the new image is decoded. Theme tunes timing/easing via CSS custom
  * properties on the gallery wrapper.
  *
- * @package WooCommerce_Rich_Attribute_Suite
+ * @package Kaupang\AttributeSuite
  */
 
 defined('ABSPATH') || exit;
@@ -16,10 +16,10 @@ defined('ABSPATH') || exit;
 /**
  * Registers and conditionally enqueues the gallery transition assets.
  */
-class WC_RAS_Variation_Gallery_Transition {
+class Kaupang_Attribute_Suite_Variation_Gallery_Transition {
 
     public function __construct() {
-        if (!apply_filters('wc_ras_enable_variation_gallery_transition', true)) {
+        if (!apply_filters('kaupang/attribute-suite/enable_variation_gallery_transition', true)) {
             return;
         }
         add_action('wp_enqueue_scripts', array($this, 'register_assets'));
@@ -31,21 +31,21 @@ class WC_RAS_Variation_Gallery_Transition {
      * other code can opt into the asset without re-declaring it.
      */
     public function register_assets() {
-        $css_path = WC_RAS_PLUGIN_DIR . 'assets/css/variation-gallery-transition.css';
-        $js_path  = WC_RAS_PLUGIN_DIR . 'assets/js/variation-gallery-transition.js';
+        $css_path = KAUPANG_ATTRIBUTE_SUITE_DIR . 'assets/css/variation-gallery-transition.css';
+        $js_path  = KAUPANG_ATTRIBUTE_SUITE_DIR . 'assets/js/variation-gallery-transition.js';
 
         wp_register_style(
             'wc-ras-variation-gallery-transition',
-            WC_RAS_PLUGIN_URL . 'assets/css/variation-gallery-transition.css',
+            KAUPANG_ATTRIBUTE_SUITE_URL . 'assets/css/variation-gallery-transition.css',
             array(),
-            file_exists($css_path) ? filemtime($css_path) : WC_RAS_VERSION
+            file_exists($css_path) ? filemtime($css_path) : KAUPANG_ATTRIBUTE_SUITE_VERSION
         );
 
         wp_register_script(
             'wc-ras-variation-gallery-transition',
-            WC_RAS_PLUGIN_URL . 'assets/js/variation-gallery-transition.js',
+            KAUPANG_ATTRIBUTE_SUITE_URL . 'assets/js/variation-gallery-transition.js',
             array('jquery', 'wc-add-to-cart-variation'),
-            file_exists($js_path) ? filemtime($js_path) : WC_RAS_VERSION,
+            file_exists($js_path) ? filemtime($js_path) : KAUPANG_ATTRIBUTE_SUITE_VERSION,
             true
         );
     }
@@ -62,4 +62,4 @@ class WC_RAS_Variation_Gallery_Transition {
     }
 }
 
-new WC_RAS_Variation_Gallery_Transition();
+new Kaupang_Attribute_Suite_Variation_Gallery_Transition();
