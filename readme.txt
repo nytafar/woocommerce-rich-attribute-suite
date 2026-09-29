@@ -3,7 +3,7 @@ Contributors: lassejellum
 Requires at least: 5.5
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 1.3.0
+Stable tag: 1.3.1
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -23,6 +23,29 @@ WooCommerce Rich Attribute Suite transforms standard attribute taxonomy pages in
 4. Edit an attribute term to access its rich content page
 
 == Changelog ==
+
+= 1.3.1 – 2026-09-29 =
+
+**Added**
+* Enriched variation description, CPT templates and an origin modal with a hydrated single card: front-of-pack card, taste radar, origin tabs, bottom sheet on phones.
+* Variation gallery image fade with theme-tunable timing.
+* Products with `pa_opprinnelse` use client-side variations; the modal/CTA only shows for rich origin pages.
+* Declared HPOS (custom order tables) compatibility.
+
+**Changed**
+* Attribute page single reworked as a paper substrate with polaroid hero; tighter, data-led mobile grid; inline spec-sheet producers section at ≥32rem.
+* Modal layout: banner hero, flex-wrap body, intrinsic container-query grid, rendered as first child of the gallery wrapper; assets cache-busted by filemtime.
+* Region label dropped from the variation-description flag pill.
+* AJAX-loaded forms are detected with a MutationObserver instead of `ajaxComplete`.
+* Adopted suite kit v2: version synced from the header, generated readme.txt, `tools/release`; standard header (GitHub Plugin URI, License GPL-2.0-or-later, Requires at least 5.5, Requires Plugins: woocommerce, WC tested up to 11.1) and cart/checkout blocks compatibility declared.
+* Suite kit v2.1 (tooling, generated readme.txt); no runtime change.
+
+**Fixed**
+* Modal background; prev/next selects the radio inputs correctly.
+* Rewrite rules now re-flush on every version change (the gate was hard-coded to 1.3.0).
+
+**Removed**
+* Stray tracked translation backup (`languages/*-backup-*.po~`).
 
 = 1.3.0 – 2026-04-23 =
 

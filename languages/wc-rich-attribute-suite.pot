@@ -1,184 +1,688 @@
-# Copyright (C) 2025 Lasse Jellum
-# This file is distributed under the same license as the WooCommerce Rich Attribute Suite plugin.
+# Copyright (C) 2026 Lasse Jellum
+# This file is distributed under the GPL-2.0-or-later.
 msgid ""
 msgstr ""
-"Project-Id-Version: WooCommerce Rich Attribute Suite 1.3.0\n"
-"Report-Msgid-Bugs-To: https://jellum.net\n"
-"POT-Creation-Date: 2025-05-13T13:00:00+02:00\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Project-Id-Version: WooCommerce Rich Attribute Suite 1.3.1\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/woocommerce-rich-attribute-suite\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: WooCommerce Rich Attribute Suite\n"
+"POT-Creation-Date: 2026-09-29T05:47:54+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: wc-rich-attribute-suite\n"
 
-#: woocommerce-rich-attribute-suite.php:43
-msgid "WooCommerce Rich Attribute Suite requires WooCommerce to be installed and activated."
+#. Plugin Name of the plugin
+#: woocommerce-rich-attribute-suite.php
+msgid "WooCommerce Rich Attribute Suite"
 msgstr ""
 
-#: includes/cpt-attribute-page.php:18
+#. Plugin URI of the plugin
+#: woocommerce-rich-attribute-suite.php
+msgid "https://github.com/nytafar/woocommerce-rich-attribute-suite"
+msgstr ""
+
+#. Description of the plugin
+#: woocommerce-rich-attribute-suite.php
+msgid "Enhance WooCommerce product attribute taxonomy pages with rich, translatable, and fully editable content using native WordPress tools."
+msgstr ""
+
+#. Author of the plugin
+#: woocommerce-rich-attribute-suite.php
+msgid "Lasse Jellum"
+msgstr ""
+
+#. Author URI of the plugin
+#: woocommerce-rich-attribute-suite.php
+msgid "https://jellum.net"
+msgstr ""
+
+#: includes/admin-hooks.php:31
+#: includes/admin-hooks.php:49
+#: includes/admin-hooks.php:266
+msgid "Rich Content"
+msgstr ""
+
+#: includes/admin-hooks.php:35
+msgid "Edit Rich Content"
+msgstr ""
+
+#: includes/admin-hooks.php:38
+msgid "Edit the rich content page for this attribute term using the block editor."
+msgstr ""
+
+#: includes/admin-hooks.php:53
+msgid "Create Rich Content Page"
+msgstr ""
+
+#: includes/admin-hooks.php:56
+msgid "No rich content page exists for this attribute term. Click to create one."
+msgstr ""
+
+#: includes/admin-hooks.php:91
+msgid "Attribute Type"
+msgstr ""
+
+#: includes/admin-hooks.php:92
+msgid "Attribute Term"
+msgstr ""
+
+#: includes/admin-hooks.php:93
+#: includes/admin-hooks.php:190
+#: templates/parts/origin-modal.php:114
+msgid "Region"
+msgstr ""
+
+#: includes/admin-hooks.php:94
+#: includes/admin-hooks.php:199
+msgid "Smak"
+msgstr ""
+
+#: includes/admin-hooks.php:95
+msgid "Producer"
+msgstr ""
+
+#: includes/admin-hooks.php:166
+msgid "Attribute Properties"
+msgstr ""
+
+#: includes/admin-hooks.php:194
+msgid "The region for this attribute (e.g., geographical location)"
+msgstr ""
+
+#: includes/admin-hooks.php:203
+msgid "The taste profile for this attribute"
+msgstr ""
+
+#: includes/admin-hooks.php:295
+msgid "Edit"
+msgstr ""
+
+#: includes/admin-hooks.php:299
+msgid "No rich content page exists. Click to create one."
+msgstr ""
+
+#: includes/admin-hooks.php:300
+msgid "Create"
+msgstr ""
+
+#: includes/admin-hooks.php:372
+msgid "Description"
+msgstr ""
+
+#: includes/cpt-attribute-page.php:17
 msgctxt "Post type general name"
 msgid "Attribute Pages"
 msgstr ""
 
-#: includes/cpt-attribute-page.php:19
+#: includes/cpt-attribute-page.php:18
 msgctxt "Post type singular name"
 msgid "Attribute Page"
 msgstr ""
 
-#: includes/cpt-attribute-page.php:20
+#: includes/cpt-attribute-page.php:19
 msgctxt "Admin Menu text"
-msgid "Attribute Pages"
+msgid "Attribute Suite"
 msgstr ""
 
-#: includes/cpt-attribute-page.php:21
+#: includes/cpt-attribute-page.php:20
 msgctxt "Add New on Toolbar"
 msgid "Attribute Page"
 msgstr ""
 
-#: includes/cpt-attribute-page.php:22
+#: includes/cpt-attribute-page.php:21
 msgid "Add New"
 msgstr ""
 
-#: includes/cpt-attribute-page.php:23
+#: includes/cpt-attribute-page.php:22
 msgid "Add New Attribute Page"
 msgstr ""
 
-#: includes/cpt-attribute-page.php:24
+#: includes/cpt-attribute-page.php:23
 msgid "New Attribute Page"
 msgstr ""
 
-#: includes/cpt-attribute-page.php:25
+#: includes/cpt-attribute-page.php:24
 msgid "Edit Attribute Page"
 msgstr ""
 
-#: includes/cpt-attribute-page.php:26
+#: includes/cpt-attribute-page.php:25
 msgid "View Attribute Page"
 msgstr ""
 
-#: includes/cpt-attribute-page.php:27
-msgid "All Attribute Pages"
+#: includes/cpt-attribute-page.php:26
+msgid "All Pages"
 msgstr ""
 
-#: includes/cpt-attribute-page.php:28
+#: includes/cpt-attribute-page.php:27
 msgid "Search Attribute Pages"
 msgstr ""
 
-#: includes/cpt-attribute-page.php:29
+#: includes/cpt-attribute-page.php:28
 msgid "Parent Attribute Pages:"
 msgstr ""
 
-#: includes/cpt-attribute-page.php:30
+#: includes/cpt-attribute-page.php:29
 msgid "No attribute pages found."
 msgstr ""
 
-#: includes/cpt-attribute-page.php:31
+#: includes/cpt-attribute-page.php:30
 msgid "No attribute pages found in Trash."
 msgstr ""
 
-#: includes/cpt-attribute-page.php:32
+#: includes/cpt-attribute-page.php:31
 msgctxt "Overrides the \"Featured Image\" phrase"
 msgid "Attribute Image"
 msgstr ""
 
-#: includes/cpt-attribute-page.php:33
+#: includes/cpt-attribute-page.php:32
 msgctxt "Overrides the \"Set featured image\" phrase"
 msgid "Set attribute image"
 msgstr ""
 
-#: includes/cpt-attribute-page.php:34
+#: includes/cpt-attribute-page.php:33
 msgctxt "Overrides the \"Remove featured image\" phrase"
 msgid "Remove attribute image"
 msgstr ""
 
-#: includes/cpt-attribute-page.php:35
+#: includes/cpt-attribute-page.php:34
 msgctxt "Overrides the \"Use as featured image\" phrase"
 msgid "Use as attribute image"
 msgstr ""
 
-#: includes/cpt-attribute-page.php:73
+#: includes/cpt-attribute-page.php:115
 msgid "Region information for the attribute"
 msgstr ""
 
-#: includes/cpt-attribute-page.php:82
+#: includes/cpt-attribute-page.php:124
 msgid "Taste profile for the attribute"
 msgstr ""
 
-#: includes/admin-hooks.php:27
-msgid "Rich Content"
+#. translators: %d: number of producers
+#: includes/frontend-hooks.php:272
+#: templates/single-attribute_page.php:122
+#, php-format
+msgid "%d produsent"
+msgid_plural "%d produsenter"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/origin/block-patterns.php:25
+msgid "Rich Attribute Suite"
 msgstr ""
 
-#: includes/admin-hooks.php:31
-msgid "Edit Rich Content"
+#: includes/origin/block-patterns.php:30
+msgid "Opprinnelse — 3-kolonne-start"
 msgstr ""
 
-#: includes/admin-hooks.php:34
-msgid "Edit the rich content page for this attribute term using the block editor."
+#: includes/origin/block-patterns.php:31
+msgid "Startmal for opprinnelsesside: produsenter, sted, håndverk. Rediger fritt."
 msgstr ""
 
-#: includes/admin-hooks.php:46
-msgid "Create Rich Content Page"
+#: includes/origin/block-patterns.php:48
+msgid "Produsentene"
 msgstr ""
 
-#: includes/admin-hooks.php:49
-msgid "No rich content page exists for this attribute term. Click to create one."
+#: includes/origin/block-patterns.php:49
+msgid "Stedet"
 msgstr ""
 
-#: includes/admin-hooks.php:74
-msgid "Attribute Type"
+#: includes/origin/block-patterns.php:50
+msgid "Håndverket"
 msgstr ""
 
-#: includes/admin-hooks.php:75
-msgid "Attribute Term"
+#: includes/origin/block-patterns.php:52
+msgid "Hvem dyrker kakaoen? Kooperativet, familien, den sosiale virksomheten. Skriv om menneskene bak bønnene."
 msgstr ""
 
-#: includes/admin-hooks.php:76
-msgid "Region"
+#: includes/origin/block-patterns.php:53
+msgid "Hvor ligger opprinnelsen? Klima, jordsmonn, landskap, høyde. Det stedet smaken kommer fra."
 msgstr ""
 
-#: includes/admin-hooks.php:77
-msgid "Smak"
+#: includes/origin/block-patterns.php:54
+msgid "Hvordan behandles bønnene? Fermentering, tørking, lokal tradisjon. Det som gjør akkurat denne opprinnelsen distinkt."
 msgstr ""
 
-#: includes/admin-hooks.php:152
-msgid "Attribute Properties"
+#: includes/origin/origin-admin-certifications.php:42
+msgid "Velg sertifiserings-ikon"
 msgstr ""
 
-#: includes/admin-hooks.php:172
-msgid "The region for this attribute (e.g., geographical location)"
+#: includes/origin/origin-admin-certifications.php:43
+msgid "Bruk dette ikonet"
 msgstr ""
 
-#: includes/admin-hooks.php:180
-msgid "The taste profile for this attribute"
+#: includes/origin/origin-admin-certifications.php:44
+#: includes/origin/origin-admin-certifications.php:62
+#: includes/origin/origin-admin-certifications.php:100
+msgid "Velg ikon"
 msgstr ""
 
-#: includes/frontend-hooks.php:76
-msgid "Region:"
+#: includes/origin/origin-admin-certifications.php:45
+#: includes/origin/origin-admin-certifications.php:99
+msgid "Bytt ikon"
 msgstr ""
 
-#: includes/frontend-hooks.php:80
-msgid "Smak:"
+#: includes/origin/origin-admin-certifications.php:46
+#: includes/origin/origin-admin-certifications.php:65
+#: includes/origin/origin-admin-certifications.php:103
+msgid "Fjern ikon"
 msgstr ""
 
-#: includes/variation-improvements.php:106
-#: includes/variation-improvements.php:112
-#: includes/variation-improvements.php:196
-#: includes/variation-improvements.php:202
+#: includes/origin/origin-admin-certifications.php:58
+#: includes/origin/origin-admin-certifications.php:86
+msgid "Ikon"
+msgstr ""
+
+#: includes/origin/origin-admin-certifications.php:68
+#: includes/origin/origin-admin-certifications.php:106
+msgid "SVG anbefales. Ikonet vises på modal, CPT-side og arkivkort — ikke på produktkort."
+msgstr ""
+
+#: includes/origin/origin-admin.php:20
+msgid "Opprinnelse: Cultivation"
+msgstr ""
+
+#: includes/origin/origin-admin.php:29
+msgid "Opprinnelse: People & Producers"
+msgstr ""
+
+#: includes/origin/origin-admin.php:38
+msgid "Opprinnelse: Post-harvest"
+msgstr ""
+
+#: includes/origin/origin-admin.php:47
+msgid "Opprinnelse: Flavour"
+msgstr ""
+
+#: includes/origin/origin-admin.php:56
+msgid "Opprinnelse: Fremtidig"
+msgstr ""
+
+#: includes/origin/origin-admin.php:65
+msgid "Opprinnelse: Referanser"
+msgstr ""
+
+#: includes/origin/origin-admin.php:98
+msgid "Variety"
+msgstr ""
+
+#: includes/origin/origin-admin.php:103
+msgid "Cacao variety, e.g. Chuncho, Criollo, Trinitario."
+msgstr ""
+
+#: includes/origin/origin-admin.php:122
+msgid "Producer type"
+msgstr ""
+
+#: includes/origin/origin-admin.php:126
+#: includes/origin/origin-admin.php:167
+msgid "— Select —"
+msgstr ""
+
+#: includes/origin/origin-admin.php:137
+msgid "Producer count"
+msgstr ""
+
+#: includes/origin/origin-admin.php:142
+msgid "Leave blank if not applicable — the line is hidden when missing."
+msgstr ""
+
+#: includes/origin/origin-admin.php:163
+msgid "Fermentation type"
+msgstr ""
+
+#: includes/origin/origin-admin.php:178
+msgid "Fermentation days"
+msgstr ""
+
+#: includes/origin/origin-admin.php:187
+msgid "Fermentation method"
+msgstr ""
+
+#: includes/origin/origin-admin.php:192
+msgid "Short free-text description (e.g., \"3-tier cascade wooden boxes\")."
+msgstr ""
+
+#: includes/origin/origin-admin.php:197
+msgid "Drying method"
+msgstr ""
+
+#: includes/origin/origin-admin.php:202
+msgid "Short free-text description (e.g., \"Sun-dried on raised beds\")."
+msgstr ""
+
+#: includes/origin/origin-admin.php:240
+msgid "0–10, blank = ikke vurdert"
+msgstr ""
+
+#: includes/origin/origin-admin.php:247
+msgid "Frihåndsnotater redigeres i feltet \"Smak\" i hovedboksen ovenfor."
+msgstr ""
+
+#: includes/origin/origin-admin.php:266
+msgid "Altitude min"
+msgstr ""
+
+#: includes/origin/origin-admin.php:271
+msgid "Altitude max"
+msgstr ""
+
+#: includes/origin/origin-admin.php:276
+msgid "Unit"
+msgstr ""
+
+#: includes/origin/origin-admin.php:282
+msgid "Stored for future use — not yet rendered on the frontend."
+msgstr ""
+
+#: includes/origin/origin-admin.php:294
+msgid "Archive ID"
+msgstr ""
+
+#: includes/origin/origin-admin.php:298
+#: includes/origin/origin-meta.php:122
+msgid "External archive identifier (e.g., Silva GT-047)."
+msgstr ""
+
+#: includes/origin/origin-config.php:27
+msgid "Syre"
+msgstr ""
+
+#: includes/origin/origin-config.php:28
+msgid "Sødme"
+msgstr ""
+
+#: includes/origin/origin-config.php:29
+msgid "Bitter"
+msgstr ""
+
+#: includes/origin/origin-config.php:30
+msgid "Kropp"
+msgstr ""
+
+#: includes/origin/origin-config.php:31
+msgid "Frukt"
+msgstr ""
+
+#: includes/origin/origin-config.php:32
+msgid "Blomst"
+msgstr ""
+
+#: includes/origin/origin-config.php:33
+msgid "Jord"
+msgstr ""
+
+#: includes/origin/origin-config.php:34
+msgid "Krydder"
+msgstr ""
+
+#: includes/origin/origin-config.php:47
+msgid "Single estate"
+msgstr ""
+
+#: includes/origin/origin-config.php:48
+msgid "Family farm"
+msgstr ""
+
+#: includes/origin/origin-config.php:49
+msgid "Cooperative"
+msgstr ""
+
+#: includes/origin/origin-config.php:50
+msgid "Social enterprise"
+msgstr ""
+
+#: includes/origin/origin-config.php:51
+msgid "Smallholders"
+msgstr ""
+
+#: includes/origin/origin-config.php:64
+msgid "Sentralisert"
+msgstr ""
+
+#: includes/origin/origin-config.php:65
+msgid "Desentralisert"
+msgstr ""
+
+#: includes/origin/origin-config.php:66
+msgid "Blandet"
+msgstr ""
+
+#: includes/origin/origin-meta.php:27
+msgid "Cacao variety (e.g., Chuncho, Criollo)."
+msgstr ""
+
+#: includes/origin/origin-meta.php:36
+msgid "Producer organization type."
+msgstr ""
+
+#: includes/origin/origin-meta.php:44
+msgid "Number of producers (nullable)."
+msgstr ""
+
+#: includes/origin/origin-meta.php:53
+msgid "Fermentation organization type."
+msgstr ""
+
+#: includes/origin/origin-meta.php:61
+msgid "Fermentation duration in days (nullable)."
+msgstr ""
+
+#: includes/origin/origin-meta.php:69
+msgid "Free-text fermentation method description."
+msgstr ""
+
+#: includes/origin/origin-meta.php:77
+msgid "Free-text drying method description."
+msgstr ""
+
+#: includes/origin/origin-meta.php:86
+msgid "8-axis taste profile, values 0–10 per axis."
+msgstr ""
+
+#: includes/origin/origin-meta.php:104
+msgid "Altitude range {min, max, unit}."
+msgstr ""
+
+#: includes/origin/origin-render.php:208
+#, php-format
+msgid "%d dag"
+msgid_plural "%d dager"
+msgstr[0] ""
+msgstr[1] ""
+
+#: includes/origin/origin-taxonomies.php:23
+msgctxt "Taxonomy general name"
+msgid "Countries"
+msgstr ""
+
+#: includes/origin/origin-taxonomies.php:24
+msgctxt "Taxonomy singular name"
+msgid "Country"
+msgstr ""
+
+#: includes/origin/origin-taxonomies.php:25
+msgid "Countries"
+msgstr ""
+
+#: includes/origin/origin-taxonomies.php:26
+msgid "All countries"
+msgstr ""
+
+#: includes/origin/origin-taxonomies.php:27
+msgid "Edit country"
+msgstr ""
+
+#: includes/origin/origin-taxonomies.php:28
+msgid "View country"
+msgstr ""
+
+#: includes/origin/origin-taxonomies.php:29
+msgid "Update country"
+msgstr ""
+
+#: includes/origin/origin-taxonomies.php:30
+msgid "Add new country"
+msgstr ""
+
+#: includes/origin/origin-taxonomies.php:31
+msgid "New country name"
+msgstr ""
+
+#: includes/origin/origin-taxonomies.php:32
+msgid "Search countries"
+msgstr ""
+
+#: includes/origin/origin-taxonomies.php:33
+msgid "No countries found."
+msgstr ""
+
+#: includes/origin/origin-taxonomies.php:50
+msgctxt "Taxonomy general name"
+msgid "Certifications"
+msgstr ""
+
+#: includes/origin/origin-taxonomies.php:51
+msgctxt "Taxonomy singular name"
+msgid "Certification"
+msgstr ""
+
+#: includes/origin/origin-taxonomies.php:52
+msgid "Certifications"
+msgstr ""
+
+#: includes/origin/origin-taxonomies.php:53
+msgid "All certifications"
+msgstr ""
+
+#: includes/origin/origin-taxonomies.php:54
+msgid "Edit certification"
+msgstr ""
+
+#: includes/origin/origin-taxonomies.php:55
+msgid "View certification"
+msgstr ""
+
+#: includes/origin/origin-taxonomies.php:56
+msgid "Update certification"
+msgstr ""
+
+#: includes/origin/origin-taxonomies.php:57
+msgid "Add new certification"
+msgstr ""
+
+#: includes/origin/origin-taxonomies.php:58
+msgid "New certification name"
+msgstr ""
+
+#: includes/origin/origin-taxonomies.php:59
+msgid "Search certifications"
+msgstr ""
+
+#: includes/origin/origin-taxonomies.php:60
+msgid "No certifications found."
+msgstr ""
+
+#: includes/origin/origin-taxonomies.php:77
+msgid "Attachment ID of the certification icon SVG."
+msgstr ""
+
+#: includes/origin/origin-taxonomies.php:85
+msgid "Full/official certification name."
+msgstr ""
+
+#: includes/origin/origin-taxonomies.php:93
+msgid "External URL (certification body or programme page)."
+msgstr ""
+
+#: includes/variation-improvements.php:157
+#: templates/parts/variation-description.php:36
+msgid "Lær mer"
+msgstr ""
+
+#: includes/variation-improvements.php:233
+#: includes/variation-improvements.php:239
+#: includes/variation-improvements.php:254
 msgid "Learn more"
 msgstr ""
 
-#: templates/taxonomy-product-attribute.php:46
-msgid "Region:"
+#: templates/archive-attribute_page.php:40
+msgid "Forrige"
 msgstr ""
 
-#: templates/taxonomy-product-attribute.php:54
-msgid "Smak:"
+#: templates/archive-attribute_page.php:41
+msgid "Neste"
 msgstr ""
 
-#: templates/taxonomy-product-attribute.php:78
-msgid "Products made with %s"
+#: templates/archive-attribute_page.php:46
+msgid "Ingen opprinnelser publisert enda."
+msgstr ""
+
+#. translators: %d: number of chocolates/products using this origin
+#: templates/parts/origin-card.php:93
+#, php-format
+msgid "Brukes i %d sjokolade"
+msgid_plural "Brukes i %d sjokolader"
+msgstr[0] ""
+msgstr[1] ""
+
+#: templates/parts/origin-modal.php:69
+#: templates/parts/origin-modal.php:74
+msgid "Lukk"
+msgstr ""
+
+#: templates/parts/origin-modal.php:119
+msgid "Varietet"
+msgstr ""
+
+#: templates/parts/origin-modal.php:124
+msgid "Høyde"
+msgstr ""
+
+#: templates/parts/origin-modal.php:129
+msgid "Produsenter"
+msgstr ""
+
+#: templates/parts/origin-modal.php:137
+#: templates/single-attribute_page.php:146
+msgid "Fermentering"
+msgstr ""
+
+#: templates/parts/origin-modal.php:145
+#: templates/single-attribute_page.php:152
+msgid "Tørking"
+msgstr ""
+
+#: templates/parts/origin-modal.php:152
+msgid "Smaksprofil"
+msgstr ""
+
+#: templates/parts/origin-modal.php:170
+msgid "Se hele siden →"
+msgstr ""
+
+#: templates/parts/origin-modal.php:179
+msgid "Opprinnelser"
+msgstr ""
+
+#: templates/single-attribute_page.php:108
+msgid "Produsenter og dyrking"
+msgstr ""
+
+#: templates/single-attribute_page.php:131
+msgid "Varietet:"
+msgstr ""
+
+#: templates/single-attribute_page.php:160
+msgid "Etter innhøsting"
+msgstr ""
+
+#: templates/single-attribute_page.php:181
+msgid "Smaksnotater"
+msgstr ""
+
+#: woocommerce-rich-attribute-suite.php:74
+msgid "WooCommerce Rich Attribute Suite requires WooCommerce to be installed and activated."
 msgstr ""

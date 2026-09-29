@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-09-29
+
 ### Added
 - Enriched variation description, CPT templates and an origin modal with a hydrated single card: front-of-pack card, taste radar, origin tabs, bottom sheet on phones.
 - Variation gallery image fade with theme-tunable timing.
