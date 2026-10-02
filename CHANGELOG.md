@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-10-02
+
+### Added
+- GS1 Digital Link for label QR codes: `/01/<GTIN>[/10/<lot>][/21/<serial>]` → 307 to the product page with the
+  variation preselected, looked up on Woo's native GTIN field (`includes/gtin-links.php`). Malformed GTIN or bad check
+  digit → 400, unknown/unpublished → 404, query string passed through, qualifiers resolve up to the GTIN (batch ledger
+  later). Responses carry `Do-Not-Cache` so GridPane's page cache doesn't pin them. Check: `tools/check-gtin-links.php`.
+
 ## [2.0.0] - 2026-09-29
 
 Renamed WooCommerce Rich Attribute Suite → **Kaupang Attribute Suite** (Kaupang rename wave 2). Identity moved, the
